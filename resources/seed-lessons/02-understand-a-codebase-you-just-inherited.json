@@ -1,0 +1,129 @@
+{
+  "id": "seed-02-understand-a-codebase-you-just-inherited",
+  "title": "Understand a codebase you just inherited",
+  "tool": "Claude Code CLI",
+  "goal": "You will produce and verify a repository map, trace one feature end to end, and identify the files responsible for a specific behavior.",
+  "est_minutes": 30,
+  "prerequisites": [
+    "The repository is cloned locally",
+    "Claude Code is installed and authenticated",
+    "A feature or behavior to investigate"
+  ],
+  "steps": [
+    {
+      "action": "Start Claude Code from the repository root.",
+      "where": "Terminal window opened in the repository directory.",
+      "why": "Starting at the root gives Claude Code access to the complete project context.",
+      "checkpoint": "The Claude Code prompt appears and its working directory matches the repository root.",
+      "hint_levels": [
+        "Check the terminal's current directory first.",
+        "Navigate to the folder containing the repository's top-level files.",
+        "Run `cd <repository-path>`, confirm with `pwd` or `Get-Location`, then run `claude`."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Switch Claude Code into Plan mode.",
+      "where": "Claude Code input area; mode selector controlled by Shift+Tab.",
+      "why": "Plan mode lets you investigate without changing repository files.",
+      "checkpoint": "The input area visibly indicates Plan mode.",
+      "hint_levels": [
+        "Look for the mode indicator near the prompt.",
+        "Claude Code cycles permission modes with Shift+Tab.",
+        "Press Shift+Tab until `plan mode` is displayed."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Request a high-level repository map with evidence from actual files.",
+      "where": "Claude Code prompt in Plan mode.",
+      "why": "A concise map establishes the main components and likely entry points before tracing details.",
+      "checkpoint": "The response lists top-level areas, their responsibilities, and supporting file paths.",
+      "hint_levels": [
+        "Start broad and require file-path evidence.",
+        "Request architecture, entry points, major modules, tests, and configuration while excluding generated folders.",
+        "Enter: `Map this repository at a high level. Identify entry points, major modules, data flow, tests, and configuration. Cite the files supporting each conclusion; ignore generated and dependency directories.`"
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Choose one user-visible feature and request its end-to-end execution path.",
+      "where": "Claude Code prompt beneath the repository-map response.",
+      "why": "Following one concrete feature turns the structural map into an understandable runtime story.",
+      "checkpoint": "The response shows an ordered path from an entry point through intermediate functions or modules to the final effect.",
+      "hint_levels": [
+        "Pick a feature with a clear trigger and result.",
+        "Name the feature precisely and request symbols, file paths, and call order.",
+        "Enter: `Trace <feature> end to end from its user trigger to its final side effect. List the call sequence with file paths and symbol names, and label any uncertain links.`"
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Open the cited entry-point file at the symbol that begins the feature.",
+      "where": "File path link or cited path in Claude Code's trace output, opened in your terminal editor or configured IDE.",
+      "why": "Inspecting the first handoff verifies that the proposed trace begins in executable code.",
+      "checkpoint": "The editor shows the cited symbol and code that delegates to the next part of the trace.",
+      "hint_levels": [
+        "Begin with the first file in the call sequence.",
+        "Use the cited file and symbol rather than browsing by filename alone.",
+        "Ctrl+click the cited path if supported, or open it with your editor's `Open File` command and search for the cited symbol."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Search the repository for the next symbol in the proposed call sequence.",
+      "where": "Claude Code prompt using its repository search capabilities.",
+      "why": "Independent symbol lookup confirms whether the claimed handoff exists and reveals alternate callers.",
+      "checkpoint": "The output lists matching definitions or references with file paths and line locations.",
+      "hint_levels": [
+        "Use the next function, class, event, route, or command name from the trace.",
+        "Ask for definitions and call sites, not another broad explanation.",
+        "Enter: `Find every definition and call site of <symbol>. Group the results by definition, production callers, and tests, with file paths and line numbers.`"
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Trace the specific behavior backward from its visible output or side effect.",
+      "where": "Claude Code prompt in the current conversation.",
+      "why": "Backward tracing exposes the condition, state, or transformation that actually controls the behavior.",
+      "checkpoint": "The response identifies the controlling branch or transformation and connects it to upstream inputs with cited symbols.",
+      "hint_levels": [
+        "Anchor the search on the final observable effect.",
+        "Describe the exact output, state change, request, or error and ask what controls it.",
+        "Enter: `Starting from <visible output or side effect>, trace backward to the input and condition that determine it. Cite each file and symbol, and separate confirmed links from inferences.`"
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Inspect the tests that exercise the controlling branch.",
+      "where": "Claude Code prompt, followed by the cited test files in your editor or configured IDE.",
+      "why": "Tests reveal expected behavior, edge cases, and the maintainers' intended boundaries.",
+      "checkpoint": "You can see at least one test whose setup and assertion correspond to the investigated behavior, or a visible report that no such test exists.",
+      "hint_levels": [
+        "Look near the production symbol's references for test callers.",
+        "Search for both the symbol name and distinctive output text.",
+        "Enter: `Find tests covering <controlling symbol or behavior>. Show which branch each test exercises and cite the exact test names and file paths.`"
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Request a final evidence table identifying where the behavior lives.",
+      "where": "Claude Code prompt at the bottom of the investigation conversation.",
+      "why": "A compact evidence record makes the result reusable for debugging or future changes.",
+      "checkpoint": "The response contains a table with trigger, control logic, data or state, side effect, and tests, each tied to file paths and symbols.",
+      "hint_levels": [
+        "Summarize only conclusions supported by the investigation.",
+        "Require separate rows for the feature's major responsibilities and flag remaining uncertainty.",
+        "Enter: `Create a final evidence table with columns Responsibility, File, Symbol, and Evidence for this feature. Include its trigger, orchestration, controlling logic, data/state, side effect, and tests; finish with any unresolved uncertainty.`"
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 15838,
+  "codexThreadId": "019fd583-0588-7fd3-957f-faa3a07c4f67",
+  "createdAt": "2026-08-06T05:20:06.490Z",
+  "runs": [],
+  "track": "Claude Code",
+  "builtin": true,
+  "featured": false
+}

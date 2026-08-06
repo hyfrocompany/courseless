@@ -1,0 +1,142 @@
+{
+  "id": "seed-26-every-account-and-tool-ready-on-day-one",
+  "title": "Every account and tool, ready on day one",
+  "tool": "Google Chrome on Windows 11",
+  "goal": "You will sign in to work email, chat, documents, and your password manager, then install and verify your development environment.",
+  "est_minutes": 75,
+  "prerequisites": [
+    "Your company email address and temporary password",
+    "Your company onboarding or invitation email",
+    "Permission to install Windows apps",
+    "Your phone for multifactor authentication"
+  ],
+  "steps": [
+    {
+      "action": "Sign in to your company email account with the address and temporary password provided by your employer.",
+      "where": "Google Chrome address bar and your company email provider's Sign in page.",
+      "why": "Your inbox contains the invitations needed to activate the other tools.",
+      "checkpoint": "You should see your work inbox with your company email address or profile icon in the top-right corner.",
+      "hint_levels": [
+        "Start with the web address your employer gave you for email.",
+        "Open that address in Chrome, then use the Sign in form for your work account.",
+        "Click the Chrome address bar, enter the company email URL, press Enter, click Sign in, enter your work email and temporary password, then complete any prompts."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Complete the security setup prompt for your work account using your phone.",
+      "where": "Security setup or More information required page displayed after email sign-in.",
+      "why": "Multifactor authentication protects your account and may be required before other services will open.",
+      "checkpoint": "You should see a success message and then return to your inbox.",
+      "hint_levels": [
+        "Look for the security prompt shown after you sign in.",
+        "Choose the phone or authenticator option required by your employer and follow the code prompts.",
+        "Click Next on the security setup page, select the required method, scan the QR code or enter your phone number, confirm the displayed code, then click Done."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Open the chat invitation in your inbox and activate your company chat account.",
+      "where": "Inbox message list, chat invitation email, and its Join, Accept Invitation, or Get Started button.",
+      "why": "Activating chat lets you communicate with your team on your first day.",
+      "checkpoint": "You should see the company workspace name and a list of channels or conversations in the chat app.",
+      "hint_levels": [
+        "Search your newest messages for a chat or workspace invitation.",
+        "Open the invitation from Slack, Microsoft Teams, or your employer's chat service and use its activation button.",
+        "In the inbox search box, type \"invitation\", open the chat invitation, click Join or Accept Invitation, sign in with your work email, and follow the workspace prompts."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Open the document-suite invitation or company portal and sign in with your work account.",
+      "where": "Inbox invitation message or company portal, then the Google Workspace or Microsoft 365 app launcher.",
+      "why": "This gives you access to the shared documents used by your team.",
+      "checkpoint": "You should see the document home page with your work profile icon and at least one shared or recent file area.",
+      "hint_levels": [
+        "Look for a documents, Drive, SharePoint, or Microsoft 365 invitation.",
+        "Use the invitation link, then confirm that your work account appears in the document service.",
+        "Open the document-suite email, click Open, Get Started, or Accept Invitation, sign in with your work email, then open Drive or OneDrive from the app launcher."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Open one shared onboarding document from the document home page.",
+      "where": "Google Drive Shared with me panel or Microsoft 365 OneDrive Shared navigation item.",
+      "why": "Opening a shared file verifies that your document permissions work.",
+      "checkpoint": "You should see the onboarding document's contents and your work profile icon in the document editor.",
+      "hint_levels": [
+        "Check the area for files other people shared with you.",
+        "Open Shared with me in Drive or Shared in OneDrive and find a file with onboarding or welcome in its name.",
+        "In Google Drive click Shared with me, or in OneDrive click Shared, then double-click the onboarding file."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Open the password-manager invitation in your inbox and create your account.",
+      "where": "Inbox invitation email and the Create Account, Join, or Accept Invitation button on the password manager's setup page.",
+      "why": "The password manager stores unique work credentials securely.",
+      "checkpoint": "You should see the password manager vault with your company name or work account visible.",
+      "hint_levels": [
+        "Return to your inbox and find the security or password-vault invitation.",
+        "Open the invitation from 1Password, Bitwarden, or your employer's password manager and complete its account form.",
+        "Open the password-manager invitation, click Join or Accept Invitation, enter the requested account details, save the recovery information in the approved location, and click Create Account."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Install the password manager's Chrome extension from its official Chrome Web Store listing.",
+      "where": "Chrome Web Store extension page and the blue Add to Chrome button.",
+      "why": "The extension can fill saved work credentials without copying passwords.",
+      "checkpoint": "You should see the password manager icon in Chrome's Extensions menu, marked by the puzzle-piece icon.",
+      "hint_levels": [
+        "Look for the browser-extension option inside your password manager vault.",
+        "Use only the official extension listing published by your password-manager company.",
+        "Open the official Chrome Web Store listing, click Add to Chrome, click Add extension, then click the puzzle-piece Extensions icon and find the password manager."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Download and run the company-approved development environment installer from the link in your onboarding materials.",
+      "where": "Onboarding document's development setup link, Chrome Downloads button, and the Windows installer dialog.",
+      "why": "The approved installer provides the editor or workstation tools required for your job.",
+      "checkpoint": "You should see the development app's welcome screen after installation finishes.",
+      "hint_levels": [
+        "Return to the onboarding document and find the development or engineering setup section.",
+        "Use its approved Windows download link, then open the downloaded installer from Chrome.",
+        "Click the development-tool link in the onboarding document, click Download for Windows, click Chrome's Downloads button in the top-right, click the downloaded .exe file, approve the Windows prompt, and complete the installer."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Sign in to the development app with your company-approved work account.",
+      "where": "Development app Welcome screen, Accounts or profile icon, and Sign In menu.",
+      "why": "Signing in connects your licensed features, settings, and company resources.",
+      "checkpoint": "You should see your work account name or email beside the app's Accounts or profile icon.",
+      "hint_levels": [
+        "Find the person-shaped profile or Accounts control in the development app.",
+        "Choose the sign-in provider named in your onboarding document and use your work account.",
+        "Click the Accounts or profile icon, click Sign In, select the approved provider, complete sign-in in Chrome, then return to the development app."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Run the onboarding document's verification command in the development app's terminal.",
+      "where": "Development app menu bar under Terminal > New Terminal, then the terminal panel at the bottom of the window.",
+      "why": "The verification command confirms that the required work environment is installed and available.",
+      "checkpoint": "You should see the expected version number or success message specified in the onboarding document without a command-not-found error.",
+      "hint_levels": [
+        "Use the final verification command shown in the development setup section.",
+        "Open the app's integrated terminal, type the command exactly as written, and run it.",
+        "Click Terminal, click New Terminal, copy the verification command from the onboarding document, paste it into the terminal panel, and press Enter."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 205894,
+  "codexThreadId": "019fd592-e111-7f12-b4f6-796421bf899b",
+  "createdAt": "2026-08-06T05:37:25.491Z",
+  "runs": [],
+  "track": "First week",
+  "builtin": true,
+  "featured": false
+}

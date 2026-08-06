@@ -1,0 +1,130 @@
+{
+  "id": "seed-03-ship-a-reviewed-change-with-confidence",
+  "title": "Ship a reviewed change with confidence",
+  "tool": "Claude Code",
+  "goal": "You will review your branch diff for bugs, obtain a concise summary, apply a verified fix, and inspect the final changes before pushing.",
+  "est_minutes": 20,
+  "prerequisites": [
+    "Claude Code is installed and authenticated",
+    "Your repository has a configured remote",
+    "Your branch contains unpushed changes",
+    "Your project’s test command works locally"
+  ],
+  "steps": [
+    {
+      "action": "Open a terminal at the repository root and run `git status --short --branch`.",
+      "where": "Terminal window at the repository’s top-level directory.",
+      "why": "This confirms the active branch and reveals uncommitted files before the review begins.",
+      "checkpoint": "The first line shows your branch, followed by any modified or untracked files.",
+      "hint_levels": [
+        "Check your branch before involving Claude.",
+        "Use Git’s short status view from the folder containing `.git`.",
+        "In the terminal, type `git status --short --branch` and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Run `git fetch origin` to refresh the remote comparison point.",
+      "where": "Same terminal prompt at the repository root.",
+      "why": "A current remote reference prevents Claude from reviewing against stale branch data.",
+      "checkpoint": "The command finishes without an authentication or repository error.",
+      "hint_levels": [
+        "Refresh the remote references without changing your files.",
+        "Fetch from the remote normally named `origin`.",
+        "Type `git fetch origin` and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Start Claude Code by running `claude`.",
+      "where": "Same terminal prompt at the repository root.",
+      "why": "Launching here gives Claude access to the repository and its Git history.",
+      "checkpoint": "The Claude Code prompt appears and identifies the current project directory.",
+      "hint_levels": [
+        "Launch the coding agent from inside the repository.",
+        "The Claude Code CLI command is `claude`.",
+        "Type `claude` and press Enter, then complete any displayed trust prompt."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Ask Claude to review the complete branch diff against its merge base without editing files.",
+      "where": "Claude Code conversation prompt in the terminal.",
+      "why": "A read-only first pass separates diagnosis from implementation.",
+      "checkpoint": "Claude displays findings tied to files or lines and has not proposed an edit for approval.",
+      "hint_levels": [
+        "Specify the comparison branch and forbid edits for now.",
+        "Request concrete correctness bugs in committed and uncommitted changes, ranked by severity.",
+        "Enter: `Review my complete branch diff against origin/main using the merge base, including uncommitted changes. Do not edit files. Find concrete bugs, rank them by severity, and cite file paths and lines.`"
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask Claude to summarize the diff’s purpose, affected areas, risks, and test coverage.",
+      "where": "Claude Code conversation prompt beneath the review response.",
+      "why": "A structured summary helps you understand the branch before choosing a fix.",
+      "checkpoint": "Claude returns a compact summary containing purpose, affected areas, risks, and tests.",
+      "hint_levels": [
+        "Turn the review into a branch-level overview.",
+        "Name the four sections you want so the response stays useful.",
+        "Enter: `Summarize this branch in four sections: purpose, affected areas, key risks, and existing or missing tests.`"
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask Claude to explain the highest-severity finding and propose the smallest safe fix.",
+      "where": "Claude Code conversation prompt beneath the summary.",
+      "why": "Validating one finding before editing reduces the chance of fixing a false positive.",
+      "checkpoint": "Claude explains a failure scenario and names the specific files it would change.",
+      "hint_levels": [
+        "Focus on the most consequential credible issue.",
+        "Require a reproducible failure scenario and a minimal patch plan.",
+        "Enter: `For the highest-severity credible bug, explain the failure scenario and propose the smallest safe fix, including the files and tests you would change. Do not edit yet.`"
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Tell Claude to implement that fix and add or update a focused regression test.",
+      "where": "Claude Code conversation prompt, followed by Claude Code’s edit-permission prompt if one appears.",
+      "why": "The regression test demonstrates the bug and protects the corrected behavior.",
+      "checkpoint": "Claude reports modified files, and its diff view shows both the fix and a focused test change.",
+      "hint_levels": [
+        "Approve only the scoped plan you just inspected.",
+        "Ask for the minimal implementation plus a regression test, then review any permission request.",
+        "Enter: `Implement that minimal fix and add or update a focused regression test. Avoid unrelated refactoring.` Then approve only the expected file edits when prompted."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask Claude to run the focused test and the project’s relevant validation command.",
+      "where": "Claude Code conversation prompt and any shell-command approval prompt.",
+      "why": "Executing validation confirms the patch works in the real project.",
+      "checkpoint": "The terminal shows passing results, or Claude reports a specific remaining failure with command output.",
+      "hint_levels": [
+        "Validate the narrow behavior first, then the surrounding project.",
+        "Have Claude run the regression test and the repository’s established lint, typecheck, or test command.",
+        "Enter: `Run the focused regression test, then run the relevant project validation commands for these files. Report the exact commands and results.` Approve the expected non-destructive commands."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Exit Claude Code and inspect the final patch with `git diff --check` followed by `git diff`.",
+      "where": "Claude Code prompt using `/exit`, then the normal terminal prompt at the repository root.",
+      "why": "A final human inspection catches whitespace errors and confirms only intended changes remain.",
+      "checkpoint": "`git diff --check` prints no errors, and `git diff` shows only the reviewed fix and test changes.",
+      "hint_levels": [
+        "Finish with Git’s own view of the working tree.",
+        "Leave Claude, check patch formatting, and then read the complete diff.",
+        "Enter `/exit`, then run `git diff --check`; if it is clean, run `git diff` and inspect every changed hunk."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 31676,
+  "codexThreadId": "019fd584-677e-7eb1-a694-ddbf8a371ac6",
+  "createdAt": "2026-08-06T05:21:23.826Z",
+  "runs": [],
+  "track": "Claude Code",
+  "builtin": true,
+  "featured": false
+}

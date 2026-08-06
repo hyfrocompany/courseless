@@ -1,0 +1,141 @@
+{
+  "id": "seed-10-pivot-tables-in-one-sitting",
+  "title": "Pivot tables in one sitting",
+  "tool": "Microsoft Excel for Windows (Microsoft 365)",
+  "goal": "You will turn a sales sheet into a refreshable PivotTable with rows, summed values, a report filter, and a PivotChart.",
+  "est_minutes": 15,
+  "prerequisites": [
+    "An Excel sales sheet with column headers in the first row",
+    "At least one category column, one numeric sales column, and one column suitable for filtering",
+    "No completely blank rows or columns inside the sales data"
+  ],
+  "steps": [
+    {
+      "action": "Click any populated cell inside the sales data.",
+      "where": "Sales worksheet grid in the Microsoft Excel workbook window.",
+      "why": "Excel uses the surrounding data region as the PivotTable source.",
+      "checkpoint": "One cell inside the sales data has a green selection border.",
+      "hint_levels": [
+        "Start anywhere within the block of sales records.",
+        "Choose a cell below a column header, not an empty cell outside the data.",
+        "Click one populated cell in the sales data, such as a cell under Product, Region, or Sales."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Open the Create PivotTable dialog.",
+      "where": "Insert tab on the ribbon, PivotTable button in the Tables group.",
+      "why": "This dialog lets you confirm the source data and choose where the PivotTable will go.",
+      "checkpoint": "The Create PivotTable dialog is visible and the Table/Range box contains a cell range.",
+      "hint_levels": [
+        "Look on the ribbon for the tab used to add new objects.",
+        "The PivotTable command is in the Tables group on the Insert tab.",
+        "Click Insert > PivotTable > From Table/Range."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Create the PivotTable on a new worksheet.",
+      "where": "Create PivotTable dialog, New Worksheet option and OK button.",
+      "why": "A separate sheet gives the summary room without changing the source data.",
+      "checkpoint": "A new worksheet opens with an empty PivotTable placeholder and a PivotTable Fields pane on the right.",
+      "hint_levels": [
+        "Choose the placement option that keeps the summary separate.",
+        "Select New Worksheet near the bottom of the dialog.",
+        "Click New Worksheet, then click OK."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a category field to the PivotTable's Rows area.",
+      "where": "PivotTable Fields pane on the right, field list and Rows box at the bottom.",
+      "why": "The PivotTable needs categories such as Product, Region, or Salesperson to group its results.",
+      "checkpoint": "The selected categories appear as row labels in the PivotTable.",
+      "hint_levels": [
+        "Choose the field whose items should run down the left side.",
+        "Drag a category field from the field list into the box labeled Rows.",
+        "In PivotTable Fields, drag Product, Region, or Salesperson into Rows."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add the numeric sales field to the Values area.",
+      "where": "PivotTable Fields pane on the right, field list and Values box at the bottom.",
+      "why": "The Values area calculates a total for every row category.",
+      "checkpoint": "A numeric column labeled Sum of Sales or a similar field name appears in the PivotTable.",
+      "hint_levels": [
+        "Find the field containing the amounts you want to total.",
+        "Drag the numeric Sales or Amount field into the Values box.",
+        "In PivotTable Fields, drag Sales, Revenue, or Amount into Values."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Change the value calculation to Sum if Excel chose another calculation.",
+      "where": "PivotTable Fields pane, dropdown beside the field in Values, then Value Field Settings dialog.",
+      "why": "Summing produces sales totals instead of counting the number of records.",
+      "checkpoint": "The PivotTable value heading begins with Sum of and the cells show total amounts.",
+      "hint_levels": [
+        "Check the heading above the PivotTable numbers.",
+        "Use the value field's menu to choose how Excel summarizes it.",
+        "In Values, click the field dropdown > Value Field Settings > Sum > OK."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a field such as Region or Year to the Filters area.",
+      "where": "PivotTable Fields pane on the right, field list and Filters box at the bottom.",
+      "why": "A report filter lets you show one subset of sales without rebuilding the PivotTable.",
+      "checkpoint": "A filter name and dropdown appear above the PivotTable.",
+      "hint_levels": [
+        "Choose a field that would be useful for narrowing the report.",
+        "Drag a field from the list into the box labeled Filters.",
+        "In PivotTable Fields, drag Region, Year, or Salesperson into Filters."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Select one item from the report filter.",
+      "where": "Filter dropdown above the PivotTable, beside the filter field name.",
+      "why": "This confirms that the PivotTable can display a chosen subset of the sales data.",
+      "checkpoint": "The filter cell shows the selected item and the PivotTable totals update.",
+      "hint_levels": [
+        "Look directly above the row labels for a dropdown arrow.",
+        "Open the report filter and choose one listed item.",
+        "Click the filter dropdown above the PivotTable, click an item, then click OK."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Refresh the PivotTable after returning the report filter to All.",
+      "where": "PivotTable Analyze tab on the ribbon, Refresh button in the Data group.",
+      "why": "Refreshing pulls current values and new records from the source data into the summary.",
+      "checkpoint": "The filter displays (All), the PivotTable remains visible, and Excel finishes refreshing without an error.",
+      "hint_levels": [
+        "Select the PivotTable to reveal its special ribbon tabs.",
+        "Reset the filter to (All), then find Refresh on the PivotTable Analyze tab.",
+        "Choose (All) from the filter dropdown, click inside the PivotTable, then click PivotTable Analyze > Refresh."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Insert a PivotChart for the PivotTable.",
+      "where": "PivotTable Analyze tab on the ribbon, PivotChart button in the Tools group, then Insert Chart dialog.",
+      "why": "A PivotChart turns the summarized sales totals into a visual that stays linked to the PivotTable.",
+      "checkpoint": "A chart appears on the worksheet with category labels and plotted sales values.",
+      "hint_levels": [
+        "Use the chart command on the PivotTable-specific ribbon tab.",
+        "With the PivotTable selected, open PivotChart and choose a common chart type such as Clustered Column.",
+        "Click inside the PivotTable > PivotTable Analyze > PivotChart > Column > Clustered Column > OK."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 63352,
+  "codexThreadId": "019fd586-a487-70c0-99ce-9e0c03f85126",
+  "createdAt": "2026-08-06T05:23:56.500Z",
+  "runs": [],
+  "track": "Excel",
+  "builtin": true,
+  "featured": true
+}

@@ -1,0 +1,129 @@
+{
+  "id": "seed-11-look-anything-up-with-xlookup",
+  "title": "Look anything up with XLOOKUP",
+  "tool": "Microsoft Excel for Microsoft 365",
+  "goal": "You will replace legacy VLOOKUP formulas with exact-match, fallback, and two-way XLOOKUP formulas in a working Excel sheet.",
+  "est_minutes": 18,
+  "prerequisites": [
+    "An Excel workbook containing VLOOKUP formulas",
+    "A lookup table with unique IDs in its first column",
+    "A row-and-column table for the two-way lookup"
+  ],
+  "steps": [
+    {
+      "action": "Duplicate the worksheet that contains the VLOOKUP formulas.",
+      "where": "Worksheet tab bar at the bottom of the Excel window.",
+      "why": "A copy preserves the original formulas for comparison and recovery.",
+      "checkpoint": "A second worksheet tab appears with the same data as the original.",
+      "hint_levels": [
+        "Start with the sheet tab you plan to edit.",
+        "The tab's context menu includes an option for copying the entire worksheet.",
+        "Right-click the worksheet tab, click Move or Copy, select Create a copy, and click OK."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Select the first cell containing a VLOOKUP formula.",
+      "where": "Home tab > Editing group > Find & Select > Find.",
+      "why": "Starting with a real legacy formula makes the conversion directly applicable to your workbook.",
+      "checkpoint": "The selected cell's formula bar begins with =VLOOKUP(.",
+      "hint_levels": [
+        "Search the sheet's formulas for the old function name.",
+        "Use Find with Look in set to Formulas so Excel searches formulas instead of displayed values.",
+        "Press Ctrl+F, enter VLOOKUP, click Options, choose Formulas under Look in, and click Find Next."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Replace the selected VLOOKUP with an XLOOKUP that uses the same lookup cell, key column, and return column.",
+      "where": "Formula bar above the worksheet grid.",
+      "why": "XLOOKUP separates the lookup and return ranges and performs exact matching by default.",
+      "checkpoint": "The cell displays the same result as before and the formula bar begins with =XLOOKUP(.",
+      "hint_levels": [
+        "Map the old formula's lookup value and table columns into XLOOKUP.",
+        "Use =XLOOKUP(lookup_value,lookup_column,return_column), choosing the old table's first column as the lookup column and its returned column as the return column.",
+        "Click the formula bar, enter =XLOOKUP(original_lookup_cell,original_key_range,original_return_range), and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a readable fallback as the fourth XLOOKUP argument.",
+      "where": "Formula bar for the converted result cell.",
+      "why": "The if-not-found argument replaces #N/A with a message users can act on.",
+      "checkpoint": "The formula bar shows \"Not found\" as the fourth argument.",
+      "hint_levels": [
+        "Look immediately after the return array.",
+        "XLOOKUP's fourth argument is the value displayed when no exact match exists.",
+        "Edit the formula to =XLOOKUP(lookup_value,lookup_column,return_column,\"Not found\") and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Temporarily enter a nonexistent lookup value in the input cell referenced by the formula.",
+      "where": "Referenced lookup-value cell in the worksheet grid.",
+      "why": "Testing a missing key proves that the fallback handles failed matches.",
+      "checkpoint": "The XLOOKUP result cell displays Not found instead of #N/A.",
+      "hint_levels": [
+        "Use a value that cannot appear in the key column.",
+        "Replace the current lookup ID with a clearly fake value such as TEST-999.",
+        "Select the lookup input cell, type TEST-999, and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Restore the original lookup value in the input cell.",
+      "where": "Quick Access Toolbar > Undo, or the worksheet grid.",
+      "why": "Restoring the valid key leaves the workbook ready for normal use.",
+      "checkpoint": "The result changes from Not found back to the expected matched value.",
+      "hint_levels": [
+        "Reverse only the temporary test entry.",
+        "Undo returns the input cell to its previous valid value.",
+        "Press Ctrl+Z once and confirm the matched result reappears."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Select the output cell for the two-way lookup beside your row-label and column-header input cells.",
+      "where": "Worksheet grid next to the two-way lookup inputs and source table.",
+      "why": "The result needs a dedicated cell that can respond to both lookup choices.",
+      "checkpoint": "The intended output cell has a green selection border.",
+      "hint_levels": [
+        "Choose the cell where the row-and-column intersection should appear.",
+        "Use a blank cell near the two input cells so the relationship stays visible.",
+        "Click the blank result cell beside the row-label and column-header inputs."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Enter a nested XLOOKUP that selects a table row first and then the requested column from that row.",
+      "where": "Formula bar above the worksheet grid.",
+      "why": "Nesting XLOOKUP performs a two-way lookup without hard-coded column numbers.",
+      "checkpoint": "The result cell displays the value at the intersection of the selected row and column.",
+      "hint_levels": [
+        "Use the inner lookup to return an entire row, then search its headers.",
+        "Build =XLOOKUP(column_choice,header_range,XLOOKUP(row_choice,row_labels,data_body,\"Not found\"),\"Not found\").",
+        "In the result cell, type =XLOOKUP(column_input,header_range,XLOOKUP(row_input,row_label_range,data_range,\"Not found\"),\"Not found\") and press Enter."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Change each two-way lookup input once and confirm the result updates to the new intersection.",
+      "where": "Row-label and column-header input cells in the worksheet grid.",
+      "why": "Testing both dimensions verifies that neither lookup is tied to a fixed row or column.",
+      "checkpoint": "The result changes after each input edit and matches the visibly intersecting source-table value.",
+      "hint_levels": [
+        "Test the row choice and the column choice independently.",
+        "Pick another valid row label, then another valid header, and compare the result with the source table.",
+        "Click the row input, enter another listed row label, press Enter, then click the column input, enter another displayed header, and press Enter."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 71271,
+  "codexThreadId": "019fd587-37d9-70b1-87f1-ceb0227b4c04",
+  "createdAt": "2026-08-06T05:24:34.855Z",
+  "runs": [],
+  "track": "Excel",
+  "builtin": true,
+  "featured": false
+}

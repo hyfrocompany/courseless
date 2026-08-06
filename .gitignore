@@ -1,0 +1,13 @@
+node_modules/
+out/
+dist/
+.vite/
+*.log
+
+# AI-harness tooling installed locally by `npx impeccable skills install` — not part of the app
+.claude/
+.agents/
+.cursor/
+
+# scratch working directory used by the seed-generation harness
+.codex-seed-workdir/

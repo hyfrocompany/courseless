@@ -1,0 +1,165 @@
+{
+  "id": "seed-22-fix-a-photo-s-lighting-like-a-pro",
+  "title": "Fix a photo's lighting like a pro",
+  "tool": "Adobe Photoshop",
+  "goal": "You will correct a photo’s overall exposure with Levels and Curves, refine local lighting with Dodge and Burn, and save a natural-looking edit.",
+  "est_minutes": 30,
+  "prerequisites": [
+    "Adobe Photoshop installed",
+    "A photo with exposure or lighting problems",
+    "Permission to save an edited copy of the photo"
+  ],
+  "steps": [
+    {
+      "action": "Open the photo you want to correct.",
+      "where": "Menu bar > File > Open.",
+      "why": "Opening the original photo creates the document you will edit.",
+      "checkpoint": "You should see the photo on the canvas and a Background layer in the Layers panel.",
+      "hint_levels": [
+        "Start with the File menu at the top.",
+        "Choose Open, then locate the photo in the file browser.",
+        "Click File > Open, select the photo, and click Open."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Duplicate the Background layer.",
+      "where": "Layers panel on the right side of the workspace.",
+      "why": "A duplicate preserves the original pixels for comparison and recovery.",
+      "checkpoint": "You should see a new layer named Background copy above Background.",
+      "hint_levels": [
+        "Look for the photo layer in the Layers panel.",
+        "The duplicate command is available by right-clicking the Background layer.",
+        "Right-click Background, click Duplicate Layer, and click OK."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a Levels adjustment layer.",
+      "where": "Bottom of the Layers panel > half-filled circle icon > Levels.",
+      "why": "Levels lets you set the darkest, brightest, and middle tones without changing the original pixels.",
+      "checkpoint": "You should see a Levels 1 layer and a histogram in the Properties panel.",
+      "hint_levels": [
+        "Look along the bottom edge of the Layers panel.",
+        "Use the half-black, half-white circle called Create new fill or adjustment layer.",
+        "Click the half-filled circle icon, then click Levels."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Move the black and white Input Levels sliders inward until each meets the visible edge of the histogram.",
+      "where": "Properties panel > Levels histogram > black left slider and white right slider.",
+      "why": "Aligning the endpoints restores useful contrast without unnecessarily clipping tones.",
+      "checkpoint": "The photo should have clearer contrast while retaining visible detail in bright and dark areas.",
+      "hint_levels": [
+        "Watch the two outer sliders beneath the histogram.",
+        "Move each outer Input Levels slider only through the empty gap beside the histogram data.",
+        "Drag the black triangle from the left toward the histogram’s first data and the white triangle from the right toward its last data."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Adjust the gray Input Levels slider slightly until the overall brightness looks balanced.",
+      "where": "Properties panel > Levels histogram > gray middle slider.",
+      "why": "The middle slider corrects midtone brightness without resetting the black and white endpoints.",
+      "checkpoint": "Faces or main subjects should look properly lit without highlights becoming blank or shadows becoming solid black.",
+      "hint_levels": [
+        "Concentrate on the middle triangle beneath the histogram.",
+        "Move the gray slider left to brighten midtones or right to darken them.",
+        "Drag the middle Input Levels triangle in small movements, then stop when the subject looks naturally exposed."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a Curves adjustment layer above the Levels layer.",
+      "where": "Bottom of the Layers panel > half-filled circle icon > Curves.",
+      "why": "Curves provides finer control over brightness and contrast after the basic Levels correction.",
+      "checkpoint": "You should see a Curves 1 layer above Levels 1 and a diagonal line in the Properties panel.",
+      "hint_levels": [
+        "Return to the adjustment-layer control at the bottom of Layers.",
+        "Choose Curves from the Create new fill or adjustment layer menu.",
+        "Click the half-filled circle icon, then click Curves."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Create a gentle S-shaped curve by raising one point in the brighter half and lowering one point in the darker half.",
+      "where": "Properties panel > Curves graph with the diagonal line.",
+      "why": "A subtle S-curve adds controlled contrast while keeping the lighting believable.",
+      "checkpoint": "The curve should resemble a shallow S and the photo should look slightly clearer rather than dramatically harsher.",
+      "hint_levels": [
+        "Make two small changes on opposite halves of the diagonal line.",
+        "Lift the upper-right half slightly and lower the lower-left half slightly.",
+        "Click near the line’s upper-right quarter and drag slightly up, then click near its lower-left quarter and drag slightly down."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Create a new 50% gray layer named Dodge and Burn using the Overlay blending mode.",
+      "where": "Menu bar > Layer > New > Layer dialog.",
+      "why": "An Overlay gray layer allows reversible local lightening and darkening without painting on the photo.",
+      "checkpoint": "You should see a transparent-looking Dodge and Burn layer above Curves 1 while the photo itself remains visible.",
+      "hint_levels": [
+        "Use the New Layer dialog rather than the basic new-layer button.",
+        "The dialog includes Name, Mode, and a checkbox for filling with a neutral color.",
+        "Click Layer > New > Layer, enter Dodge and Burn, choose Overlay from Mode, check Fill with Overlay-neutral color (50% gray), and click OK."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Select the Dodge Tool and set a soft brush with Exposure at 5%.",
+      "where": "Left Tools panel > Dodge Tool, then top Options bar > brush preset and Exposure.",
+      "why": "Low exposure and a soft edge build lightening gradually and reduce obvious retouching marks.",
+      "checkpoint": "The Dodge Tool is active, Exposure reads 5%, and the brush preview has a soft feathered edge.",
+      "hint_levels": [
+        "Find the tool whose icon resembles a small lollipop.",
+        "It may share a tool slot with Burn Tool and Sponge Tool, and its settings appear across the top.",
+        "Click and hold the Dodge/Burn tool slot, choose Dodge Tool, choose a Soft Round brush in the Options bar, and set Exposure to 5%."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Paint short strokes over only the shadow areas that need gentle brightening.",
+      "where": "Image canvas while the Dodge and Burn layer is selected in the Layers panel.",
+      "why": "Selective dodging reveals local detail without flattening all of the photo’s shadows.",
+      "checkpoint": "The chosen shadows should appear slightly lighter while nearby areas remain unchanged.",
+      "hint_levels": [
+        "Work only where existing light should be strengthened.",
+        "Use several passes with a brush slightly larger than the area instead of one strong stroke.",
+        "Confirm Dodge and Burn is selected, resize the brush with the [ and ] keys, then click-drag short strokes over the shadows."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Switch to the Burn Tool at 5% Exposure and paint over only the bright areas that need gentle darkening.",
+      "where": "Left Tools panel > Burn Tool, top Options bar > Exposure, then image canvas.",
+      "why": "Selective burning recovers visual balance and guides attention without making highlights look dirty.",
+      "checkpoint": "Distracting bright areas should look slightly darker while highlight texture remains visible.",
+      "hint_levels": [
+        "Use the tool grouped with the Dodge Tool.",
+        "Keep Exposure low and build the effect in several passes.",
+        "Click and hold the Dodge Tool, choose Burn Tool, set Exposure to 5%, and paint short strokes over overly bright areas."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Toggle the Dodge and Burn layer’s visibility to confirm the local correction is subtle, then save an editable PSD copy.",
+      "where": "Layers panel > eye icon beside Dodge and Burn, then menu bar > File > Save As.",
+      "why": "Comparing before and after catches excessive edits, and PSD preserves every adjustment layer.",
+      "checkpoint": "Turning the eye off and on shows a restrained lighting improvement, and a new .psd file appears in the chosen folder.",
+      "hint_levels": [
+        "Compare the local edit before committing to the saved copy.",
+        "Use the layer’s eye icon for comparison, then save in Photoshop format under a new name.",
+        "Click the eye beside Dodge and Burn twice, reduce the layer Opacity if the change is strong, then click File > Save As, choose Photoshop (*.PSD), enter a new filename, and click Save."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 174218,
+  "codexThreadId": "019fd60a-ca95-7d30-8d2a-dd7fdcc540d2",
+  "createdAt": "2026-08-06T07:48:19.357Z",
+  "runs": [],
+  "track": "Creative",
+  "builtin": true,
+  "featured": false
+}

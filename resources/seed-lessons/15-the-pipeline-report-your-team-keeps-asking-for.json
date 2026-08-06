@@ -1,0 +1,166 @@
+{
+  "id": "seed-15-the-pipeline-report-your-team-keeps-asking-for",
+  "title": "The pipeline report your team keeps asking for",
+  "tool": "Salesforce Lightning Experience",
+  "goal": "You will create a filtered and grouped opportunity pipeline report, chart it on a dashboard, and schedule dashboard emails to your team.",
+  "est_minutes": 30,
+  "prerequisites": [
+    "Salesforce access with report and dashboard creation permissions",
+    "Opportunity records containing Stage, Close Date, Amount, and Owner",
+    "A shared report folder and dashboard folder your team can access",
+    "Permission to add recipients to dashboard subscriptions"
+  ],
+  "steps": [
+    {
+      "action": "Open the Reports workspace.",
+      "where": "Nine-dot App Launcher at the top-left of Salesforce, then the \"View All\" link and \"Reports\" item.",
+      "why": "The Reports workspace is where you create and manage Salesforce reports.",
+      "checkpoint": "The Reports tab is open and a \"New Report\" button is visible.",
+      "hint_levels": [
+        "Start with the grid-shaped launcher at the top-left.",
+        "Open the full App Launcher and find Reports under All Items.",
+        "Click App Launcher > View All > Reports."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Start a report using the Opportunities report type.",
+      "where": "\"New Report\" button, \"Choose Report Type\" window, and its search box.",
+      "why": "The report type determines which sales records and fields are available.",
+      "checkpoint": "Lightning Report Builder opens with an opportunity-record preview.",
+      "hint_levels": [
+        "Look for the button near the upper-right of the Reports page.",
+        "Search the report-type window for Opportunities and select the basic Opportunities type.",
+        "Click New Report > search \"Opportunities\" > select Opportunities > Start Report."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Set the report to include all opportunities closing in the current fiscal quarter.",
+      "where": "\"Filters\" tab in the left Details panel, using the \"Show Me\" and \"Close Date\" standard filters.",
+      "why": "These filters focus the report on the team's current-quarter pipeline.",
+      "checkpoint": "The Filters panel shows \"Show Me: All opportunities\" and a current-fiscal-quarter Close Date range.",
+      "hint_levels": [
+        "Use the Filters tab beside Outline.",
+        "Edit the Show Me filter first, then edit the Close Date filter and choose the current fiscal quarter range.",
+        "Click Filters > Show Me > All opportunities > Apply, then Close Date > Range > Current FQ > Apply."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Exclude closed opportunities with a Stage filter.",
+      "where": "\"Filters\" tab in the left Details panel and the \"Add Filter\" search box.",
+      "why": "Removing won and lost deals leaves only active pipeline.",
+      "checkpoint": "A Stage filter appears in the Filters panel and the preview no longer shows Closed Won or Closed Lost records.",
+      "hint_levels": [
+        "Add one more filter below the standard filters.",
+        "Choose Stage, use the not-equal operator, and exclude both closed stage values available in your organization.",
+        "Click Filters > Add Filter > Stage > operator \"not equal to\" > select Closed Won and Closed Lost > Apply."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Group the report rows by Stage.",
+      "where": "\"Outline\" tab in the left Details panel, under \"Groups\" and \"Group Rows\".",
+      "why": "Stage grouping shows how much pipeline sits at each point in the sales process.",
+      "checkpoint": "The preview is divided into labeled Stage sections with subtotals.",
+      "hint_levels": [
+        "Move from Filters back to Outline and look under Groups.",
+        "Use the Group Rows field selector and choose Stage.",
+        "Click Outline > Group Rows > Add group > Stage."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Group each stage by Opportunity Owner.",
+      "where": "\"Outline\" tab, \"Groups\" section, second \"Group Rows\" selector.",
+      "why": "The second grouping reveals each salesperson's contribution within every stage.",
+      "checkpoint": "Owner names appear as nested groups beneath the Stage groups in the preview.",
+      "hint_levels": [
+        "Add another row grouping below Stage.",
+        "Choose Opportunity Owner as the second Group Rows field.",
+        "Click Outline > Group Rows > Add group > Opportunity Owner."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Summarize the Amount column by sum.",
+      "where": "Report preview, dropdown arrow in the \"Amount\" column header, then the \"Summarize\" menu.",
+      "why": "Summing Amount turns the grouped records into measurable pipeline totals.",
+      "checkpoint": "Each group displays an Amount subtotal and the report displays a grand total.",
+      "hint_levels": [
+        "Open the menu attached to the Amount heading.",
+        "The Summarize submenu contains the aggregation choices for numeric fields.",
+        "Click the Amount column arrow > Summarize > Sum."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a horizontal bar chart showing summed Amount by Stage.",
+      "where": "\"Add Chart\" button above the report preview and the chart \"Properties\" gear panel.",
+      "why": "A chart makes stage-by-stage pipeline differences easy to scan.",
+      "checkpoint": "A horizontal bar chart appears above the table with Stage labels and Amount values.",
+      "hint_levels": [
+        "Use the chart control above the preview after confirming the report is grouped.",
+        "Add the chart, open Chart Properties, choose Horizontal Bar, Stage, and Sum of Amount.",
+        "Click Add Chart > Properties gear > Display As: Horizontal Bar > Y-Axis: Stage > X-Axis: Sum of Amount."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Save and run the report as \"Current Quarter Pipeline by Stage and Owner\" in your team's shared report folder.",
+      "where": "\"Save & Run\" button at the upper-right and the \"Save Report\" dialog.",
+      "why": "Saving in a shared folder makes the report available as a dashboard source.",
+      "checkpoint": "The completed report page opens with its name displayed at the top.",
+      "hint_levels": [
+        "Finish the report from the upper-right corner.",
+        "In the save dialog, enter the report name and select a report folder your team can view.",
+        "Click Save & Run > enter \"Current Quarter Pipeline by Stage and Owner\" > Select Folder > choose the shared report folder > Select Folder > Save."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Create a dashboard named \"Team Pipeline Dashboard\" in your team's shared dashboard folder.",
+      "where": "\"Dashboards\" tab in the Salesforce navigation bar, \"New Dashboard\" button, and \"New Dashboard\" dialog.",
+      "why": "The dashboard provides a shared home for the pipeline visualization.",
+      "checkpoint": "Dashboard Builder opens with \"Team Pipeline Dashboard\" at the top and an empty canvas.",
+      "hint_levels": [
+        "Leave the report page and open the Dashboards workspace.",
+        "Start a new dashboard, give it the requested name, and choose the team's shared dashboard folder.",
+        "Click Dashboards > New Dashboard > enter \"Team Pipeline Dashboard\" > Select Folder > choose the shared folder > Select Folder > Create."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Add the saved pipeline report as a dashboard chart widget and save the dashboard.",
+      "where": "Dashboard Builder toolbar, \"+ Widget\" button, \"Select Report\" window, widget editor, and \"Save\" button.",
+      "why": "The widget places the live report totals on the shared dashboard.",
+      "checkpoint": "The saved dashboard canvas shows a chart populated from \"Current Quarter Pipeline by Stage and Owner\".",
+      "hint_levels": [
+        "Add a widget sourced from the report you just saved.",
+        "Choose the pipeline report, keep a bar chart visualization, add it to the canvas, and save.",
+        "Click + Widget > Chart or Table > search for and select \"Current Quarter Pipeline by Stage and Owner\" > Select > choose Horizontal Bar if needed > Add > Save."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Subscribe your team to receive the refreshed dashboard on the requested schedule.",
+      "where": "Dashboard viewing page, \"Subscribe\" button, \"Edit Subscription\" dialog, and \"Edit Recipients\" control.",
+      "why": "The subscription automatically refreshes and emails the dashboard on a predictable cadence.",
+      "checkpoint": "A confirmation appears and the Subscribe dialog shows the saved frequency, time, and recipients.",
+      "hint_levels": [
+        "Open the subscription control on the finished dashboard.",
+        "Choose the team's requested frequency and time, add permitted recipients, and leave email delivery enabled.",
+        "Click Done if needed > Subscribe > set Frequency, Day, and Time > Edit Recipients > select each user, group, or role > Add > Close > keep \"Receive new results by email\" selected > Save."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 134623,
+  "codexThreadId": "019fd58c-8fd0-7123-a4fb-a22035db4653",
+  "createdAt": "2026-08-06T05:30:29.321Z",
+  "runs": [],
+  "track": "Salesforce",
+  "builtin": true,
+  "featured": true
+}

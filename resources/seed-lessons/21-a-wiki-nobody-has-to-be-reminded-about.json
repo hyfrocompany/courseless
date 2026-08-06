@@ -1,0 +1,128 @@
+{
+  "id": "seed-21-a-wiki-nobody-has-to-be-reminded-about",
+  "title": "A wiki nobody has to be reminded about",
+  "tool": "Notion desktop app",
+  "goal": "You will build a team wiki with a homepage, clear sections, named owners, and a reusable page template.",
+  "est_minutes": 35,
+  "prerequisites": [
+    "Access to a Notion workspace",
+    "Names of the people who will own each wiki section"
+  ],
+  "steps": [
+    {
+      "action": "Create a new page named \"Team Wiki\".",
+      "where": "Left sidebar, \"New page\" button near the bottom.",
+      "why": "This page will be the central entrance to the wiki.",
+      "checkpoint": "You should see an empty page titled \"Team Wiki\" in the main window and in the left sidebar.",
+      "hint_levels": [
+        "Start in the left sidebar.",
+        "Use the New page button, then replace Untitled with the wiki name.",
+        "Click New page, click the Untitled title field, type Team Wiki, and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a short welcome sentence explaining what belongs in the wiki.",
+      "where": "Main page editor directly below the \"Team Wiki\" title.",
+      "why": "A clear purpose helps teammates know when to use the wiki.",
+      "checkpoint": "You should see a sentence below the page title describing the wiki's purpose.",
+      "hint_levels": [
+        "Click beneath the title.",
+        "Type one sentence such as: Find our processes, policies, and team knowledge here.",
+        "Click the first empty block below Team Wiki, type Find our processes, policies, and team knowledge here, and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Create a subpage named \"Company\".",
+      "where": "Empty block in the main page editor; slash-command menu opened by typing \"/page\".",
+      "why": "A Company section gives shared information a predictable home.",
+      "checkpoint": "You should see a page block named \"Company\" on the Team Wiki homepage and a nested Company page in the left sidebar.",
+      "hint_levels": [
+        "Use a page block beneath the welcome sentence.",
+        "The /page command creates a page inside the current page.",
+        "Click an empty block, type /page, choose Page from the menu, type Company, and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Create a subpage named \"People & Culture\".",
+      "where": "Team Wiki main page editor, in a new empty block below the Company page block.",
+      "why": "This section provides one home for onboarding, benefits, and team norms.",
+      "checkpoint": "You should see separate \"Company\" and \"People & Culture\" page blocks on the homepage.",
+      "hint_levels": [
+        "Add another page block below Company.",
+        "Open the slash-command menu and choose Page again.",
+        "Press Enter below Company, type /page, click Page, type People & Culture, and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Create a subpage named \"How We Work\".",
+      "where": "Team Wiki main page editor, in a new empty block below the People & Culture page block.",
+      "why": "This section keeps recurring processes and working agreements easy to find.",
+      "checkpoint": "You should see three section page blocks: Company, People & Culture, and How We Work.",
+      "hint_levels": [
+        "Repeat the page-block pattern once more.",
+        "Create a Page block in the empty line below People & Culture.",
+        "Press Enter below People & Culture, type /page, click Page, type How We Work, and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add an inline table database named \"Wiki Directory\" to the homepage.",
+      "where": "Team Wiki main page editor; slash-command menu opened with \"/table\" and the \"Table view\" option under Databases.",
+      "why": "The directory gives teammates one searchable list of wiki pages and their owners.",
+      "checkpoint": "You should see a database table titled \"Wiki Directory\" embedded on the Team Wiki page.",
+      "hint_levels": [
+        "Add the directory below the section links.",
+        "Choose the database-style Table view, not a simple table block.",
+        "Click an empty block below the sections, type /table, select Table view under Databases, choose New database if prompted, and name it Wiki Directory."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Rename the database's second column to \"Owner\" and change its property type to \"Person\".",
+      "where": "Wiki Directory table, second column header menu, \"Edit property\" panel, \"Type\" menu.",
+      "why": "A Person property makes responsibility visible and assignable.",
+      "checkpoint": "You should see an \"Owner\" column with person-shaped cells or an \"Add person\" prompt.",
+      "hint_levels": [
+        "Open the menu on the second column header.",
+        "Edit that property's name and select Person as its type.",
+        "Click the second column header, click Edit property, change the name to Owner, open Type, and click Person."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Add one directory row for each section and assign an owner in every row.",
+      "where": "Wiki Directory table, \"New\" rows in the first column and cells in the \"Owner\" column.",
+      "why": "Visible ownership tells everyone who maintains each part of the wiki.",
+      "checkpoint": "You should see rows for Company, People & Culture, and How We Work, each with a person's name in the Owner column.",
+      "hint_levels": [
+        "Use the table rows to list the three sections and their maintainers.",
+        "Enter each section name in the first column, then choose a workspace member in Owner.",
+        "Click New, type Company, click its Owner cell, choose a person, and repeat for People & Culture and How We Work."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Create a database template named \"Standard Wiki Page\" with headings for \"Summary\", \"Details\", and \"Related Links\".",
+      "where": "Wiki Directory database, dropdown arrow beside the blue \"New\" button, \"New template\" option, template page editor.",
+      "why": "A shared template makes future wiki pages consistent and quicker to write.",
+      "checkpoint": "You should see \"Standard Wiki Page\" listed in the New button's template menu, and its editor should display the three headings.",
+      "hint_levels": [
+        "Look beside the database's New button for its template menu.",
+        "Create a new template, name it, then add three Heading 2 blocks.",
+        "Click the arrow beside New, click New template, name it Standard Wiki Page, then type /heading 2 and add Summary, Details, and Related Links as separate headings."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 158380,
+  "codexThreadId": "019fd58e-7ab5-72e0-a015-a0ec38b12963",
+  "createdAt": "2026-08-06T05:32:24.241Z",
+  "runs": [],
+  "track": "Notion",
+  "builtin": true,
+  "featured": false
+}

@@ -1,0 +1,118 @@
+{
+  "id": "seed-05-let-codex-fix-a-bug-while-you-watch",
+  "title": "Let Codex fix a bug while you watch",
+  "tool": "Codex CLI",
+  "goal": "You will reproduce a project bug, have Codex investigate and fix it, review and test the diff, and commit the verified change.",
+  "est_minutes": 25,
+  "prerequisites": [
+    "A Git project with a reproducible bug",
+    "Codex CLI installed and signed in",
+    "The project's test or run command",
+    "A clean working tree"
+  ],
+  "steps": [
+    {
+      "action": "Run the smallest command that reproduces the bug.",
+      "where": "Terminal prompt at the root of the Git project.",
+      "why": "A concrete failure gives Codex evidence to investigate and a result to verify later.",
+      "checkpoint": "The terminal shows the incorrect behavior or failing test you intend to fix.",
+      "hint_levels": [
+        "Start with the command closest to the symptom.",
+        "Use a focused test, build, or run command instead of the entire suite when possible.",
+        "At the project-root prompt, enter the relevant command, such as npm test -- path/to/failing.test.js."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Launch Codex in the project directory.",
+      "where": "Terminal prompt at the root of the Git project.",
+      "why": "Starting here gives Codex access to the repository and its local instructions.",
+      "checkpoint": "The Codex interactive prompt appears and identifies the current project directory.",
+      "hint_levels": [
+        "Stay in the directory containing the repository.",
+        "The CLI starts from your current terminal location.",
+        "At the project-root prompt, type codex and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Describe the symptom and ask Codex to investigate before editing.",
+      "where": "Codex interactive prompt at the bottom of the terminal.",
+      "why": "Supplying the exact failure while separating investigation from implementation makes the diagnosis easier to review.",
+      "checkpoint": "Codex begins inspecting relevant files or running diagnostic commands without immediately changing code.",
+      "hint_levels": [
+        "Include what you expected and what actually happened.",
+        "Give Codex the reproduction command and ask for a root-cause explanation before any edit.",
+        "Enter: Investigate this bug without editing yet: [symptom]. Expected: [result]. Actual: [result]. Reproduce with: [command]. Explain the root cause."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Approve the safe read-only commands Codex proposes while following its investigation.",
+      "where": "Approval prompt inside the Codex terminal session.",
+      "why": "The command output shows whether the investigation follows evidence from the real project.",
+      "checkpoint": "You can see Codex connect command results and source locations to a specific root cause.",
+      "hint_levels": [
+        "Check what each proposed command will inspect.",
+        "Allow searches, file reads, and the reproduction command when their scope matches the project.",
+        "At each approval prompt, review the displayed command and choose the option that approves this command only."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Tell Codex to implement the smallest fix for the diagnosed cause.",
+      "where": "Codex interactive prompt beneath the investigation summary.",
+      "why": "A narrowly scoped instruction reduces unrelated changes and makes review safer.",
+      "checkpoint": "Codex reports edited file names and the terminal shows that changes were applied.",
+      "hint_levels": [
+        "Refer back to the diagnosis you just reviewed.",
+        "Ask for the minimal change and explicitly rule out unrelated refactoring.",
+        "Enter: Implement the smallest fix for that root cause; preserve existing behavior and avoid unrelated refactors."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask Codex to display and explain the complete diff without making further edits.",
+      "where": "Codex interactive prompt in the terminal.",
+      "why": "Reviewing every changed line catches accidental scope expansion before you keep the fix.",
+      "checkpoint": "A diff with added and removed lines is visible, along with an explanation of how it addresses the bug.",
+      "hint_levels": [
+        "Pause implementation and inspect what changed.",
+        "Request the full Git diff plus a file-by-file explanation.",
+        "Enter: Do not edit anything else; show the complete git diff and explain how each change fixes the symptom."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Run the original reproduction command again from the Codex session.",
+      "where": "Codex interactive prompt and its command-output area.",
+      "why": "Repeating the same check demonstrates that the observed bug is actually resolved.",
+      "checkpoint": "The formerly failing test passes or the incorrect behavior no longer appears in the command output.",
+      "hint_levels": [
+        "Use the exact check that failed at the beginning.",
+        "Tell Codex to run the original command and report its exit status.",
+        "Enter: Run [original command] again and show the result and exit status."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Exit Codex and commit only the reviewed fix.",
+      "where": "Codex prompt, followed by the project-root terminal prompt.",
+      "why": "A Git commit preserves the verified fix as an intentional project change.",
+      "checkpoint": "The terminal shows a successful commit summary, and git status reports a clean working tree.",
+      "hint_levels": [
+        "Return to the shell, stage the reviewed files, and record them.",
+        "Use /exit, then git add with explicit file paths, git commit, and git status.",
+        "Enter /exit, then run git add path/to/reviewed-file, git commit -m \"Fix <bug symptom>\", and git status."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 39595,
+  "codexThreadId": "019fd606-c1a0-7b52-9683-fc3468dfeb0b",
+  "createdAt": "2026-08-06T07:44:05.888Z",
+  "runs": [],
+  "track": "Codex CLI",
+  "builtin": true,
+  "featured": false
+}

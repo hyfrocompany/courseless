@@ -1,0 +1,128 @@
+{
+  "id": "seed-12-a-budget-model-that-holds-up",
+  "title": "A budget model that holds up",
+  "tool": "Microsoft Excel",
+  "goal": "You will build a clean three-year revenue and operating profit model controlled by a Base/Upside scenario toggle.",
+  "est_minutes": 25,
+  "prerequisites": [
+    "A blank Excel workbook",
+    "Microsoft Excel 365 or Excel 2021"
+  ],
+  "steps": [
+    {
+      "action": "Enter the assumptions block labels and headers in cells A1:D8.",
+      "where": "Worksheet grid, starting at cell A1 below the ribbon.",
+      "why": "A dedicated assumptions block keeps model inputs organized and auditable.",
+      "checkpoint": "You should see \"Assumptions\" in A1, \"Scenario\" in A2, and Driver, Base, Upside, and Active across A4:D4, with four driver names in A5:A8.",
+      "hint_levels": [
+        "Build the input section in the upper-left corner.",
+        "Use A5:A8 for Starting Revenue, Growth, Gross Margin, and Annual OpEx.",
+        "Enter A1 Assumptions; A2 Scenario; A4 Driver; B4 Base; C4 Upside; D4 Active; then enter the four driver names in A5:A8."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Enter the Base and Upside assumption values in B5:C8.",
+      "where": "Worksheet grid, inside the assumptions block under the Base and Upside headers.",
+      "why": "Two assumption sets provide the inputs that the scenario toggle will switch between.",
+      "checkpoint": "You should see 100000 in B5:C5, 10% and 20% in B6:C6, 60% and 65% in B7:C7, and 40000 and 45000 in B8:C8.",
+      "hint_levels": [
+        "Fill both scenario columns with a complete set of drivers.",
+        "Starting Revenue is unchanged; Growth, Gross Margin, and Annual OpEx differ by scenario.",
+        "Enter B5:C5 as 100000 and 100000; B6:C6 as 10% and 20%; B7:C7 as 60% and 65%; B8:C8 as 40000 and 45000."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Create a Base/Upside dropdown in cell B2.",
+      "where": "Data tab > Data Tools group > Data Validation dialog.",
+      "why": "A validated dropdown makes scenario changes fast and prevents invalid entries.",
+      "checkpoint": "Cell B2 should display Base and show a dropdown arrow when selected, with Base and Upside as its choices.",
+      "hint_levels": [
+        "Use Excel's input-validation feature on the scenario cell.",
+        "Set B2 to allow a List whose source contains the two scenario names.",
+        "Select B2, choose Data > Data Validation > Data Validation, set Allow to List, enter Base,Upside in Source, click OK, and select Base."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Enter an XLOOKUP formula in D5 and fill it down through D8.",
+      "where": "Formula bar for cell D5, then the fill handle at the lower-right corner of the selected cell.",
+      "why": "The Active column converts the selected scenario into one consistent set of model drivers.",
+      "checkpoint": "With Base selected in B2, D5:D8 should display 100000, 10%, 60%, and 40000.",
+      "hint_levels": [
+        "Match the scenario name to the headers above the two input columns.",
+        "Look up $B$2 in $B$4:$C$4 and return the corresponding value from each row.",
+        "In D5 enter =XLOOKUP($B$2,$B$4:$C$4,B5:C5), press Enter, then drag D5's fill handle down to D8."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Enter the output table labels and year headers in A11:D15.",
+      "where": "Worksheet grid, starting at cell A11 beneath the assumptions block.",
+      "why": "A compact output section separates calculated results from editable drivers.",
+      "checkpoint": "You should see \"Model Outputs\" in A11, years 2026–2028 in B12:D12, and Revenue, Gross Profit, Annual OpEx, and Operating Profit in A13:A16.",
+      "hint_levels": [
+        "Place the reporting section a few rows below the assumptions.",
+        "Use one header row for three years and one row for each financial metric.",
+        "Enter A11 Model Outputs; B12:D12 2026, 2027, 2028; and A13:A16 Revenue, Gross Profit, Annual OpEx, Operating Profit."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Build the three-year revenue calculation across B13:D13.",
+      "where": "Formula bar and worksheet cells B13:D13 in the Model Outputs section.",
+      "why": "Revenue establishes the model's time-based calculation chain.",
+      "checkpoint": "Under Base, the Revenue row should show 100000, 110000, and 121000 before currency formatting.",
+      "hint_levels": [
+        "Start with Active Starting Revenue, then grow each later year from the previous year.",
+        "B13 should link to D5, while C13 and D13 should multiply the prior year by one plus D6.",
+        "Enter =$D$5 in B13, enter =B13*(1+$D$6) in C13, then drag C13's fill handle across to D13."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Enter the Gross Profit, Annual OpEx, and Operating Profit formulas and fill them across all three years.",
+      "where": "Formula bar for cells B14:B16, then the fill handle across columns C:D.",
+      "why": "These formulas turn the active assumptions into the model's key profitability outputs.",
+      "checkpoint": "Under Base, Operating Profit should display 20000, 26000, and 32600 before currency formatting.",
+      "hint_levels": [
+        "Calculate profit from revenue and margin, link OpEx to its active driver, then subtract.",
+        "Use Revenue × Active Gross Margin for row 14, Active Annual OpEx for row 15, and Gross Profit − Annual OpEx for row 16.",
+        "Enter =B13*$D$7 in B14, =$D$8 in B15, and =B14-B15 in B16; select B14:B16 and drag the fill handle across to D16."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Apply distinct input, header, percentage, and currency formatting to the assumptions and output blocks.",
+      "where": "Home tab > Font, Alignment, Number, and Styles groups.",
+      "why": "Consistent visual conventions make inputs, calculations, and outputs easy to scan.",
+      "checkpoint": "The section titles and table headers should stand out, B5:C8 should have an input fill color, percentages should show as percentages, and financial values should show currency with no decimals.",
+      "hint_levels": [
+        "Use color and number formats to distinguish editable cells from results.",
+        "Format A1:D1 and A11:D11 as section titles, A4:D4 and A12:D12 as headers, B6:D7 as percentages, and financial cells as currency.",
+        "Use Home > Cell Styles or Font for titles and headers; apply a light fill to B5:C8; select B6:D7 and choose Percent Style; select B5:D5, B8:D8, and B13:D16 and choose Currency with zero decimal places."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Switch the scenario dropdown to Upside and confirm that the active assumptions and outputs recalculate.",
+      "where": "Dropdown arrow in cell B2 within the assumptions block.",
+      "why": "Testing the toggle verifies that the model responds correctly without changing formulas.",
+      "checkpoint": "B2 should show Upside, D6:D8 should show 20%, 65%, and $45,000, and Operating Profit should show $20,000, $33,000, and $48,600 across 2026–2028.",
+      "hint_levels": [
+        "Use the control at the top of the assumptions block and watch both sections.",
+        "Changing B2 to Upside should update D5:D8 first and then recalculate the output table.",
+        "Select B2, click its dropdown arrow, choose Upside, and verify D6:D8 plus B16:D16 against the checkpoint values."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 79190,
+  "codexThreadId": "019fd587-cdad-7e20-af3e-072233cd3ab7",
+  "createdAt": "2026-08-06T05:25:37.027Z",
+  "runs": [],
+  "track": "Excel",
+  "builtin": true,
+  "featured": false
+}

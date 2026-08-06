@@ -1,0 +1,129 @@
+{
+  "id": "seed-25-set-a-new-teammate-up-to-win",
+  "title": "Set a new teammate up to win",
+  "tool": "Asana",
+  "goal": "You will create a reusable first-week onboarding project covering accounts, tools, first tasks, and check-ins.",
+  "est_minutes": 25,
+  "prerequisites": [
+    "An Asana account with permission to create projects",
+    "The new hire's name, manager, start date, and email",
+    "A list of required accounts and tools"
+  ],
+  "steps": [
+    {
+      "action": "Create a blank project named \"New Hire Onboarding – Template\".",
+      "where": "Left sidebar Create button, then Project, Blank project dialog.",
+      "why": "A dedicated template keeps the onboarding process consistent and reusable.",
+      "checkpoint": "The project header shows \"New Hire Onboarding – Template\" in List view.",
+      "hint_levels": [
+        "Start from the creation control in the sidebar.",
+        "Choose a project rather than a task, then select the blank-project option.",
+        "Click Create > Project > Blank project, enter \"New Hire Onboarding – Template\", choose List, then click Create project."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add sections named \"Before Day 1\", \"Accounts & Access\", \"Tools & Setup\", \"First Tasks\", and \"Check-ins\".",
+      "where": "Project List view, Add section control above the task list.",
+      "why": "Sections organize the checklist by onboarding stage and responsibility.",
+      "checkpoint": "All five section headings appear in the project task list.",
+      "hint_levels": [
+        "Look above the task rows for the section control.",
+        "Create one section for each onboarding stage, preserving the requested order.",
+        "Click Add section, type each section name, press Enter, and repeat until all five appear."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add preparation tasks under \"Before Day 1\" for sending the welcome email, confirming the start schedule, and assigning a buddy.",
+      "where": "Project List view, task rows beneath the \"Before Day 1\" section heading.",
+      "why": "Completing preparation early prevents avoidable first-day delays.",
+      "checkpoint": "Three separate task rows appear under \"Before Day 1\".",
+      "hint_levels": [
+        "Add the work as separate rows beneath the first section.",
+        "The three task names should begin with clear verbs: Send, Confirm, and Assign.",
+        "Click Add task under Before Day 1, enter each task name, and press Enter after each one."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add one task for each required account under \"Accounts & Access\".",
+      "where": "Project List view, task rows beneath the \"Accounts & Access\" section heading.",
+      "why": "Separate account tasks make missing access visible and assignable.",
+      "checkpoint": "Every required account appears as its own task in the Accounts & Access section.",
+      "hint_levels": [
+        "Turn each login or permission into its own task.",
+        "Use names such as \"Create email account\" and \"Grant shared-drive access\" rather than one combined access task.",
+        "Click Add task under Accounts & Access, type one account action, press Enter, and repeat for every account."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add one installation or configuration task for each required tool under \"Tools & Setup\".",
+      "where": "Project List view, task rows beneath the \"Tools & Setup\" section heading.",
+      "why": "A tool-by-tool list makes setup progress easy to verify.",
+      "checkpoint": "Each required tool has a separate setup task visible under Tools & Setup.",
+      "hint_levels": [
+        "Use the tools list you gathered before starting.",
+        "Phrase each row as an observable setup action, such as \"Sign in to Slack\" or \"Clone the team repository\".",
+        "Under Tools & Setup, click Add task, enter one tool setup action, press Enter, and repeat for the remaining tools."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add three outcome-based starter tasks under \"First Tasks\".",
+      "where": "Project List view, task rows beneath the \"First Tasks\" section heading.",
+      "why": "Small real deliverables help the new hire learn the workflow while contributing.",
+      "checkpoint": "Three distinct deliverables appear under First Tasks, each beginning with an action verb.",
+      "hint_levels": [
+        "Choose small pieces of genuine team work.",
+        "Make each task produce a visible result, such as updating a profile, completing a practice ticket, or submitting a small change.",
+        "Click Add task under First Tasks, type the first deliverable, press Enter, and repeat until three tasks are listed."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add Day 1, Day 3, and Day 5 manager check-in tasks under \"Check-ins\".",
+      "where": "Project List view, task rows beneath the \"Check-ins\" section heading.",
+      "why": "Scheduled touchpoints surface access problems and unclear expectations early.",
+      "checkpoint": "The Check-ins section shows three separate tasks labeled Day 1, Day 3, and Day 5.",
+      "hint_levels": [
+        "Create a beginning, middle, and end-of-week conversation.",
+        "Name each task with both its day and purpose, such as \"Day 3 check-in: unblock setup and first tasks\".",
+        "Under Check-ins, add three tasks named \"Day 1 check-in\", \"Day 3 check-in\", and \"Day 5 check-in\", pressing Enter after each."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Assign every checklist task to the role responsible for completing it.",
+      "where": "Project List view, Assignee column beside each task row.",
+      "why": "Explicit ownership prevents onboarding work from falling between the manager, IT, buddy, and new hire.",
+      "checkpoint": "Every task row displays an assignee avatar or name in the Assignee column.",
+      "hint_levels": [
+        "Scan the assignee column for empty cells.",
+        "Use the actual responsible teammate where possible and a role placeholder in the template where needed.",
+        "Click each empty Assignee cell, search for and select the responsible person, then continue until no task is unassigned."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Convert the finished project into an Asana template.",
+      "where": "Project header dropdown beside the project name, Save as template option.",
+      "why": "A project template lets the team launch the same onboarding structure for every new hire.",
+      "checkpoint": "Asana displays the saved template in the team's Templates gallery.",
+      "hint_levels": [
+        "Use the project-level menu near its title.",
+        "The reuse command is in the project header dropdown and is labeled Save as template.",
+        "Click the dropdown beside \"New Hire Onboarding – Template\", select Save as template, complete the template details, then click Create template."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 197975,
+  "codexThreadId": "019fd592-49e2-7f61-9a87-3e8e33ed7278",
+  "createdAt": "2026-08-06T05:36:40.717Z",
+  "runs": [],
+  "track": "First week",
+  "builtin": true,
+  "featured": true
+}

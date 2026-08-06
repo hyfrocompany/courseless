@@ -1,0 +1,535 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   Courseless design system — ocean-blue, editorial, hairline-inlaid.
+   Tokens are LAW (research/design-language.md). Semantic names resolve through
+   --c-* custom properties so a single `.dark` class flips the whole app.
+   ========================================================================== */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+
+  /* ocean ramp — constant across themes (identity) */
+  --o-50: #eff8ff;
+  --o-100: #dcf0ff;
+  --o-200: #b9e2ff;
+  --o-300: #7dccff;
+  --o-400: #36b0fa;
+  --o-500: #0b96ea;
+  --o-600: #0077c8;
+  --o-700: #0a5fa0;
+  --o-800: #0f4c80;
+  --o-900: #123f69;
+  --o-950: #0b2942;
+
+  /* semantic surfaces + ink (light) */
+  --c-paper: #f7f9fb;
+  --c-surface: #ffffff;
+  --c-sunken: #f1f5f8;
+  --c-ink-900: #0e1a22;
+  --c-ink-700: #33434d;
+  --c-ink-500: #5e6e79;
+  --c-ink-400: #8996a0;
+  --c-ink-300: #b6c0c7;
+  --c-line-1: #e4eaee;
+  --c-line-2: #edf1f4;
+
+  /* tinted surfaces */
+  --c-mist: #eff8ff;
+  --c-mist-line: #b9e2ff;
+  --c-mist-ink: #0f4c80;
+  --c-chip: #dcf0ff;
+  --c-chip-ink: #0f4c80;
+
+  /* interactive */
+  --c-link: #0a5fa0;
+  --c-accent: #0b96ea;
+  --c-fill: #0077c8;
+  --c-fill-hover: #0a5fa0;
+  --c-cta: #0e1a22;
+  --c-cta-ink: #ffffff;
+  --c-cta-hover: #000000;
+  --c-focus: #0b96ea;
+
+  /* status */
+  --c-success: #0e9f6e;
+  --c-warn: #b45309;
+  --c-warn-bg: #fdf6ec;
+  --c-warn-line: #ecd9b8;
+  --c-danger: #d14343;
+  --c-danger-bg: #fdf1f1;
+  --c-danger-line: #f0cfcf;
+
+  /* data marks (validated ≥3:1 vs surface) */
+  --c-bar: #0b96ea;
+  --c-bar-track: #f1f5f8;
+  --c-mark: #123f69;
+  --c-hatch: #8996a0;
+
+  /* elevation */
+  --c-shadow-float: 0 18px 46px -14px rgb(9 30 48 / 0.34), 0 4px 12px -4px rgb(9 30 48 / 0.16);
+  --c-glass: rgb(247 249 251 / 0.82);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --c-paper: #0a1420;
+  --c-surface: #101e2c;
+  --c-sunken: #0d1926;
+  --c-ink-900: #eaf2f8;
+  --c-ink-700: #b8c6d2;
+  --c-ink-500: #8496a5;
+  --c-ink-400: #63768a;
+  --c-ink-300: #4a5b6c;
+  --c-line-1: #1d2e3f;
+  --c-line-2: #16283a;
+
+  --c-mist: #0e2739;
+  --c-mist-line: #1e415c;
+  --c-mist-ink: #b9e2ff;
+  --c-chip: #12314a;
+  --c-chip-ink: #9fd6ff;
+
+  --c-link: #4fc3f7;
+  --c-accent: #4fc3f7;
+  --c-fill: #0b96ea;
+  --c-fill-hover: #36b0fa;
+  --c-cta: #e8f4fc;
+  --c-cta-ink: #0a1420;
+  --c-cta-hover: #ffffff;
+  --c-focus: #4fc3f7;
+
+  --c-success: #34d399;
+  --c-warn: #f0b429;
+  --c-warn-bg: #241c0d;
+  --c-warn-line: #453515;
+  --c-danger: #f87171;
+  --c-danger-bg: #2a1414;
+  --c-danger-line: #4d2222;
+
+  --c-bar: #36b0fa;
+  --c-bar-track: #0d1926;
+  --c-mark: #b9e2ff;
+  --c-hatch: #63768a;
+
+  --c-shadow-float: 0 20px 48px -12px rgb(0 0 0 / 0.66), 0 4px 14px -4px rgb(0 0 0 / 0.5);
+  --c-glass: rgb(10 20 32 / 0.82);
+}
+
+@theme inline {
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  --color-ocean-50: var(--o-50);
+  --color-ocean-100: var(--o-100);
+  --color-ocean-200: var(--o-200);
+  --color-ocean-300: var(--o-300);
+  --color-ocean-400: var(--o-400);
+  --color-ocean-500: var(--o-500);
+  --color-ocean-600: var(--o-600);
+  --color-ocean-700: var(--o-700);
+  --color-ocean-800: var(--o-800);
+  --color-ocean-900: var(--o-900);
+  --color-ocean-950: var(--o-950);
+
+  --color-paper: var(--c-paper);
+  --color-surface: var(--c-surface);
+  --color-sunken: var(--c-sunken);
+  --color-ink: var(--c-ink-900);
+  --color-ink-900: var(--c-ink-900);
+  --color-ink-700: var(--c-ink-700);
+  --color-ink-500: var(--c-ink-500);
+  --color-ink-400: var(--c-ink-400);
+  --color-ink-300: var(--c-ink-300);
+  --color-line: var(--c-line-1);
+  --color-line-2: var(--c-line-2);
+  --color-mist: var(--c-mist);
+  --color-mist-line: var(--c-mist-line);
+  --color-mist-ink: var(--c-mist-ink);
+  --color-chip: var(--c-chip);
+  --color-chip-ink: var(--c-chip-ink);
+  --color-link: var(--c-link);
+  --color-accent: var(--c-accent);
+  --color-fill: var(--c-fill);
+  --color-cta: var(--c-cta);
+  --color-cta-ink: var(--c-cta-ink);
+  --color-success: var(--c-success);
+  --color-warn: var(--c-warn);
+  --color-warn-bg: var(--c-warn-bg);
+  --color-warn-line: var(--c-warn-line);
+  --color-danger: var(--c-danger);
+  --color-danger-bg: var(--c-danger-bg);
+  --color-danger-line: var(--c-danger-line);
+  --color-bar: var(--c-bar);
+  --color-bar-track: var(--c-bar-track);
+  --color-mark: var(--c-mark);
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-float: var(--c-shadow-float);
+  --shadow-lift: 0 12px 32px -10px rgb(14 26 34 / 0.14), 0 4px 10px -4px rgb(14 26 34 / 0.06);
+
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* ---------------------------------------------------------------- base */
+
+/* Element defaults live in @layer base so that utilities always win — an unlayered
+   `button { color: inherit }` silently beats every Tailwind text-* class. */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  /* the float widget paints its own rounded card, so the window itself is transparent */
+  body.is-float,
+  body.is-float #root {
+    background: transparent;
+  }
+
+  /* the pointer overlay is a sheet of glass over the desktop: nothing of ours may paint on it,
+     and nothing on it may ever take a click */
+  body.is-overlay,
+  body.is-overlay #root {
+    background: transparent;
+    overflow: hidden;
+    cursor: none;
+    user-select: none;
+  }
+  body.is-overlay * {
+    pointer-events: none !important;
+  }
+
+  body {
+    margin: 0;
+    background: var(--c-paper);
+    color: var(--c-ink-900);
+    font-family: var(--font-sans);
+    /* desktop-app density, not editorial-website scale */
+    font-size: 14.5px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-variant-ligatures: none;
+    overflow-wrap: break-word;
+  }
+
+  ::selection {
+    background: var(--o-200);
+    color: var(--o-950);
+  }
+  .dark ::selection {
+    background: var(--o-800);
+    color: #eaf2f8;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--c-paper),
+      0 0 0 4px var(--c-focus);
+    border-radius: 6px;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  input,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--c-ink-400);
+  }
+}
+
+/* ---------------------------------------------------------------- scrollbars */
+
+/* Scrollability must be VISIBLE. The thumb is ink-300 (not a hairline) so "this scrolls" reads
+   at a glance in both themes; hovering darkens it to ink-500. */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-ink-300) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--c-ink-300);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--c-ink-500);
+    background-clip: content-box;
+  }
+  /* the float widget is a 380px sticky note — a 11px bar would eat it */
+  body.is-float ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  body.is-float ::-webkit-scrollbar-thumb {
+    border-width: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------- utilities */
+
+@utility ring-hairline {
+  box-shadow: inset 0 0 0 1px var(--c-line-1);
+}
+
+@utility ring-hairline-strong {
+  box-shadow: inset 0 0 0 1px var(--c-ink-300);
+}
+
+/* Window drag regions for the custom title bar. Every interactive child of a dragged
+   surface must opt back out with .app-no-drag or it stops receiving clicks. */
+@utility app-drag {
+  -webkit-app-region: drag;
+}
+
+@utility app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* NOTE: the old `.rail` (hidden-scrollbar horizontal strip) is deliberately gone. Content that
+   does not fit now wraps into a responsive grid — nothing scrolls without a visible affordance. */
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- motion */
+
+@keyframes cl-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cl-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cl-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cl-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes cl-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes cl-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.rise {
+  animation: cl-rise 0.36s var(--ease-enter) both;
+}
+.fade {
+  animation: cl-fade 0.24s var(--ease-enter) both;
+}
+.slide-in {
+  animation: cl-slide-in 0.24s var(--ease-enter) both;
+}
+.pulse-dot {
+  animation: cl-pulse 1.5s ease-in-out infinite;
+}
+.sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, var(--o-300), transparent);
+  animation: cl-sweep 1.6s var(--ease-enter) infinite;
+}
+.grow-bar {
+  transform-origin: left center;
+  animation: cl-grow 0.52s var(--ease-enter) both;
+}
+
+/* ---------------------------------------------------------------- guided pointing overlay */
+
+/* These marks land on the desktop, not on our paper, so they carry their own contrast: the ring
+   is drawn twice (white under ocean) and the callout keeps a solid body with a hard shadow. */
+
+/* transform-only: the ring is a fixed 96px box that scales, so it stays on the compositor */
+@keyframes cl-ripple {
+  from {
+    transform: translate(-50%, -50%) scale(0.16);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.42;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes cl-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+.cl-ripple {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  border: 2.5px solid var(--o-500);
+  box-shadow:
+    0 0 0 1.5px rgb(255 255 255 / 0.5),
+    inset 0 0 0 1.5px rgb(255 255 255 / 0.4);
+  transform: translate(-50%, -50%) scale(0.16);
+  animation: cl-ripple 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.cl-ripple-2 {
+  animation-delay: 0.18s;
+  border-color: var(--o-300);
+}
+
+.cl-bob {
+  animation: cl-bob 2.6s ease-in-out 0.7s infinite;
+}
+
+/* The stall nudge: the float's own hairline swells ocean ONCE and settles back to the hairline
+   it always had. A permanent ring would read as an error state; this reads as a tap on the arm. */
+@keyframes cl-nudge {
+  0% {
+    box-shadow: inset 0 0 0 1px var(--c-line-1);
+  }
+  22% {
+    box-shadow:
+      inset 0 0 0 2px var(--o-500),
+      0 0 0 5px rgb(11 150 234 / 0.16);
+  }
+  100% {
+    box-shadow: inset 0 0 0 1px var(--c-line-1);
+  }
+}
+
+.cl-nudge {
+  box-shadow: inset 0 0 0 1px var(--c-line-1);
+  animation: cl-nudge 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1 both;
+}
+
+.cl-callout {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 300px;
+  padding: 7px 12px 7px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0e1a22;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow:
+    inset 0 0 0 1px rgb(14 26 34 / 0.14),
+    0 10px 26px -8px rgb(6 22 38 / 0.5),
+    0 2px 6px -2px rgb(6 22 38 / 0.35);
+}
+
+.cl-callout-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--o-500);
+  box-shadow: 0 0 0 3px rgb(11 150 234 / 0.18);
+}
+
+.cl-callout-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

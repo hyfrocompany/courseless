@@ -1,0 +1,164 @@
+{
+  "id": "seed-24-your-first-real-render",
+  "title": "Your first real render",
+  "tool": "Blender",
+  "goal": "You will create and render a smooth colored sphere on a floor with materials, lighting, a camera, and finished render settings.",
+  "est_minutes": 35,
+  "prerequisites": [
+    "Blender 4.x installed",
+    "A mouse with a scroll wheel or middle button"
+  ],
+  "steps": [
+    {
+      "action": "Delete the default cube.",
+      "where": "Center 3D Viewport, using the selected cube and the X keyboard shortcut.",
+      "why": "This clears space for the model you will create.",
+      "checkpoint": "The cube disappears, while Camera and Light remain listed in the Outliner at the top-right.",
+      "hint_levels": [
+        "Look for the orange-outlined cube in the center.",
+        "Select only the cube before using Blender's delete command.",
+        "Left-click the cube, press X, then press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a UV sphere.",
+      "where": "3D Viewport header > Add menu > Mesh submenu.",
+      "why": "The sphere will be the main model in the finished image.",
+      "checkpoint": "A sphere appears at the center and Sphere is listed in the Outliner.",
+      "hint_levels": [
+        "Open the Add menu above the 3D Viewport.",
+        "The rounded object is inside the Mesh submenu.",
+        "Click Add > Mesh > UV Sphere."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Move the sphere upward by one meter.",
+      "where": "3D Viewport, using the G and Z keyboard shortcuts.",
+      "why": "Raising the sphere places its bottom on the future floor.",
+      "checkpoint": "The sphere sits above the red X-axis and its Z location is 1 m in the Item panel.",
+      "hint_levels": [
+        "Constrain the movement to the vertical blue axis.",
+        "Start Grab, choose the Z axis, and enter a precise distance.",
+        "With the sphere selected, press G, press Z, type 1, then press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Apply smooth shading to the sphere.",
+      "where": "Object menu in the 3D Viewport header.",
+      "why": "Smooth shading removes the visibly faceted look from the model.",
+      "checkpoint": "The sphere's surface looks visually smooth instead of polygonal.",
+      "hint_levels": [
+        "Look for a shading command in the Object menu.",
+        "The command is named Shade Auto Smooth in current Blender versions.",
+        "With the sphere selected, click Object > Shade Auto Smooth."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a plane at the world origin.",
+      "where": "3D Viewport header > Add menu > Mesh submenu.",
+      "why": "The plane provides a floor that can receive light and shadows.",
+      "checkpoint": "A flat square appears beneath the sphere and Plane is listed in the Outliner.",
+      "hint_levels": [
+        "Return to the Add menu used for the sphere.",
+        "Choose the flat primitive from the Mesh submenu.",
+        "Click Add > Mesh > Plane."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Scale the plane to ten times its original size.",
+      "where": "3D Viewport, using the S keyboard shortcut.",
+      "why": "A larger floor fills the camera view around the model.",
+      "checkpoint": "The plane extends well beyond the sphere in every horizontal direction.",
+      "hint_levels": [
+        "Use Blender's Scale command while the plane is selected.",
+        "Enter a number after pressing S for an exact uniform scale.",
+        "With Plane selected, press S, type 10, then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Give the sphere a blue material.",
+      "where": "Right-side Properties editor > Material Properties tab > Surface section > Base Color.",
+      "why": "A colored material makes the model respond visibly to the scene lighting.",
+      "checkpoint": "In Material Preview mode, the sphere appears blue while the plane remains gray.",
+      "hint_levels": [
+        "Select Sphere in the Outliner, then find the red checker-sphere Material Properties icon.",
+        "Create a material with New, then change its Principled BSDF Base Color.",
+        "Select Sphere, click Material Properties > New > Base Color, choose blue, then click outside the color picker."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Give the plane a light-gray material.",
+      "where": "Right-side Properties editor > Material Properties tab > Surface section > Base Color.",
+      "why": "A neutral floor contrasts with the blue model and keeps its shadow readable.",
+      "checkpoint": "In Material Preview mode, the floor appears light gray and the sphere remains blue.",
+      "hint_levels": [
+        "Select the floor before creating its separate material.",
+        "Use the same New and Base Color controls you used for the sphere.",
+        "Select Plane in the Outliner, click Material Properties > New > Base Color, choose light gray, then click outside the color picker."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Increase the existing light's power to 1200 watts.",
+      "where": "Outliner > Light, then right-side Properties editor > Object Data Properties tab > Light > Power.",
+      "why": "A stronger light clearly illuminates the model and creates a visible shadow.",
+      "checkpoint": "The Power field reads 1200 W and Rendered viewport shading shows a brighter sphere and floor.",
+      "hint_levels": [
+        "Select Light in the Outliner and look for its green light-bulb properties icon.",
+        "The Power field is near the top of the Light data settings.",
+        "Click Light in the Outliner > Object Data Properties > Power, type 1200, then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Set the camera to Location X 7, Y -7, Z 5 and Rotation X 68°, Y 0°, Z 46°.",
+      "where": "Outliner > Camera, then 3D Viewport right sidebar > Item tab > Transform section.",
+      "why": "These transforms aim the camera toward the sphere and floor from an elevated angle.",
+      "checkpoint": "Pressing Numpad 0 shows the sphere and surrounding floor inside the camera frame.",
+      "hint_levels": [
+        "Select Camera and open its numeric Transform controls.",
+        "Use the Location and Rotation fields in the Item tab, including the minus sign for Y Location.",
+        "Select Camera, press N, open Item > Transform, enter Location 7, -7, 5 and Rotation 68°, 0°, 46°, then press Numpad 0."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Set the output resolution to 800 by 800 pixels at 100 percent.",
+      "where": "Right-side Properties editor > Output Properties tab > Format section.",
+      "why": "A square output creates a manageable final image with predictable dimensions.",
+      "checkpoint": "Resolution X reads 800 px, Y reads 800 px, and Percentage reads 100%.",
+      "hint_levels": [
+        "Look for the printer-shaped Output Properties icon.",
+        "The image dimensions are in the Format section under Resolution.",
+        "Open Output Properties > Format and set Resolution X to 800, Y to 800, and Percentage to 100%."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Render the finished image.",
+      "where": "Top menu bar > Render menu > Render Image command.",
+      "why": "Rendering combines the model, materials, light, camera, and output settings into the final image.",
+      "checkpoint": "The Render Result window shows a blue sphere on a light-gray floor with illumination and a visible shadow.",
+      "hint_levels": [
+        "The final command is in the Render menu at the top.",
+        "Choose Render Image and wait while Blender calculates the frame.",
+        "Click Render > Render Image, or press F12, and wait for Render Result to appear."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 190056,
+  "codexThreadId": "019fd60b-6da7-78f2-88f1-f2ab6c4e5799",
+  "createdAt": "2026-08-06T07:49:53.441Z",
+  "runs": [],
+  "track": "Creative",
+  "builtin": true,
+  "featured": false
+}

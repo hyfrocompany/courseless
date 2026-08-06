@@ -1,0 +1,129 @@
+{
+  "id": "seed-14-ship-a-design-to-developers-cleanly",
+  "title": "Ship a design to developers cleanly",
+  "tool": "Figma Design",
+  "goal": "You will organize a design file, mark its final sections ready for development, and add implementation annotations developers can inspect in Dev Mode.",
+  "est_minutes": 30,
+  "prerequisites": [
+    "A Figma design file with final screens",
+    "Edit access to the file",
+    "Dev Mode access for your workspace"
+  ],
+  "steps": [
+    {
+      "action": "Rename the design page to describe the feature and handoff state.",
+      "where": "Pages list at the top of the left sidebar.",
+      "why": "A specific page name helps developers find the approved work quickly.",
+      "checkpoint": "The Pages list shows a name such as \"Checkout — Ready for Dev\" instead of a generic page name.",
+      "hint_levels": [
+        "Start with the page name above the Layers list.",
+        "Use a feature name plus a clear handoff state.",
+        "In the Pages list, double-click the page name, type \"[Feature] — Ready for Dev\", then press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Rename the top-level frames and reusable components with consistent product-facing names.",
+      "where": "Layers panel in the left sidebar.",
+      "why": "Clear layer names make screens and components searchable in both Design and Dev Mode.",
+      "checkpoint": "The top-level layer list uses descriptive names such as \"Checkout / Desktop / Payment\" with no remaining names like \"Frame 42\" or \"Group 8\".",
+      "hint_levels": [
+        "Scan the top-level layers for generated names.",
+        "Use a consistent pattern such as feature, platform, and state.",
+        "Select a layer in the Layers panel, press Ctrl+R, type its descriptive name, and press Enter; repeat for each top-level frame or component."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Create a section around the screens that belong to one developer workflow.",
+      "where": "Section tool in the bottom toolbar, available from the frame-and-section tools menu.",
+      "why": "Sections group related screens and provide a named handoff boundary.",
+      "checkpoint": "A tinted section boundary surrounds the intended screens and its title appears at the upper-left.",
+      "hint_levels": [
+        "Look for the tool that groups frames on the canvas.",
+        "Choose Section, then draw one boundary around the related screens.",
+        "Press Shift+S, then drag from above the first screen to below the last related screen."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Rename the section with the feature, platform, and flow state.",
+      "where": "Section title on the canvas or the selected section name in the Layers panel.",
+      "why": "A structured section name tells developers exactly what the grouped screens cover.",
+      "checkpoint": "The section title shows a descriptive name such as \"Checkout / Web / Happy path\".",
+      "hint_levels": [
+        "Name the new canvas boundary, not an individual frame.",
+        "Include the feature, target platform, and scenario in the section name.",
+        "Double-click the section title, type \"[Feature] / [Platform] / [Flow or state]\", then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Arrange the frames inside the section in the order a user encounters them.",
+      "where": "Canvas inside the named section.",
+      "why": "A predictable left-to-right flow reduces ambiguity about screen sequence and state changes.",
+      "checkpoint": "The frames form an evenly spaced sequence from the entry screen through the final state.",
+      "hint_levels": [
+        "Use the visual journey as the ordering rule.",
+        "Place the entry state first, followed by each interaction result and edge state.",
+        "Drag frames into journey order, then select them and use the alignment and spacing controls in the top toolbar."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Mark the completed section as ready for development.",
+      "where": "Section context menu on the canvas or the section's context menu in the Layers panel.",
+      "why": "Ready-for-development status distinguishes approved work from drafts and exposes it clearly in Dev Mode.",
+      "checkpoint": "The section displays the ready-for-development indicator and appears in Dev Mode's ready-for-development view.",
+      "hint_levels": [
+        "Open the menu for the section boundary itself.",
+        "The section menu contains the handoff status command.",
+        "Right-click the section title or its Layers-panel row, then click \"Mark as ready for dev\"."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Switch to Dev Mode and select the first implementation-critical frame.",
+      "where": "Dev Mode toggle in the upper-right toolbar, then the canvas or Layers panel.",
+      "why": "Reviewing from the developer view reveals what engineers will actually inspect.",
+      "checkpoint": "The interface shows Dev Mode and the right sidebar displays Inspect details for the selected frame.",
+      "hint_levels": [
+        "Change from editing the design to inspecting it.",
+        "Use the Dev Mode toggle, then choose the first key frame in the flow.",
+        "Click the Dev Mode toggle marked with the code icon in the upper-right, then click the first implementation-critical frame."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add an annotation that states the selected frame's non-obvious behavior or implementation rule.",
+      "where": "Annotation tool in the Dev Mode toolbar, placed on the canvas beside the relevant frame or layer.",
+      "why": "Annotations preserve requirements that cannot be inferred from pixels or generated code.",
+      "checkpoint": "A numbered annotation marker and its note are visible beside the targeted design element.",
+      "hint_levels": [
+        "Annotate behavior that a developer could otherwise misinterpret.",
+        "Target the relevant layer and write one testable rule, such as a breakpoint, truncation, or loading behavior.",
+        "In Dev Mode, choose the Annotation tool from the toolbar, click beside the target layer, enter the rule, and finish the annotation."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Review every ready-for-development section in Dev Mode and resolve any unclear names or missing annotations you can see.",
+      "where": "Ready for dev navigation in the left sidebar, with Inspect and annotation details in the right sidebar.",
+      "why": "A final developer-view pass catches handoff gaps before the file is shared.",
+      "checkpoint": "Each ready section is discoverable, its frames have descriptive names, and every non-obvious behavior has a visible annotation marker.",
+      "hint_levels": [
+        "Inspect the file as if you had not designed it.",
+        "Move through each ready section and check navigation, layer names, Inspect output, and annotation markers.",
+        "In Dev Mode, open each item under \"Ready for dev\" in the left sidebar, select its key frames, and correct any unclear name or missing note before moving on."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 102947,
+  "codexThreadId": "019fd589-e30a-7a52-be7d-8a3b53f88797",
+  "createdAt": "2026-08-06T05:27:30.905Z",
+  "runs": [],
+  "track": "Figma",
+  "builtin": true,
+  "featured": false
+}

@@ -1,0 +1,130 @@
+{
+  "id": "seed-04-set-up-codex-and-run-your-first-task",
+  "title": "Set up Codex and run your first task",
+  "tool": "OpenAI Codex CLI in Windows Terminal",
+  "goal": "You will install Codex CLI, sign in, run it inside a project, request a small README change, and review the resulting edit.",
+  "est_minutes": 15,
+  "prerequisites": [
+    "Windows Terminal or PowerShell",
+    "Node.js and npm installed",
+    "A local project folder containing README.md",
+    "A ChatGPT account with Codex access"
+  ],
+  "steps": [
+    {
+      "action": "Open Windows Terminal.",
+      "where": "Windows Start menu search box and the \"Terminal\" app result.",
+      "why": "Codex CLI is installed and operated through a terminal.",
+      "checkpoint": "A Windows Terminal window shows a PowerShell prompt ending with a greater-than sign.",
+      "hint_levels": [
+        "Open the app used for entering commands.",
+        "Search the Start menu for Terminal.",
+        "Press the Windows key, type \"Terminal\", then press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Install Codex CLI by running \"npm install -g @openai/codex\".",
+      "where": "PowerShell command line in the active Windows Terminal tab.",
+      "why": "This adds the codex command to your computer.",
+      "checkpoint": "The command finishes without a red error message and displays an added or updated packages summary.",
+      "hint_levels": [
+        "Enter the installation command at the blinking cursor.",
+        "Use npm with the global flag and the @openai/codex package name.",
+        "Type \"npm install -g @openai/codex\" and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Confirm the installation by running \"codex --version\".",
+      "where": "PowerShell command line in Windows Terminal.",
+      "why": "A version response proves the codex command is available.",
+      "checkpoint": "The next line displays \"codex-cli\" followed by a version number.",
+      "hint_levels": [
+        "Ask the new command to report its version.",
+        "Add the --version option after codex.",
+        "Type \"codex --version\" and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Change into your project folder with the cd command.",
+      "where": "PowerShell command line in Windows Terminal.",
+      "why": "Codex uses the current folder as the project it can inspect and edit.",
+      "checkpoint": "The path before the PowerShell prompt now ends with your project folder name.",
+      "hint_levels": [
+        "Look at the folder path shown before the cursor.",
+        "Use cd followed by the full path to your project.",
+        "Type \"cd \\\"C:\\path\\to\\your-project\\\"\", replace the example path, and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Start ChatGPT sign-in by running \"codex login\".",
+      "where": "PowerShell command line in Windows Terminal.",
+      "why": "Signing in authorizes Codex to use your ChatGPT account.",
+      "checkpoint": "Your browser opens an OpenAI sign-in page or the terminal displays sign-in choices.",
+      "hint_levels": [
+        "Use the codex command’s login action.",
+        "Enter codex followed by login.",
+        "Type \"codex login\" and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Complete the account authorization in your browser.",
+      "where": "OpenAI sign-in page in the browser window opened by Codex.",
+      "why": "The browser securely returns your authorization to the CLI.",
+      "checkpoint": "The browser reports that authentication succeeded and Windows Terminal confirms that you are logged in.",
+      "hint_levels": [
+        "Continue with your usual ChatGPT account.",
+        "Enter your ChatGPT credentials and approve Codex access if prompted.",
+        "On the OpenAI page, click \"Continue with ChatGPT\", sign in, choose your workspace if shown, then click \"Authorize\" or \"Continue\"."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Launch Codex by running \"codex\" from the project folder.",
+      "where": "PowerShell command line in Windows Terminal.",
+      "why": "This starts an interactive Codex session scoped to your project.",
+      "checkpoint": "The terminal shows the OpenAI Codex interface, your project directory, and a prompt beginning with a greater-than symbol.",
+      "hint_levels": [
+        "Start the CLI while the prompt still shows your project path.",
+        "The command is the tool’s name by itself.",
+        "Return to Windows Terminal, type \"codex\", and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask Codex to add one short Getting Started sentence to README.md without changing anything else.",
+      "where": "Input prompt at the bottom of the interactive Codex terminal screen.",
+      "why": "A tightly scoped request makes your first edit easy to inspect.",
+      "checkpoint": "Codex reports that it changed README.md and shows a completed task response.",
+      "hint_levels": [
+        "Describe one small file change and set a clear boundary.",
+        "Name README.md, request one sentence, and prohibit unrelated edits.",
+        "Type \"Add one short sentence under the Getting Started section in README.md telling users to install dependencies before running the project. Do not change anything else.\" and press Enter."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Run \"/review\" to inspect the change Codex made.",
+      "where": "Input prompt at the bottom of the interactive Codex terminal screen.",
+      "why": "Reviewing the diff lets you verify the edit before keeping or committing it.",
+      "checkpoint": "The terminal displays a review of the local change, and the diff shows only the intended added README.md line.",
+      "hint_levels": [
+        "Use the built-in command for examining changes.",
+        "Slash commands are entered in the same prompt used for tasks.",
+        "Type \"/review\" and press Enter, then confirm the displayed diff contains only the intended README.md addition."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 31676,
+  "codexThreadId": "019fd605-dffb-75b1-a244-89405e115464",
+  "createdAt": "2026-08-06T07:43:13.349Z",
+  "runs": [],
+  "track": "Codex CLI",
+  "builtin": true,
+  "featured": true
+}

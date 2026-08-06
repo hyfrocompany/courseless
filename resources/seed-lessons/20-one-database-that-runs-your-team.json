@@ -1,0 +1,129 @@
+{
+  "id": "seed-20-one-database-that-runs-your-team",
+  "title": "One database that runs your team",
+  "tool": "Notion",
+  "goal": "You will consolidate duplicate task databases into one master database with consistent properties, a project relation, and filtered views.",
+  "est_minutes": 35,
+  "prerequisites": [
+    "Two or more Notion databases containing similar tasks",
+    "An existing Projects database to relate tasks to",
+    "Permission to edit the relevant Notion pages"
+  ],
+  "steps": [
+    {
+      "action": "Create a full-page database named Master Tasks.",
+      "where": "Left sidebar New page button, then the Table database option in the new page.",
+      "why": "A single source database prevents records and property definitions from drifting apart.",
+      "checkpoint": "You should see a page titled Master Tasks containing a new table with one blank row.",
+      "hint_levels": [
+        "Start from a new page in the workspace sidebar.",
+        "Choose a table that creates a database, not a simple table block.",
+        "Click New page, enter Master Tasks, then select Table under Get started with."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add Status, Due, Priority, and Owner properties with matching property types.",
+      "where": "Master Tasks table header, using the plus button to the right of the existing columns.",
+      "why": "A shared schema lets every task work with the same filters, sorts, and views.",
+      "checkpoint": "The table header should show Status, Due, Priority, and Owner columns.",
+      "hint_levels": [
+        "Work across the table's column headers.",
+        "Add Status as Status, Due as Date, Priority as Select, and Owner as Person.",
+        "Click the header-row + four times; name each property and choose Status, Date, Select, and Person respectively."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a Project relation property connected to the Projects database.",
+      "where": "Master Tasks table header plus button, Relation property type, then the database picker.",
+      "why": "The relation connects each task to its project without duplicating project information.",
+      "checkpoint": "A Project column should appear, and clicking a cell should offer pages from the Projects database.",
+      "hint_levels": [
+        "Look for the property type that links database pages.",
+        "Create a Relation named Project and select the existing Projects database.",
+        "Click header-row +, choose Relation, search for and select Projects, click Add relation, then rename the property Project if needed."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Move the rows from the first duplicate task database into Master Tasks.",
+      "where": "Source database table rows and the Move to command in the selected rows menu.",
+      "why": "Moving pages preserves each task page's content while centralizing its records.",
+      "checkpoint": "The moved tasks should appear as rows in Master Tasks and no longer appear in the source database.",
+      "hint_levels": [
+        "Select the source rows using their left-edge checkboxes.",
+        "Use Move to on the selected pages and choose Master Tasks as the destination.",
+        "In the source table, select the rows, open the selected-rows menu, click Move to, search for Master Tasks, and select it."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Move the rows from each remaining duplicate task database into Master Tasks.",
+      "where": "Each source database table, using row checkboxes and the selected rows Move to menu.",
+      "why": "Completing the migration makes Master Tasks the only task source that needs maintenance.",
+      "checkpoint": "Master Tasks should contain the tasks from every former duplicate database.",
+      "hint_levels": [
+        "Repeat the same migration for every remaining source.",
+        "Select all task rows in each duplicate database and move them to Master Tasks.",
+        "Open each source database, select its rows, choose Move to, and select Master Tasks."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Fill any blank Status, Due, Priority, Owner, and Project cells for the imported tasks.",
+      "where": "Master Tasks table cells under the corresponding property columns.",
+      "why": "Complete properties make the upcoming views accurate and useful.",
+      "checkpoint": "Every imported row should have a Status and Project, with other known values visible in their columns.",
+      "hint_levels": [
+        "Scan for empty cells across the shared properties.",
+        "Click empty cells and choose or enter the correct value for each imported task.",
+        "In Master Tasks, click each blank property cell and select its Status, date, Priority, Owner, or related Project page."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Create a linked view of Master Tasks on the page where you want a focused task list.",
+      "where": "Target Notion page body, slash-command menu, Linked view of database option.",
+      "why": "A linked view shows a tailored slice of the master data without creating duplicate records.",
+      "checkpoint": "The target page should display a database view whose source is Master Tasks.",
+      "hint_levels": [
+        "Add a database view inside the destination page.",
+        "Choose a linked database view and connect it to Master Tasks.",
+        "On the target page, type /linked, select Linked view of database, search for Master Tasks, and select it."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Filter the linked view to show only unfinished tasks for one project.",
+      "where": "Linked database toolbar, Filter button, advanced filter menu.",
+      "why": "Filters replace separate project databases while keeping every task in the master source.",
+      "checkpoint": "The view should show only rows for the chosen project whose Status is not Done.",
+      "hint_levels": [
+        "Use both the Project and Status properties to narrow the view.",
+        "Add Project contains your chosen project and Status is not Done.",
+        "Click Filter, add Project → contains → select the project, then add Status → is not → Done."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Create a second view grouped by Status and sorted by Due date.",
+      "where": "View name dropdown at the upper-left of the linked database, New view command, then Group and Sort toolbar controls.",
+      "why": "Multiple views provide different workflows over the same underlying records.",
+      "checkpoint": "A second view tab should be visible with Status groups and earlier due dates listed first.",
+      "hint_levels": [
+        "Create another perspective from the view switcher.",
+        "Add a new view, group it by Status, and sort Due ascending.",
+        "Click the current view name, click New view, name it Workflow, click Create, then choose Group → Status and Sort → Due → Ascending."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 150461,
+  "codexThreadId": "019fd58d-e4d5-7642-b069-6555ff9c4477",
+  "createdAt": "2026-08-06T05:31:52.368Z",
+  "runs": [],
+  "track": "Notion",
+  "builtin": true,
+  "featured": false
+}

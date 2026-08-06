@@ -1,0 +1,141 @@
+{
+  "id": "seed-23-cut-a-clean-edit-before-lunch",
+  "title": "Cut a clean edit before lunch",
+  "tool": "Adobe Premiere Pro",
+  "goal": "You will import footage, build and trim a two-minute edit, add transitions, and export an MP4 video.",
+  "est_minutes": 35,
+  "prerequisites": [
+    "Adobe Premiere Pro installed",
+    "Two or more video clips saved on your computer",
+    "A folder with enough space for the exported video"
+  ],
+  "steps": [
+    {
+      "action": "Create a new Premiere Pro project named Two-Minute Edit.",
+      "where": "Premiere Pro Home screen, New Project button, Project name field, and Create button.",
+      "why": "The project stores your edit, media links, and export settings.",
+      "checkpoint": "The Premiere Pro editing workspace opens with Two-Minute Edit shown in the window title.",
+      "hint_levels": [
+        "Start with the large button on the Home screen.",
+        "The New Project screen has a Project name field near the upper-left.",
+        "Click New Project, enter Two-Minute Edit in Project name, choose a project location, and click Create."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Import the video clips you want to edit.",
+      "where": "File menu in the top menu bar, Import command, and the operating system file picker.",
+      "why": "Imported clips become available for arranging in your project.",
+      "checkpoint": "Thumbnail items for your video clips appear in the Project panel at the lower-left.",
+      "hint_levels": [
+        "Look for the menu that handles files.",
+        "Import opens a file picker where you can select one or several clips.",
+        "Choose File > Import, select the clips with Ctrl-click, and click Open."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Drag the imported clips into the empty Timeline panel in the order you want them to play.",
+      "where": "Project panel at the lower-left and Timeline panel across the lower-right.",
+      "why": "Placing the clips creates a sequence and forms the first rough edit.",
+      "checkpoint": "Colored clip blocks appear on the V1 and A1 tracks, and a sequence item appears in the Project panel.",
+      "hint_levels": [
+        "Move the clip thumbnails toward the large empty panel at the bottom.",
+        "The Timeline uses horizontal tracks labelled V1 for video and A1 for audio.",
+        "In the Project panel, select the clips in playback order and drag them onto the empty Timeline panel."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Cut each unwanted section at its beginning and end with the Razor tool.",
+      "where": "Tools panel beside the Timeline, Razor Tool button with the razor-blade icon, or keyboard shortcut C.",
+      "why": "These cuts isolate material that should not remain in the rough edit.",
+      "checkpoint": "Each unwanted section is separated from the surrounding footage by vertical edit lines.",
+      "hint_levels": [
+        "Look beside the Timeline for the razor-blade icon.",
+        "Select the Razor Tool, then click the clip at both boundaries of an unwanted section.",
+        "Press C, click at the start and end of each unwanted section on the Timeline, then press V to return to the Selection Tool."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Remove each isolated unwanted section with Ripple Delete.",
+      "where": "Timeline panel, right-click context menu on the isolated clip section, Ripple Delete command.",
+      "why": "Ripple Delete removes the section and automatically closes the resulting gap.",
+      "checkpoint": "The unwanted section disappears and the following clips move left with no empty space between them.",
+      "hint_levels": [
+        "Use the command that deletes while closing the gap.",
+        "Right-click the isolated clip section and find Ripple Delete in its context menu.",
+        "With the Selection Tool active, right-click the unwanted section in the Timeline and click Ripple Delete."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Drag clip edges to shorten the sequence until its duration is approximately two minutes.",
+      "where": "Timeline panel, left or right edge of each clip, with the Selection Tool active.",
+      "why": "Edge trimming refines cut timing without creating additional edits.",
+      "checkpoint": "The end of the final clip sits near 00:02:00:00 on the Timeline time ruler.",
+      "hint_levels": [
+        "Adjust the boundaries between clips rather than cutting again.",
+        "Hover over a clip edge until the red trim-bracket cursor appears, then drag.",
+        "Press V, point at a clip edge in the Timeline, and drag left or right while watching the time ruler and Program Monitor."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a Cross Dissolve transition to the cut where you want the clearest visual change.",
+      "where": "Effects panel, Video Transitions folder, Dissolve folder, and Cross Dissolve effect.",
+      "why": "A short dissolve can smooth a deliberate change between two adjacent shots.",
+      "checkpoint": "A transition block labelled Cross Dissolve straddles the selected cut in the Timeline.",
+      "hint_levels": [
+        "Look in the panel that contains effects and transitions.",
+        "Expand Video Transitions and then Dissolve to find Cross Dissolve.",
+        "Choose Window > Effects if needed, expand Video Transitions > Dissolve, and drag Cross Dissolve onto the cut between two clips."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Play the sequence from beginning to end and pause at any visible or audible problem.",
+      "where": "Program Monitor Play button above the Timeline, or Spacebar keyboard shortcut.",
+      "why": "A complete review catches gaps, abrupt cuts, and unwanted frames before export.",
+      "checkpoint": "The playhead reaches the end near 00:02:00:00 without showing black gaps or unintended footage.",
+      "hint_levels": [
+        "Review what the viewer will actually receive.",
+        "Start at the sequence beginning and watch both picture and sound.",
+        "Press Home to move to the beginning, press Spacebar to play, and press Spacebar again whenever you need to stop."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Open the Export workspace for the finished sequence.",
+      "where": "Export tab in the workspace bar at the top of Premiere Pro, or File > Export > Media.",
+      "why": "The Export workspace prepares the current sequence for an output file.",
+      "checkpoint": "The Export screen appears with Media File selected and a preview of your sequence visible.",
+      "hint_levels": [
+        "Move from editing to the workspace used for output.",
+        "The Export tab is near the top of the Premiere Pro window.",
+        "Click Export at the top, or choose File > Export > Media."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Export the sequence as an H.264 Match Source - Adaptive High Bitrate file.",
+      "where": "Export workspace, File Name, Location, Format, Preset, and Export controls.",
+      "why": "This creates a widely playable MP4 while preserving suitable source dimensions and frame rate.",
+      "checkpoint": "The export progress finishes and an .mp4 file appears in the selected folder.",
+      "hint_levels": [
+        "Confirm the filename, destination, format, and preset before starting.",
+        "Use H.264 for Format and Match Source - Adaptive High Bitrate for Preset.",
+        "Set File Name and Location, choose Format > H.264, choose Preset > Match Source - Adaptive High Bitrate, and click Export."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 182137,
+  "codexThreadId": "019fd590-e997-72c2-bfa9-24c9f87ab52c",
+  "createdAt": "2026-08-06T05:35:23.898Z",
+  "runs": [],
+  "track": "Creative",
+  "builtin": true,
+  "featured": false
+}

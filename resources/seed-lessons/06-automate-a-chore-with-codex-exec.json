@@ -1,0 +1,117 @@
+{
+  "id": "seed-06-automate-a-chore-with-codex-exec",
+  "title": "Automate a chore with codex exec",
+  "tool": "Codex CLI in Windows Terminal",
+  "goal": "You will use Codex non-interactively to replace a configuration key across a project and verify every resulting edit.",
+  "est_minutes": 12,
+  "prerequisites": [
+    "Codex CLI installed and authenticated",
+    "A Git-tracked project with a repeated config key",
+    "A clean working tree or a saved backup"
+  ],
+  "steps": [
+    {
+      "action": "Change into the project directory you want Codex to modify.",
+      "where": "Windows Terminal PowerShell prompt.",
+      "why": "Codex uses the selected directory as the project workspace.",
+      "checkpoint": "The prompt displays your project path.",
+      "hint_levels": [
+        "Check which folder the prompt currently shows.",
+        "Use Set-Location with the full path to your project.",
+        "Type Set-Location \"C:\\path\\to\\project\" and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Confirm that the working tree is clean by running git status --short.",
+      "where": "Windows Terminal PowerShell prompt inside the project directory.",
+      "why": "A clean baseline makes Codex's edits easy to isolate and undo.",
+      "checkpoint": "The command returns no file entries.",
+      "hint_levels": [
+        "Ask Git for its compact status view.",
+        "The --short option lists only changed and untracked files.",
+        "Type git status --short and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Locate every current occurrence by running rg -n \"OLD_CONFIG_KEY\" .",
+      "where": "Windows Terminal PowerShell prompt inside the project directory.",
+      "why": "The search establishes the expected scope before automation changes anything.",
+      "checkpoint": "The terminal lists matching file paths, line numbers, and text.",
+      "hint_levels": [
+        "Search recursively before editing.",
+        "Replace OLD_CONFIG_KEY with the exact existing key while keeping the quotes.",
+        "Type rg -n \"OLD_CONFIG_KEY\" . and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Run codex exec --sandbox workspace-write \"Replace OLD_CONFIG_KEY with NEW_CONFIG_KEY everywhere it represents the project configuration key, preserve formatting, do not alter generated or dependency files, and report the files changed.\"",
+      "where": "Windows Terminal PowerShell prompt inside the project directory.",
+      "why": "This invokes Codex non-interactively with permission limited to writing inside the workspace.",
+      "checkpoint": "The command finishes without an interactive prompt and prints a summary of changed files.",
+      "hint_levels": [
+        "Use the Codex subcommand intended for scripted runs.",
+        "Give exec workspace-write access and describe both the old and new key precisely.",
+        "Paste the command, replace both placeholder keys, and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Review the resulting patch by running git diff -- .",
+      "where": "Windows Terminal PowerShell prompt inside the project directory.",
+      "why": "The diff reveals every modification before you accept the automated work.",
+      "checkpoint": "The terminal shows only the intended key replacements in the expected files.",
+      "hint_levels": [
+        "Inspect Git's unstaged changes.",
+        "Limit the diff to the current project path.",
+        "Type git diff -- . and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Search again for the old key by running rg -n \"OLD_CONFIG_KEY\" .",
+      "where": "Windows Terminal PowerShell prompt inside the project directory.",
+      "why": "A second search detects missed references that the automation should have handled.",
+      "checkpoint": "The terminal shows no relevant occurrences of the old key.",
+      "hint_levels": [
+        "Repeat the search that established your baseline.",
+        "Use the old key, not the replacement key, in the pattern.",
+        "Type rg -n \"OLD_CONFIG_KEY\" . and press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Run the project's existing validation command.",
+      "where": "Windows Terminal PowerShell prompt at the project root, using the command defined by the project's package or build configuration.",
+      "why": "Automated text changes still need the project's normal checks.",
+      "checkpoint": "The terminal displays a successful test, lint, or validation result with no failing checks.",
+      "hint_levels": [
+        "Use the same check the project normally runs before a commit.",
+        "Look in package.json, Makefile, or the build configuration for the validation script.",
+        "Run the project's command, such as npm test, dotnet test, or pytest, and press Enter."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Inspect the final changed-file list by running git status --short.",
+      "where": "Windows Terminal PowerShell prompt inside the project directory.",
+      "why": "The final status confirms the exact scope of the completed chore.",
+      "checkpoint": "Only the files expected from the config-key update appear as modified.",
+      "hint_levels": [
+        "Finish with Git's compact summary.",
+        "Compare this list with the files Codex reported and the earlier search results.",
+        "Type git status --short and press Enter."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 47514,
+  "codexThreadId": "019fd607-8fe9-71a0-9f7a-6aebec5dd925",
+  "createdAt": "2026-08-06T07:44:32.223Z",
+  "runs": [],
+  "track": "Codex CLI",
+  "builtin": true,
+  "featured": false
+}

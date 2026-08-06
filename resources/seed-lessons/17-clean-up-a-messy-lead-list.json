@@ -1,0 +1,154 @@
+{
+  "id": "seed-17-clean-up-a-messy-lead-list",
+  "title": "Clean up a messy lead list",
+  "tool": "Salesforce Lightning Experience",
+  "goal": "You will merge duplicate leads, correct their owners, and create a focused list view for ongoing lead cleanup.",
+  "est_minutes": 30,
+  "prerequisites": [
+    "Read and edit access to Leads",
+    "Delete permission on Leads for merging",
+    "Transfer Leads permission",
+    "Active duplicate rules in the Salesforce org"
+  ],
+  "steps": [
+    {
+      "action": "Select the All Open Leads list view.",
+      "where": "Leads tab, list view dropdown beside the current list view name.",
+      "why": "A shared open-lead list gives you a broad starting set for cleanup.",
+      "checkpoint": "The list view heading reads \"All Open Leads\" and open lead rows appear.",
+      "hint_levels": [
+        "Start with the dropdown above the lead table.",
+        "Choose the view that includes open leads across owners.",
+        "Click Leads > list view dropdown > All Open Leads."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Open a lead showing a potential-duplicates alert.",
+      "where": "Lead list table, lead-name link, then the Potential Duplicates component on the record page.",
+      "why": "Salesforce exposes matches identified by your org's active duplicate rules on the record.",
+      "checkpoint": "The lead record displays a Potential Duplicates card reporting at least one possible match.",
+      "hint_levels": [
+        "Look for a lead that Salesforce has flagged.",
+        "Open its record and locate the Potential Duplicates card, commonly in the right column.",
+        "Click the lead name, then find Potential Duplicates on the record page."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Open the duplicate comparison for that lead.",
+      "where": "Potential Duplicates component, \"View Duplicates\" action.",
+      "why": "The comparison lets you confirm that the records represent the same person before merging.",
+      "checkpoint": "A comparison window lists the suspected lead records and their field values.",
+      "hint_levels": [
+        "Use the action inside the duplicate warning.",
+        "The Potential Duplicates card contains the control that opens matching records.",
+        "In Potential Duplicates, click View Duplicates."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Merge the confirmed duplicate records while choosing the most complete record as the master.",
+      "where": "Duplicate comparison window, record selection controls, \"Next,\" field-value selectors, and \"Merge Leads\" button.",
+      "why": "The master survives while selected values and related activity are consolidated into it.",
+      "checkpoint": "Salesforce returns to one lead record and shows a successful-merge confirmation.",
+      "hint_levels": [
+        "Keep the record with the strongest data and history.",
+        "Select only true duplicates, continue, then choose the winning value for each conflicting field.",
+        "Select the duplicate leads > click Next > select the master and preferred field values > click Merge Leads > confirm."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Repeat the duplicate review and merge for every remaining flagged lead in the cleanup set.",
+      "where": "Leads tab and each flagged lead's Potential Duplicates component.",
+      "why": "Clearing all reviewed duplicate groups leaves one usable record per person.",
+      "checkpoint": "Every reviewed lead either has no Potential Duplicates warning or contains matches you intentionally left separate.",
+      "hint_levels": [
+        "Work through the remaining alerts using the same test.",
+        "Compare identity fields such as email, phone, name, and company before each merge.",
+        "Return to Leads > open the next flagged lead > View Duplicates > compare > merge only confirmed matches."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Select the leads that should be assigned to the same correct owner.",
+      "where": "Leads list view table, row checkboxes beside the lead names.",
+      "why": "Selecting a verified group allows one controlled ownership update.",
+      "checkpoint": "The intended rows are checked and the list-view action bar is visible.",
+      "hint_levels": [
+        "Group only records that belong to one owner.",
+        "Use the checkbox column and verify the current Owner values before proceeding.",
+        "On Leads > All Open Leads, check each applicable row in the leftmost column."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Transfer the selected leads to their correct owner.",
+      "where": "List-view action bar, \"Change Owner\" button, owner lookup, and \"Submit\" button.",
+      "why": "Correct ownership restores accountability and accurate work queues.",
+      "checkpoint": "The selected rows show the new name in the Lead Owner column after the list refreshes.",
+      "hint_levels": [
+        "Use the ownership action above the selected rows.",
+        "Choose Change Owner, search for the user or queue, and decide whether notification is needed.",
+        "Click Change Owner > search and select the owner > optionally select Send email notification > click Submit."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Create a list view named \"Lead Cleanup Queue\".",
+      "where": "Leads tab, List View Controls gear menu, \"New\" dialog.",
+      "why": "A dedicated view makes future hygiene checks repeatable.",
+      "checkpoint": "The list view heading reads \"Lead Cleanup Queue\" above the lead table.",
+      "hint_levels": [
+        "The list-management menu sits above the table.",
+        "Create a new view and make it visible to the people responsible for cleanup.",
+        "Click List View Controls > New > enter Lead Cleanup Queue > choose visibility > Save."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Filter the cleanup view to show all open leads created or modified within your team's review window.",
+      "where": "Lead Cleanup Queue, Filters funnel panel, \"Add Filter\" controls.",
+      "why": "A bounded open-lead queue keeps recurring reviews focused on actionable records.",
+      "checkpoint": "The Filters panel shows your open-status and date conditions, and the visible rows satisfy them.",
+      "hint_levels": [
+        "Use status and recency to define what needs regular review.",
+        "Add a filter excluding your converted status and a Created Date or Last Modified Date range that matches your review cadence.",
+        "Click Filters > Add Filter > set Lead Status not equal to your converted status > Done, then Add Filter > choose Created Date or Last Modified Date > set the review range > Done > Save."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Display the identity and ownership fields needed to spot future cleanup problems.",
+      "where": "Lead Cleanup Queue, List View Controls gear menu, \"Select Fields to Display\" dialog.",
+      "why": "Visible identity fields make duplicate and ownership problems easier to recognize during each review.",
+      "checkpoint": "The table visibly includes Lead Owner, First Name, Last Name, Company, Email, Phone, Lead Status, Created Date, and Last Modified Date.",
+      "hint_levels": [
+        "Show the fields used to distinguish people and verify responsibility.",
+        "Add owner, contact identity, status, and audit-date fields, then place them in a useful order.",
+        "Click List View Controls > Select Fields to Display > move Lead Owner, First Name, Last Name, Company, Email, Phone, Lead Status, Created Date, and Last Modified Date to Visible Fields > reorder them > Save."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Pin the Lead Cleanup Queue as the default Leads view.",
+      "where": "Pin icon beside the list view name at the top of the Leads page.",
+      "why": "Opening directly to the cleanup queue makes regular maintenance harder to overlook.",
+      "checkpoint": "The pin icon appears filled and \"Lead Cleanup Queue\" remains selected after reopening the Leads tab.",
+      "hint_levels": [
+        "Look beside the view name for the pin.",
+        "Pinning makes the current list the default for the Leads object.",
+        "With Lead Cleanup Queue selected, click the pin icon beside its name."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 134623,
+  "codexThreadId": "019fd609-cd47-76c2-b64b-d0e0894329d5",
+  "createdAt": "2026-08-06T07:47:37.664Z",
+  "runs": [],
+  "track": "Salesforce",
+  "builtin": true,
+  "featured": false
+}

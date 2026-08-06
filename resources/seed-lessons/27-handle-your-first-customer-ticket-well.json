@@ -1,0 +1,129 @@
+{
+  "id": "seed-27-handle-your-first-customer-ticket-well",
+  "title": "Handle your first customer ticket well",
+  "tool": "Zendesk Support",
+  "goal": "You will triage, investigate, answer, document, and resolve one real customer support ticket.",
+  "est_minutes": 25,
+  "prerequisites": [
+    "Access to Zendesk Support",
+    "A new ticket assigned to your support queue",
+    "Access to your team's approved help articles and policies"
+  ],
+  "steps": [
+    {
+      "action": "Open the new customer ticket from the ticket queue.",
+      "where": "Left navigation bar > Views icon > Unassigned tickets or your team's new-ticket view > ticket subject.",
+      "why": "Opening the ticket reveals the customer's message and its current status.",
+      "checkpoint": "You should see the ticket subject, conversation thread, requester details, and reply composer.",
+      "hint_levels": [
+        "Start with the Views icon in the left navigation bar.",
+        "Open the view containing new tickets, then find the customer's ticket by its subject.",
+        "Click Views, click Unassigned tickets or your team's new-ticket view, then click the ticket subject."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Assign the ticket to yourself.",
+      "where": "Ticket properties panel on the left > Assignee field.",
+      "why": "Assignment shows your team that you own the next response.",
+      "checkpoint": "You should see your name in the Assignee field.",
+      "hint_levels": [
+        "Look through the ticket properties on the left.",
+        "The Assignee dropdown controls who owns the ticket.",
+        "Click Assignee, search for your name, then click your name."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Set the ticket type and priority from the customer's stated issue and impact.",
+      "where": "Ticket properties panel on the left > Type and Priority dropdowns.",
+      "why": "Accurate triage helps the team route and order work consistently.",
+      "checkpoint": "You should see selected values in both the Type and Priority fields.",
+      "hint_levels": [
+        "Focus on what the customer needs and how severely it affects them.",
+        "Choose the matching Type, then use your team's impact rules to choose Priority.",
+        "Click Type and select Question, Incident, Problem, or Task; then click Priority and select Low, Normal, High, or Urgent."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Review the requester's profile and previous tickets for relevant account details or recurring issues.",
+      "where": "Requester context panel on the right > User profile and Interaction history or Tickets tabs.",
+      "why": "Past context can prevent repeated questions and reveal whether the issue is isolated or recurring.",
+      "checkpoint": "You should see the customer's profile details and a list of prior interactions or tickets, even if the list is empty.",
+      "hint_levels": [
+        "Check the customer context beside the conversation.",
+        "The requester panel contains profile information and previous interactions.",
+        "In the right requester panel, expand User profile, then click Interaction history or Tickets and review the entries."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Search the Knowledge Capture panel for an approved article that matches the issue.",
+      "where": "Ticket workspace right sidebar > Knowledge icon > search field.",
+      "why": "An approved source gives you accurate troubleshooting steps and policy language.",
+      "checkpoint": "You should see search results containing at least one relevant help article or a clear no-results message.",
+      "hint_levels": [
+        "Use the knowledge tools beside the ticket.",
+        "Search with the product name plus the customer's main symptom.",
+        "Click the Knowledge icon in the right sidebar, click the search field, type the product and symptom, then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add an internal note summarizing the issue, impact, evidence checked, and planned resolution.",
+      "where": "Reply composer at the bottom of the conversation > Public reply dropdown > Internal note.",
+      "why": "A concise investigation record lets teammates understand and continue the work.",
+      "checkpoint": "You should see a yellow Internal note entry in the conversation containing your summary.",
+      "hint_levels": [
+        "Document your reasoning without sending it to the customer.",
+        "Switch the composer from Public reply to Internal note and record the four key facts.",
+        "Click Public reply, select Internal note, type the issue, impact, evidence checked, and planned resolution, then click Submit as Open."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Write a public reply that acknowledges the problem, states the answer or next steps, and sets a clear expectation.",
+      "where": "Reply composer at the bottom of the conversation > response text box.",
+      "why": "A clear and empathetic response helps the customer act without guessing what happens next.",
+      "checkpoint": "You should see a drafted reply that includes an acknowledgment, specific guidance, and an expected outcome or timeframe.",
+      "hint_levels": [
+        "Write for the customer, not for your internal team.",
+        "Open with acknowledgment, give numbered actions or a direct answer, and end with what the customer should expect.",
+        "Select Public reply, then type a greeting, acknowledgment, solution or next steps, expectation, and courteous closing."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Proofread the public reply against the original request and remove jargon, unsupported promises, and unnecessary details.",
+      "where": "Conversation thread and Public reply composer at the bottom of the ticket.",
+      "why": "A final comparison catches tone errors and ensures every customer question is answered.",
+      "checkpoint": "You should see a concise draft that answers each customer question and contains no internal notes or unexplained abbreviations.",
+      "hint_levels": [
+        "Compare the draft with the customer's first message.",
+        "Check accuracy, completeness, tone, and whether every next step is concrete.",
+        "Read the original message, reread the Public reply draft, then edit any unclear, missing, or overly technical wording."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Send the reply with the ticket status set to Solved.",
+      "where": "Bottom-right of the ticket > Submit as status dropdown and Submit button.",
+      "why": "Solving records the completed outcome while allowing the customer to reopen the ticket by replying.",
+      "checkpoint": "You should see the public reply in the conversation and the ticket status displayed as Solved.",
+      "hint_levels": [
+        "Use the submission control beside the reply composer.",
+        "Choose Solved only if your response fully answers the issue and no internal work remains.",
+        "Click the arrow beside Submit as, select Solved, then click Submit as Solved."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 213813,
+  "codexThreadId": "019fd593-8ff8-7ed0-be5e-b7eadb775fde",
+  "createdAt": "2026-08-06T05:38:05.738Z",
+  "runs": [],
+  "track": "First week",
+  "builtin": true,
+  "featured": false
+}

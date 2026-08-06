@@ -1,0 +1,128 @@
+{
+  "id": "seed-07-prompts-that-get-usable-answers",
+  "title": "Prompts that get usable answers",
+  "tool": "ChatGPT",
+  "goal": "You will create a context-rich prompt, specify its output format, and refine the response into a usable final draft.",
+  "est_minutes": 15,
+  "prerequisites": [
+    "Access to ChatGPT",
+    "A real message, plan, or document you need help drafting"
+  ],
+  "steps": [
+    {
+      "action": "Open a blank conversation.",
+      "where": "Left sidebar, \"New chat\" button.",
+      "why": "A blank conversation prevents earlier messages from influencing this task.",
+      "checkpoint": "You should see an empty conversation with a message composer near the bottom.",
+      "hint_levels": [
+        "Look near the top of the left sidebar.",
+        "Find the button labeled New chat.",
+        "Click New chat in the left sidebar."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Type one sentence describing the real result you need.",
+      "where": "Message composer at the bottom of the conversation.",
+      "why": "A clear task gives the chatbot a concrete outcome to work toward.",
+      "checkpoint": "You should see a sentence beginning with an action such as \"Draft,\" \"Plan,\" or \"Summarize\" in the composer.",
+      "hint_levels": [
+        "Start with what you want produced.",
+        "Use an action verb and name the intended result.",
+        "Click the message composer and type, for example, \"Draft a follow-up email to a customer who missed our meeting.\""
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add the relevant background, audience, purpose, and constraints below your task sentence.",
+      "where": "Same message composer, on new lines beneath the first sentence.",
+      "why": "Specific context helps the response fit your real situation instead of relying on guesses.",
+      "checkpoint": "You should see details labeled \"Background,\" \"Audience,\" \"Purpose,\" and \"Constraints\" in the composer.",
+      "hint_levels": [
+        "Think about what the chatbot cannot know unless you state it.",
+        "Include who this is for, what happened, what success means, and any limits.",
+        "Press Shift+Enter for new lines, then type \"Background:\", \"Audience:\", \"Purpose:\", and \"Constraints:\" with your details."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add instructions for the exact structure, length, and tone of the answer.",
+      "where": "Message composer, beneath the context details.",
+      "why": "An explicit format makes the first response easier to use and evaluate.",
+      "checkpoint": "You should see a line beginning with \"Output format:\" that names a structure, length, and tone.",
+      "hint_levels": [
+        "Describe what the finished answer should look like.",
+        "Specify the sections or layout, a length limit, and the desired voice.",
+        "Press Shift+Enter, then type, for example, \"Output format: Give me a subject line and a 120-word email in a warm, professional tone.\""
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Send the completed prompt.",
+      "where": "Up-arrow Send button at the right side of the message composer.",
+      "why": "Sending the combined task, context, and format instructions produces a response you can test against your needs.",
+      "checkpoint": "Your prompt should appear in the conversation, followed by a chatbot response.",
+      "hint_levels": [
+        "Use the control beside the text you entered.",
+        "The Send button is the up-arrow at the right edge of the composer.",
+        "Click the up-arrow Send button, or press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Compare the response with every requirement in your prompt.",
+      "where": "Chatbot response in the main conversation panel and your prompt directly above it.",
+      "why": "Checking against stated requirements reveals what needs to change in the next draft.",
+      "checkpoint": "You should be able to point to at least one part that works and one specific part to improve.",
+      "hint_levels": [
+        "Check the answer against your own labels.",
+        "Review its accuracy, audience fit, purpose, constraints, structure, length, and tone.",
+        "Scroll between your prompt and the response, then identify one successful detail and one missing or weak detail."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Type a follow-up instruction naming one specific change for the next draft.",
+      "where": "Message composer below the chatbot response.",
+      "why": "A targeted revision request is more reliable than accepting the first draft or asking vaguely for improvement.",
+      "checkpoint": "You should see a follow-up message that identifies what to keep and exactly what to change.",
+      "hint_levels": [
+        "Focus on the most important weakness you noticed.",
+        "Tell the chatbot which useful element to preserve and give a measurable revision.",
+        "Click the composer and type, for example, \"Keep the friendly opening, but shorten the email to 90 words and make the requested next step explicit.\""
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Send the revision instruction.",
+      "where": "Up-arrow Send button at the right side of the message composer.",
+      "why": "Continuing in the same conversation lets the chatbot revise the existing draft with your feedback.",
+      "checkpoint": "A revised response should appear below your follow-up instruction.",
+      "hint_levels": [
+        "Submit the follow-up from the same conversation.",
+        "Use the same Send control you used for the original prompt.",
+        "Click the up-arrow Send button, or press Enter."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Enter and send one final follow-up that fixes the most important remaining issue.",
+      "where": "Message composer below the revised response, then the up-arrow Send button.",
+      "why": "A second focused iteration turns the response into a draft that is ready for real use.",
+      "checkpoint": "The newest response should visibly include your requested correction and match the context and output format from the original prompt.",
+      "hint_levels": [
+        "Inspect the revised answer for the one issue that still limits its usefulness.",
+        "Name the remaining problem and state the exact replacement or adjustment you want.",
+        "Click the composer, type a precise correction such as \"Replace the generic closing with two proposed meeting times,\" then click the up-arrow Send button or press Enter."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 55433,
+  "codexThreadId": "019fd607-f781-7b43-940a-0788467301cb",
+  "createdAt": "2026-08-06T07:45:12.312Z",
+  "runs": [],
+  "track": "AI at work",
+  "builtin": true,
+  "featured": false
+}

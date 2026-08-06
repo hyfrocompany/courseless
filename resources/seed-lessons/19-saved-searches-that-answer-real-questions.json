@@ -1,0 +1,153 @@
+{
+  "id": "seed-19-saved-searches-that-answer-real-questions",
+  "title": "Saved searches that answer real questions",
+  "tool": "Oracle NetSuite",
+  "goal": "You will create and test a transaction saved search with filters, result columns, highlighting, recipients, and a recurring email schedule.",
+  "est_minutes": 25,
+  "prerequisites": [
+    "Permission to create Transaction saved searches",
+    "A defined transaction type, date range, and status to filter",
+    "Approved email recipients and delivery cadence"
+  ],
+  "steps": [
+    {
+      "action": "Create a new Transaction saved search.",
+      "where": "Reports > Saved Searches > All Saved Searches, then the New Saved Search page.",
+      "why": "The record type determines which criteria and result fields are available.",
+      "checkpoint": "A Transaction Saved Search form appears with Criteria, Results, Highlighting, and Email tabs.",
+      "hint_levels": [
+        "Start from the list of saved searches.",
+        "Use the New Saved Search button and choose the transaction record type.",
+        "Go to Reports > Saved Searches > All Saved Searches > New Saved Search, then click Transaction."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Enter a unique search title and select Public only if other roles should find it.",
+      "where": "Search Title and Public fields in the header of the Transaction Saved Search form.",
+      "why": "A descriptive name makes the search identifiable without exposing it unnecessarily.",
+      "checkpoint": "The Search Title field contains your chosen name and the Public checkbox reflects the intended access.",
+      "hint_levels": [
+        "Name the search before configuring its logic.",
+        "Use a name describing the records and purpose; leave Public cleared unless sharing is intended.",
+        "In the form header, complete Search Title, then set the Public checkbox as required."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add the main filters for transaction type, date, and status.",
+      "where": "Criteria tab > Standard subtab > Filter rows.",
+      "why": "These filters restrict the search to the transactions the task actually needs.",
+      "checkpoint": "The Criteria list visibly contains rows for Type, Date, and Status with selected values.",
+      "hint_levels": [
+        "Build the filters from broadest to narrowest.",
+        "Add Type, Date, and Status as separate Filter rows and define each value in its popup.",
+        "Open Criteria > Standard, choose Type and set its value, repeat for Date and Status, then click Set after each selection."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a Main Line criterion with the value appropriate for the intended transaction granularity.",
+      "where": "Criteria tab > Standard subtab > next empty Filter row.",
+      "why": "Main Line controls whether results show one transaction row or separate item and expense lines.",
+      "checkpoint": "A Main Line row appears in the Criteria list with Yes for transaction-level results or No for line-level results.",
+      "hint_levels": [
+        "Decide whether each result should represent a transaction or one of its lines.",
+        "Use Main Line = Yes for one row per transaction, or No when individual lines are required.",
+        "In Criteria > Standard, select Main Line in the next Filter row, choose Yes or No, and click Set."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Define the columns and ordering that should appear in the search output.",
+      "where": "Results tab > Columns subtab > Field, Custom Label, and Sort By columns.",
+      "why": "The result layout determines what users see on screen and receive by email.",
+      "checkpoint": "The Columns grid lists the required fields in display order, with a sort field selected.",
+      "hint_levels": [
+        "Choose only fields needed to identify and act on each result.",
+        "Typical transaction columns include Date, Type, Document Number, Name, Status, Amount, and Internal ID.",
+        "Open Results > Columns, add each field in order, enter any Custom Labels, and set Sort By on the preferred column."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add an Available Filter that users may change when running the search.",
+      "where": "Results tab > Available Filters subtab > Filter field.",
+      "why": "An available filter allows useful refinement without editing the saved definition.",
+      "checkpoint": "The selected field appears in the Available Filters grid.",
+      "hint_levels": [
+        "Pick a field users commonly narrow after opening the results.",
+        "Name, Status, or Date is often useful as an Available Filter.",
+        "Open Results > Available Filters, select the desired Filter field, and leave Show in Filter Region enabled."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Create a highlighting rule for the records that need attention.",
+      "where": "Highlighting tab > Highlight If grid and its Condition popup.",
+      "why": "Conditional formatting makes priority results immediately visible.",
+      "checkpoint": "A Highlight If row shows the chosen condition and a configured background, text color, or bold style.",
+      "hint_levels": [
+        "Base the visual cue on the most actionable condition.",
+        "Add a condition such as Status, Amount, or Days Open, then choose a restrained highlight style.",
+        "Open Highlighting, add a Highlight If row, click its condition control, set the field/operator/value, click Set, then choose the style."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Run the search and verify its filters, columns, row granularity, and highlighting.",
+      "where": "Save & Run button at the bottom of the saved-search form, then the search results page.",
+      "why": "Testing catches incorrect criteria or duplicate line results before emails are enabled.",
+      "checkpoint": "The results page shows the expected records, column order, available filter, and highlighted rows.",
+      "hint_levels": [
+        "Inspect both the records returned and how they are displayed.",
+        "Check for unexpected duplicates, missing transactions, incorrect sorting, and whether qualifying rows are highlighted.",
+        "Click Save & Run, review the results page, and use Edit This Search if any criteria, columns, or highlighting need correction."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Enable scheduled email delivery and add the approved recipients.",
+      "where": "Edit This Search > Email tab > Send According to Schedule checkbox and Specific Recipients subtab.",
+      "why": "Scheduled delivery sends the current search results to the intended audience automatically.",
+      "checkpoint": "Send According to Schedule is checked and each intended recipient appears in the Specific Recipients grid.",
+      "hint_levels": [
+        "Configure delivery from the search's Email tab.",
+        "Enable scheduled sending, then add employees, groups, or other supported recipients under Specific Recipients.",
+        "Click Edit This Search > Email, check Send According to Schedule, open Specific Recipients, and add each approved recipient."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Set the email subject, message, and recurring delivery schedule.",
+      "where": "Email tab > Customize Message and Schedule subtabs.",
+      "why": "Clear message text and a controlled cadence make the automated results useful and predictable.",
+      "checkpoint": "The Email tab visibly shows a subject and message, while the Schedule subtab shows the intended frequency, start date, and send time.",
+      "hint_levels": [
+        "Finish the notification details and timing.",
+        "Use Customize Message for context, then define the recurrence and timing under Schedule.",
+        "Open Email > Customize Message and enter the subject and message, then open Email > Schedule and set the frequency, start date, recurrence options, and time."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Save the scheduled saved search.",
+      "where": "Save button at the bottom of the Transaction Saved Search form.",
+      "why": "Saving commits the search definition and activates its configured email schedule.",
+      "checkpoint": "NetSuite returns to the saved search or results page without an error, and reopening Edit This Search shows the saved criteria, highlighting, recipients, and schedule.",
+      "hint_levels": [
+        "Commit the complete configuration once every tab has been checked.",
+        "Use Save rather than Save & Run when the final task is preserving the schedule.",
+        "Click Save at the bottom of the form, then reopen Edit This Search and confirm the Email schedule remains enabled."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 126704,
+  "codexThreadId": "019fd58b-f548-7f23-a90a-23ed301fab3d",
+  "createdAt": "2026-08-06T05:29:46.698Z",
+  "runs": [],
+  "track": "NetSuite",
+  "builtin": true,
+  "featured": false
+}

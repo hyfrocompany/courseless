@@ -1,0 +1,129 @@
+{
+  "id": "seed-01-your-first-claude-code-session",
+  "title": "Your first Claude Code session",
+  "tool": "Claude Code in Windows Terminal",
+  "goal": "You will open Claude Code in a real project, request a small README change, review its proposed edit, and approve it.",
+  "est_minutes": 15,
+  "prerequisites": [
+    "Claude account",
+    "A project folder containing README.md",
+    "Permission to install or run software on this computer"
+  ],
+  "steps": [
+    {
+      "action": "Open Windows Terminal.",
+      "where": "Windows Start menu, in the search result named \"Terminal\".",
+      "why": "Claude Code runs through a terminal window.",
+      "checkpoint": "You should see a Windows Terminal window with a PowerShell prompt ending in >.",
+      "hint_levels": [
+        "Use the Windows search box.",
+        "Search for the app named Terminal, not Command Prompt.",
+        "Press the Windows key, type Terminal, then press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Run \"claude --version\" to check the installation.",
+      "where": "PowerShell command line in the active Windows Terminal tab.",
+      "why": "The version command confirms that Claude Code is installed and available.",
+      "checkpoint": "You should see a Claude Code version number on the next line.",
+      "hint_levels": [
+        "Type the command at the blinking cursor.",
+        "The check uses the Claude command followed by two hyphens and version.",
+        "Type claude --version and press Enter; if PowerShell says the command is not recognized, install Claude Code before continuing."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Change the terminal location to your project folder.",
+      "where": "PowerShell command line in Windows Terminal.",
+      "why": "Starting Claude Code here gives it access to the intended project instead of unrelated files.",
+      "checkpoint": "You should see your project folder's name immediately before the > prompt.",
+      "hint_levels": [
+        "Use the cd command to choose the working folder.",
+        "Put the project's full folder path inside quotation marks after cd.",
+        "Type cd \"C:\\full\\path\\to\\your-project\" and press Enter."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Start Claude Code by running \"claude\".",
+      "where": "PowerShell command line inside the project folder.",
+      "why": "This opens an interactive Claude Code session scoped to the project.",
+      "checkpoint": "You should see the Claude Code interface with an input prompt near the bottom.",
+      "hint_levels": [
+        "Enter the tool's name by itself.",
+        "Run the claude command without --version this time.",
+        "Type claude and press Enter; follow the displayed browser sign-in instructions if prompted."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Confirm that you trust this project folder if Claude Code asks.",
+      "where": "Claude Code trust prompt in the terminal.",
+      "why": "Claude Code needs your confirmation before it can inspect and change files in this folder.",
+      "checkpoint": "You should see the normal Claude Code input prompt instead of the trust question.",
+      "hint_levels": [
+        "Read the choices shown beneath the folder path.",
+        "Choose the option that confirms you trust the files in this folder.",
+        "Use the arrow keys to highlight \"Yes, I trust this folder,\" then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask Claude to add a \"Getting Started\" heading and one placeholder setup sentence to README.md without changing anything else.",
+      "where": "Claude Code input prompt at the bottom of the terminal interface.",
+      "why": "A narrowly scoped request produces a small edit that is easy to inspect safely.",
+      "checkpoint": "You should see Claude inspect README.md and propose an edit or request permission to edit it.",
+      "hint_levels": [
+        "Describe the file, the exact addition, and what must remain untouched.",
+        "Tell Claude to edit README.md and limit the change to one heading and one sentence.",
+        "Type Add a \"Getting Started\" heading and one placeholder setup sentence to README.md. Do not change anything else. Then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Review every added and removed line in Claude Code's proposed diff.",
+      "where": "Permission panel or colored diff displayed in the Claude Code terminal session.",
+      "why": "The diff shows exactly what will change before you approve it.",
+      "checkpoint": "You should see only the new Getting Started heading and setup sentence marked as additions, with no unrelated removals.",
+      "hint_levels": [
+        "Focus on the colored lines rather than Claude's summary.",
+        "Lines prefixed with + are additions and lines prefixed with - are removals.",
+        "Scroll through the permission panel and verify that only README.md has the two requested additions."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Approve the README.md edit.",
+      "where": "Choice list at the bottom of Claude Code's edit-permission panel.",
+      "why": "Approval allows Claude Code to apply the reviewed change to the project file.",
+      "checkpoint": "You should see a message that README.md was updated and the normal Claude Code prompt returns.",
+      "hint_levels": [
+        "Choose the one-time approval option.",
+        "Select the choice labeled \"Yes\" rather than an option that grants broader ongoing permission.",
+        "Use the arrow keys to highlight \"Yes,\" then press Enter."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Run \"/diff\" to inspect the completed change once more.",
+      "where": "Claude Code input prompt at the bottom of the terminal interface.",
+      "why": "A final diff confirms that the accepted result matches the request.",
+      "checkpoint": "You should see README.md listed with the accepted Getting Started additions and no unexpected file changes.",
+      "hint_levels": [
+        "Use Claude Code's slash command for viewing changes.",
+        "The command begins with a forward slash and contains the word diff.",
+        "Type /diff and press Enter, then inspect the displayed file changes."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 7919,
+  "codexThreadId": "019fd571-121e-7e30-a27a-1bfe77d0fd4e",
+  "createdAt": "2026-08-06T05:00:58.122Z",
+  "runs": [],
+  "track": "Claude Code",
+  "builtin": true,
+  "featured": true
+}

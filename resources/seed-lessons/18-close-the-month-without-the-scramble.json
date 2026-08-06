@@ -1,0 +1,142 @@
+{
+  "id": "seed-18-close-the-month-without-the-scramble",
+  "title": "Close the month without the scramble",
+  "tool": "Oracle NetSuite",
+  "goal": "You will reconcile the period, lock A/R and A/P, complete its close checklist, and mark the accounting period closed.",
+  "est_minutes": 75,
+  "prerequisites": [
+    "Accounting Period Management permission",
+    "A/R, A/P, and bank activity entered through period end",
+    "Period-end bank statement and reconciliation balances",
+    "Approval to lock transactions and close the period"
+  ],
+  "steps": [
+    {
+      "action": "Open the close checklist for the accounting period you intend to close.",
+      "where": "Setup > Accounting > Manage Accounting Periods, then the Checklist icon beside the target period.",
+      "why": "The checklist shows the period's status, dependencies, and unfinished closing tasks.",
+      "checkpoint": "The Accounting Period Close Checklist page shows the correct period name and a list of closing tasks.",
+      "hint_levels": [
+        "Find the period in the accounting periods list.",
+        "Use the Checklist icon on the same row as the period you are closing.",
+        "Click Setup > Accounting > Manage Accounting Periods, locate the target period, then click its Checklist icon."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Run the A/R Aging Summary as of the period-end date.",
+      "where": "Reports > Customer/Receivables > A/R Aging Summary, using the As Of date filter.",
+      "why": "The aging total must support the accounts receivable balance before A/R is locked.",
+      "checkpoint": "The report header shows the period-end As Of date and the Total column displays the receivables balance.",
+      "hint_levels": [
+        "Start with the customer receivables reports.",
+        "Set the aging report's cutoff to the final day of the period.",
+        "Click Reports > Customer/Receivables > A/R Aging Summary, set As Of to the period-end date, then click Refresh."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Run the A/P Aging Summary as of the period-end date.",
+      "where": "Reports > Vendors/Payables > A/P Aging Summary, using the As Of date filter.",
+      "why": "The aging total must support the accounts payable balance before A/P is locked.",
+      "checkpoint": "The report header shows the period-end As Of date and the Total column displays the payables balance.",
+      "hint_levels": [
+        "Move to the vendor payables reports.",
+        "Use the A/P aging report with the same period-end cutoff.",
+        "Click Reports > Vendors/Payables > A/P Aging Summary, set As Of to the period-end date, then click Refresh."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Reconcile each period-end bank or credit-card statement.",
+      "where": "Transactions > Bank > Reconcile Account Statement, in the Account and Statement Date fields and transaction-matching list.",
+      "why": "Reconciliation confirms that cash and card balances agree with external statements.",
+      "checkpoint": "The reconciliation shows a Difference of 0.00 and the statement is saved as reconciled.",
+      "hint_levels": [
+        "Use the account reconciliation page and watch the Difference field.",
+        "Choose the account and statement date, match cleared transactions, and resolve any remaining difference.",
+        "Click Transactions > Bank > Reconcile Account Statement, select the account, enter the statement date and ending balance, mark matched transactions, confirm Difference is 0.00, then click Reconcile."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Lock accounts receivable for the target period.",
+      "where": "Setup > Accounting > Manage Accounting Periods > target period Checklist > Lock A/R task.",
+      "why": "Locking A/R prevents new posting activity from changing the reconciled receivables balance.",
+      "checkpoint": "The Lock A/R checklist row displays a completed status or check mark.",
+      "hint_levels": [
+        "Return to the period checklist and find the receivables lock.",
+        "Open Lock A/R, select the relevant subsidiaries if prompted, and submit the task.",
+        "Click Setup > Accounting > Manage Accounting Periods, click the period's Checklist icon, click Lock A/R, select subsidiaries if shown, then click Submit."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Lock accounts payable for the target period.",
+      "where": "Target period's Accounting Period Close Checklist > Lock A/P task.",
+      "why": "Locking A/P prevents new vendor postings from changing the reconciled payables balance.",
+      "checkpoint": "The Lock A/P checklist row displays a completed status or check mark.",
+      "hint_levels": [
+        "The payables lock is another task on the same checklist.",
+        "Open Lock A/P and apply it to the same subsidiary scope used for A/R.",
+        "On the Accounting Period Close Checklist, click Lock A/P, select subsidiaries if shown, then click Submit."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Run the Trial Balance for the target period and confirm the debit and credit totals agree.",
+      "where": "Reports > Financial > Trial Balance, using the period and subsidiary filters.",
+      "why": "A balanced trial balance is the final control check before all posting is locked.",
+      "checkpoint": "The report shows the target period and equal debit and credit grand totals.",
+      "hint_levels": [
+        "Use the main financial reports and verify both grand totals.",
+        "Filter Trial Balance to the closing period and the subsidiary scope being closed.",
+        "Click Reports > Financial > Trial Balance, set the Period and Subsidiary filters, click Refresh, then compare the debit and credit totals."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Complete each remaining required task on the period's close checklist.",
+      "where": "Setup > Accounting > Manage Accounting Periods > target period Checklist, in each incomplete task row.",
+      "why": "NetSuite will not allow the final close while prerequisite checklist tasks remain unfinished.",
+      "checkpoint": "Every required row above Close Period displays a completed status or check mark.",
+      "hint_levels": [
+        "Look for checklist rows without completed marks.",
+        "Open incomplete tasks in order because later tasks may depend on earlier ones.",
+        "Return to the target period's Checklist and open each incomplete row from top to bottom, complete its displayed form, and click Submit until only Close Period remains."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Lock all remaining posting activity for the period.",
+      "where": "Target period's Accounting Period Close Checklist > Lock All task.",
+      "why": "This freezes general-ledger posting after reconciliations and adjustments are complete.",
+      "checkpoint": "The Lock All checklist row displays a completed status or check mark.",
+      "hint_levels": [
+        "Use the final locking task before the close action.",
+        "Confirm the subsidiary scope, then complete Lock All.",
+        "On the period checklist, click Lock All, select the applicable subsidiaries if shown, then click Submit."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Close the accounting period.",
+      "where": "Target period's Accounting Period Close Checklist > Close Period task.",
+      "why": "Closing the period records completion and blocks ordinary posting into it.",
+      "checkpoint": "The checklist shows Close Period as completed and Manage Accounting Periods shows the period as closed.",
+      "hint_levels": [
+        "The final action is at the bottom of the completed checklist.",
+        "Open Close Period only after every prerequisite row is complete.",
+        "On the Accounting Period Close Checklist, click Close Period, confirm the period and subsidiary scope, then click Submit."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 110866,
+  "codexThreadId": "019fd58a-7d5e-7300-8a31-794937e54399",
+  "createdAt": "2026-08-06T05:28:22.618Z",
+  "runs": [],
+  "track": "NetSuite",
+  "builtin": true,
+  "featured": false
+}

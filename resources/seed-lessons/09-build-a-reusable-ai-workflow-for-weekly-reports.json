@@ -1,0 +1,128 @@
+{
+  "id": "seed-09-build-a-reusable-ai-workflow-for-weekly-reports",
+  "title": "Build a reusable AI workflow for weekly reports",
+  "tool": "ChatGPT desktop app",
+  "goal": "You will create a reusable ChatGPT Project that accepts the same weekly data shape and produces a consistent status report.",
+  "est_minutes": 20,
+  "prerequisites": [
+    "A ChatGPT account with access to Projects",
+    "One recent week of status notes to test the workflow"
+  ],
+  "steps": [
+    {
+      "action": "Create a new Project named \"Weekly Status Report.\"",
+      "where": "Left sidebar, \"New project\" button beside the Projects heading.",
+      "why": "A dedicated Project keeps the reusable instructions and weekly report chats together.",
+      "checkpoint": "You should see \"Weekly Status Report\" as the selected Project in the sidebar.",
+      "hint_levels": [
+        "Look in the sidebar under Projects.",
+        "Use the New project control, then enter a descriptive project name.",
+        "Click New project, type \"Weekly Status Report,\" and click Create project."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Open the Project instructions editor.",
+      "where": "Project header, three-dot menu beside \"Weekly Status Report,\" then \"Project instructions.\"",
+      "why": "Project instructions act as the saved prompt that applies to every weekly chat.",
+      "checkpoint": "You should see an instructions text box for the Weekly Status Report Project.",
+      "hint_levels": [
+        "Look for the menu beside the Project name.",
+        "The Project menu contains the reusable instructions setting.",
+        "Click the three dots beside Weekly Status Report, then click Project instructions."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Enter instructions that define the report sections, writing rules, and handling of missing information.",
+      "where": "Project instructions text box in the Project instructions dialog.",
+      "why": "Explicit rules make reports consistent even when the weekly details change.",
+      "checkpoint": "The editor should visibly include the section names \"Summary,\" \"Completed,\" \"In Progress,\" \"Blockers,\" and \"Next Week.\"",
+      "hint_levels": [
+        "Define both the headings and the tone.",
+        "Tell ChatGPT to use those five headings, concise bullets, factual language, and \"None reported\" when a section lacks data.",
+        "Enter: \"Create a weekly status report using exactly these headings: Summary, Completed, In Progress, Blockers, Next Week. Write Summary as 2-3 sentences and all other sections as concise bullets. Preserve names, dates, numbers, and links. Do not invent facts. Write 'None reported' when a section has no data.\""
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a fixed weekly input template beneath the report instructions.",
+      "where": "Same Project instructions text box, below the output-format rules.",
+      "why": "A stable input shape makes weekly collection faster and reduces omissions.",
+      "checkpoint": "You should see labeled fields for reporting period, audience, completed work, work in progress, blockers, next-week priorities, and metrics.",
+      "hint_levels": [
+        "Give each recurring data category its own label.",
+        "Add a copyable block with the same seven labels in the same order every week.",
+        "Append: \"Expect input in this exact shape:\\nREPORTING PERIOD:\\nAUDIENCE:\\nCOMPLETED:\\nIN PROGRESS:\\nBLOCKERS:\\nNEXT-WEEK PRIORITIES:\\nMETRICS OR LINKS:\""
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a final instruction requiring ChatGPT to flag missing fields before drafting.",
+      "where": "Bottom of the Project instructions text box.",
+      "why": "A completeness check prevents polished reports built from incomplete notes.",
+      "checkpoint": "The last instruction should say to identify missing required fields before producing the report.",
+      "hint_levels": [
+        "Add a quality gate after the template.",
+        "Require a short missing-fields list instead of a draft whenever required input is absent.",
+        "Append: \"Before drafting, check every field; if required information is missing, list the missing fields and wait for my reply.\""
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Save the Project instructions.",
+      "where": "Bottom-right \"Save\" button in the Project instructions dialog.",
+      "why": "Saving makes the workflow automatically available in every chat inside this Project.",
+      "checkpoint": "The instructions dialog should close and the Weekly Status Report Project should remain selected.",
+      "hint_levels": [
+        "Finish the editor before testing.",
+        "Use the confirmation button at the bottom of the dialog.",
+        "Click Save in the bottom-right corner."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Start a new chat inside the Project and paste one week of notes using every input-template label.",
+      "where": "\"New chat\" button within the Weekly Status Report Project, then the message composer at the bottom of the chat.",
+      "why": "A realistic test reveals whether the saved prompt works with the data shape you will reuse.",
+      "checkpoint": "The composer should show all seven labels populated or explicitly marked \"None.\"",
+      "hint_levels": [
+        "Use the saved field order instead of free-form notes.",
+        "Fill each label with this week's facts and write None for empty categories.",
+        "Click New chat inside Weekly Status Report, paste the seven-label block, fill it in, then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Check the generated report against the required headings and source facts.",
+      "where": "Assistant response in the main chat pane.",
+      "why": "Verification catches formatting drift and invented or altered details before reuse.",
+      "checkpoint": "You should see the five headings in the required order, with names, dates, metrics, and links matching your pasted notes.",
+      "hint_levels": [
+        "Compare the response with both the saved format and your input.",
+        "Confirm heading order, concise bullets, factual accuracy, and use of None reported where needed.",
+        "Read Summary, Completed, In Progress, Blockers, and Next Week in order, then compare every specific fact with the input message above."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Rename the test chat with its reporting period.",
+      "where": "Left sidebar, three-dot menu beside the current chat, then \"Rename.\"",
+      "why": "Period-based names make past reports easy to locate and provide a repeatable weekly filing convention.",
+      "checkpoint": "The sidebar should show a chat name such as \"Status Report — Aug 3–7, 2026\" inside the Project.",
+      "hint_levels": [
+        "Use the report period as the filing key.",
+        "Apply the same \"Status Report — [period]\" naming pattern each week.",
+        "In the sidebar, click the chat's three dots, click Rename, enter \"Status Report — [reporting period],\" and press Enter."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 71271,
+  "codexThreadId": "019fd609-2cbb-7f13-b758-355c40716ab0",
+  "createdAt": "2026-08-06T07:46:33.208Z",
+  "runs": [],
+  "track": "AI at work",
+  "builtin": true,
+  "featured": false
+}

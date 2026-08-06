@@ -1,0 +1,164 @@
+{
+  "id": "seed-13-auto-layout-that-behaves",
+  "title": "Auto layout that behaves",
+  "tool": "Figma Desktop",
+  "goal": "You will build a profile card whose text and button resize predictably using nested auto layout frames.",
+  "est_minutes": 20,
+  "prerequisites": [
+    "A blank Figma Design file",
+    "The Layers and Design panels visible"
+  ],
+  "steps": [
+    {
+      "action": "Draw a frame about 360 pixels wide and 240 pixels tall on the canvas.",
+      "where": "Frame tool in the top toolbar, or the F keyboard shortcut.",
+      "why": "This frame will become the responsive profile card.",
+      "checkpoint": "A new frame appears on the canvas and in the Layers panel.",
+      "hint_levels": [
+        "Look for the frame-shaped tool in the top toolbar.",
+        "Select Frame, then drag an empty rectangular area on the canvas.",
+        "Press F, then drag on the canvas until the width and height fields in the right Design panel are near 360 and 240."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add the text \"Jordan Lee\" inside the frame.",
+      "where": "Text tool in the top toolbar, or the T keyboard shortcut.",
+      "why": "The name provides the card's primary content layer.",
+      "checkpoint": "The text \"Jordan Lee\" is visible inside the frame and nested beneath it in the Layers panel.",
+      "hint_levels": [
+        "Use the tool marked with a T.",
+        "Click once inside the frame before typing the name.",
+        "Press T, click near the frame's upper-left corner, type Jordan Lee, then press Esc."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add the text \"Product Designer\" below the name.",
+      "where": "Text tool in the top toolbar, or the T keyboard shortcut.",
+      "why": "A second layer makes spacing and vertical direction visible.",
+      "checkpoint": "The role text appears below the name as a separate layer in the Layers panel.",
+      "hint_levels": [
+        "Create another text layer beneath the first one.",
+        "Activate the Text tool again and click below Jordan Lee.",
+        "Press T, click below the name, type Product Designer, then press Esc."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Apply auto layout to the card frame and set its direction to vertical.",
+      "where": "Auto layout section of the right Design panel after selecting the outer frame.",
+      "why": "Vertical auto layout keeps the card's children arranged from top to bottom.",
+      "checkpoint": "The name and role form a vertical stack, and the Auto layout section shows the vertical direction icon selected.",
+      "hint_levels": [
+        "Select the outer frame and look for Auto layout on the right.",
+        "Add auto layout, then choose the arrow that points downward.",
+        "Click the outer frame in the Layers panel, press Shift+A, then click the Vertical direction icon in Design > Auto layout."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Set the card's gap to 16 and its padding on all sides to 24.",
+      "where": "Gap between items and padding fields in the right Design panel's Auto layout section.",
+      "why": "Gap controls space between children while padding controls space around the card's inside edges.",
+      "checkpoint": "The two text layers are 16 pixels apart and sit 24 pixels from the frame edges.",
+      "hint_levels": [
+        "Find the numeric spacing controls beside the auto layout diagram.",
+        "Set Gap between items separately from the padding values.",
+        "Select the card, enter 16 in Gap between items, then enter 24 in the horizontal and vertical padding fields under Design > Auto layout."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Turn the two text layers into a nested vertical auto layout frame.",
+      "where": "Layers panel and the Auto layout button in the right Design panel, or Shift+A.",
+      "why": "A nested frame lets the text group manage its own spacing independently of the card.",
+      "checkpoint": "A new frame containing both text layers appears inside the card in the Layers panel.",
+      "hint_levels": [
+        "Select both text layers before adding auto layout.",
+        "Use Shift-click in Layers to select Jordan Lee and Product Designer together.",
+        "In the Layers panel click Jordan Lee, Shift-click Product Designer, press Shift+A, then select the Vertical direction icon in Design > Auto layout."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Set the nested text frame to Fill container width and Hug contents height.",
+      "where": "Width and height resizing controls near the top of the right Design panel.",
+      "why": "Fill makes the text group follow the card's width while Hug keeps its height fitted to its content.",
+      "checkpoint": "The nested frame spans the card's available width without adding empty vertical space.",
+      "hint_levels": [
+        "Select the new inner frame and inspect its width and height modes.",
+        "Choose Fill container for width and Hug contents for height.",
+        "Select the nested text frame in Layers, open the width dropdown in the right Design panel and choose Fill container, then open the height dropdown and choose Hug contents."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add the text \"View profile\" as a new child at the bottom of the card.",
+      "where": "Text tool in the top toolbar and the outer card frame on the canvas.",
+      "why": "This text will become a nested auto layout button.",
+      "checkpoint": "\"View profile\" appears below the text group and as another child of the outer card in the Layers panel.",
+      "hint_levels": [
+        "Place a new text layer after the nested text frame.",
+        "Make sure the text lands inside the outer card rather than outside it.",
+        "Press T, click near the bottom inside the card, type View profile, then press Esc; drag its layer beneath the nested text frame in Layers if needed."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Wrap \"View profile\" in auto layout and give its new frame 12 pixels vertical padding and 16 pixels horizontal padding.",
+      "where": "Auto layout and padding controls in the right Design panel after selecting the button text.",
+      "why": "Hug sizing plus padding creates a button that grows with its label.",
+      "checkpoint": "A frame surrounds the label with visible space above, below, left, and right, and both resizing modes show Hug contents.",
+      "hint_levels": [
+        "Turn the label itself into an auto layout frame.",
+        "Select View profile, add auto layout, and edit the new frame's padding.",
+        "Click View profile in Layers, press Shift+A, then enter 12 for vertical padding and 16 for horizontal padding in Design > Auto layout; leave width and height on Hug contents."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Change the button frame's width from Hug contents to Fill container.",
+      "where": "Width resizing dropdown near the top of the right Design panel.",
+      "why": "The button will now expand and contract with the available card width.",
+      "checkpoint": "The button frame stretches across the card while its label remains inside the padded area.",
+      "hint_levels": [
+        "Select the button's frame rather than its text.",
+        "The width mode should follow the parent instead of the label.",
+        "Click the button frame in Layers, open the width dropdown in the right Design panel, and choose Fill container."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Set the outer card frame's height to Hug contents.",
+      "where": "Height resizing dropdown near the top of the right Design panel.",
+      "why": "The card's height will follow its nested content, gaps, and padding automatically.",
+      "checkpoint": "The card's bottom edge fits 24 pixels below the button instead of retaining unused height.",
+      "hint_levels": [
+        "Select the outermost frame and inspect its height mode.",
+        "Replace the fixed height with a content-driven height.",
+        "Click the outer card frame in Layers, open the height dropdown in the right Design panel, and choose Hug contents."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Drag the outer card's right edge wider and then narrower.",
+      "where": "Right resize handle on the selected outer frame on the canvas.",
+      "why": "This tests whether Fill and Hug resizing behaviors work through the nested frames.",
+      "checkpoint": "The text group and button follow the card's width while the card's height and internal padding remain stable.",
+      "hint_levels": [
+        "Resize only the outer frame and watch its children.",
+        "Use the middle handle on the card's right edge so only its width changes.",
+        "Select the outer card, drag the middle-right handle horizontally, and confirm the Fill container children resize without changing the 16-pixel gap or 24-pixel card padding."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 87109,
+  "codexThreadId": "019fd588-c088-7e50-81c5-2adc84218095",
+  "createdAt": "2026-08-06T05:26:21.878Z",
+  "runs": [],
+  "track": "Figma",
+  "builtin": true,
+  "featured": false
+}

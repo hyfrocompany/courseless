@@ -1,0 +1,129 @@
+{
+  "id": "seed-08-turn-a-messy-doc-into-a-clean-draft",
+  "title": "Turn a messy doc into a clean draft",
+  "tool": "ChatGPT",
+  "goal": "You will transform messy meeting notes into a structured document tailored to your intended audience and verify its accuracy and tone.",
+  "est_minutes": 20,
+  "prerequisites": [
+    "Access to ChatGPT",
+    "Meeting notes with confidential details removed",
+    "A known audience and purpose for the document"
+  ],
+  "steps": [
+    {
+      "action": "Start a new conversation in ChatGPT.",
+      "where": "Left sidebar, \"New chat\" button.",
+      "why": "A fresh conversation keeps unrelated context out of the document.",
+      "checkpoint": "You should see an empty chat with a message box at the bottom.",
+      "hint_levels": [
+        "Look near the top of the left sidebar.",
+        "Find the button labeled New chat.",
+        "Click New chat in the left sidebar."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Tell ChatGPT the document's audience, purpose, and desired tone.",
+      "where": "Message box at the bottom of the new chat.",
+      "why": "Clear context helps the response sound appropriate to its readers.",
+      "checkpoint": "The message box should contain a sentence naming the audience, purpose, and tone.",
+      "hint_levels": [
+        "Describe who will read the result and why.",
+        "Include an audience such as executives, a purpose such as deciding next steps, and a tone such as concise and professional.",
+        "Type: \"The audience is [audience], the purpose is [purpose], and the tone should be [tone].\""
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Paste the meeting notes beneath your audience instructions.",
+      "where": "Same message box, on a new line below the context sentence.",
+      "why": "The notes provide the source material that ChatGPT will organize.",
+      "checkpoint": "You should see your complete notes in the message box below the audience instructions.",
+      "hint_levels": [
+        "Add the source material after your context.",
+        "Start a new line, label it Meeting notes, and paste all relevant notes.",
+        "Press Shift+Enter, type \"Meeting notes:\", press Shift+Enter again, then press Ctrl+V on Windows or Command+V on macOS."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add instructions to organize the notes into a summary, decisions, action items, owners, deadlines, and open questions without inventing details.",
+      "where": "Message box, on a new line after the pasted notes.",
+      "why": "A named structure produces a usable document and limits unsupported additions.",
+      "checkpoint": "You should see every requested section and the no-invention rule in your draft prompt.",
+      "hint_levels": [
+        "Specify the headings the finished document needs.",
+        "Request Summary, Decisions, Action Items, Owners, Deadlines, and Open Questions, and require unknown information to be marked.",
+        "Type: \"Organize these notes into Summary, Decisions, Action Items with owners and deadlines, and Open Questions. Do not invent facts; mark missing details as Not specified.\""
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Send the completed prompt.",
+      "where": "Up-arrow \"Send message\" button at the right edge of the message box.",
+      "why": "Sending the prompt generates the first structured draft.",
+      "checkpoint": "You should see a response containing headings and organized meeting information.",
+      "hint_levels": [
+        "Use the control beside the message box.",
+        "The Send message button appears as an up arrow when text is ready.",
+        "Click the up-arrow Send message button, or press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Compare the generated draft with your original notes for factual accuracy.",
+      "where": "Chat conversation area, comparing the assistant response with the notes in your earlier message.",
+      "why": "Reviewing catches invented, omitted, or misassigned information before sharing.",
+      "checkpoint": "You should be able to point to a matching source note for every decision, owner, and deadline in the draft.",
+      "hint_levels": [
+        "Focus first on details that could change what someone does.",
+        "Check every decision, person, date, number, and action item against the pasted notes.",
+        "Scroll between your notes and the response, and list any unsupported or missing details in the message box."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Request one revision that corrects any factual issues and better matches the intended tone.",
+      "where": "Message box below the assistant's draft.",
+      "why": "Targeted feedback turns the first draft into an accurate audience-ready version.",
+      "checkpoint": "You should see a revised document with your corrections applied and the requested tone reflected.",
+      "hint_levels": [
+        "Tell ChatGPT exactly what must change.",
+        "Name incorrect or missing details and describe the tone adjustment using concrete words such as warmer, shorter, or more formal.",
+        "Type your corrections plus \"Revise the full document for a [tone] tone for [audience], keeping all facts unchanged,\" then press Enter."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Ask ChatGPT to flag any remaining unclear details instead of guessing.",
+      "where": "Message box below the revised response.",
+      "why": "Explicit uncertainty makes the document safer to finalize and share.",
+      "checkpoint": "You should see either a list of unclear details or a statement that none remain.",
+      "hint_levels": [
+        "Look for anything the notes did not settle.",
+        "Request a short uncertainty check covering owners, deadlines, decisions, and ambiguous wording.",
+        "Type: \"List any remaining unclear or unsupported details in this document; do not guess,\" then press Enter."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Copy the final structured document for use in your destination document app.",
+      "where": "Final assistant response, \"Copy\" button beneath the response.",
+      "why": "Copying preserves the finished structure so you can save or share it.",
+      "checkpoint": "You should see a copied confirmation on the response and be able to paste the document with its headings intact.",
+      "hint_levels": [
+        "Use the response action that places its text on the clipboard.",
+        "The Copy button appears beneath the assistant's response, sometimes as overlapping rectangles.",
+        "Move the pointer beneath the final response, click Copy, then press Ctrl+V on Windows or Command+V on macOS in your destination document."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 63352,
+  "codexThreadId": "019fd608-93f3-7bc3-a497-fd7d74d8a1af",
+  "createdAt": "2026-08-06T07:45:51.177Z",
+  "runs": [],
+  "track": "AI at work",
+  "builtin": true,
+  "featured": false
+}

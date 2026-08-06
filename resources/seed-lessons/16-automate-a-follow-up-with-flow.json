@@ -1,0 +1,154 @@
+{
+  "id": "seed-16-automate-a-follow-up-with-flow",
+  "title": "Automate a follow-up with Flow",
+  "tool": "Salesforce Lightning Flow Builder",
+  "goal": "You will activate an Account-triggered Flow that qualifies new customers, branches on annual revenue, creates a follow-up task, and logs creation failures.",
+  "est_minutes": 35,
+  "prerequisites": [
+    "Flow Builder access and permission to activate flows",
+    "Create access to Task records",
+    "A custom Flow_Error__c object with Message__c and Record_Id__c text fields",
+    "A sandbox or development org with test Account records"
+  ],
+  "steps": [
+    {
+      "action": "Create a record-triggered Flow for Account records.",
+      "where": "Setup > Process Automation > Flows > New Flow > Record-Triggered Flow.",
+      "why": "The flow needs an Account record-change event as its starting point.",
+      "checkpoint": "Flow Builder opens with a Start card whose Object is Account.",
+      "hint_levels": [
+        "Start from the Flows list in Setup.",
+        "Choose the trigger type that responds to saved records, then select Account.",
+        "Click New Flow > Record-Triggered Flow > Create, set Object to Account."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Configure the Flow to run after an Account is created or updated when Type equals Customer - Direct and Billing Country is not blank.",
+      "where": "Start configuration panel under Configure Trigger, Set Entry Conditions, and Optimize the Flow For.",
+      "why": "Entry conditions prevent irrelevant or incomplete Accounts from entering the automation.",
+      "checkpoint": "The Start card shows Account, created or updated, two AND conditions, and Actions and Related Records.",
+      "hint_levels": [
+        "Use the Start panel to narrow which saves launch the Flow.",
+        "Set Type to Customer - Direct, require BillingCountry to be non-null, and choose the after-save optimization.",
+        "In Start, choose A record is created or updated; set Condition Requirements to All Conditions Are Met (AND); add Type Equals Customer - Direct and BillingCountry Is Null False; choose Actions and Related Records; click Done."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Set the Flow to run only when an updated Account first meets the entry conditions.",
+      "where": "Start configuration panel under When to Run the Flow for Updated Records.",
+      "why": "This prevents repeated task creation on every later edit to an already-qualified Account.",
+      "checkpoint": "The Start panel shows Only when a record is updated to meet the condition requirements.",
+      "hint_levels": [
+        "Look for the update-run behavior beneath the conditions.",
+        "Choose the option that detects the transition from not qualified to qualified.",
+        "In Start > When to Run the Flow for Updated Records, select Only when a record is updated to meet the condition requirements, then click Done."
+      ],
+      "fade_tier": 1
+    },
+    {
+      "action": "Add a Decision named Segment by Revenue with an Enterprise outcome for Annual Revenue greater than or equal to 1000000.",
+      "where": "Flow canvas Add Element button after Start > Logic > Decision.",
+      "why": "The decision isolates the high-value branch while leaving missing or smaller revenue values on the default path.",
+      "checkpoint": "The Decision card shows Enterprise and Default Outcome connectors.",
+      "hint_levels": [
+        "Add branching logic immediately after Start.",
+        "Create an Enterprise outcome that compares the triggering Account's AnnualRevenue with 1,000,000.",
+        "Click + after Start > Decision; label it Segment by Revenue; label the outcome Enterprise; set $Record > AnnualRevenue, Greater Than or Equal, 1000000; click Done."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a Create Records element named Create Enterprise Follow-Up on the Enterprise branch to create one Task assigned to the Account owner.",
+      "where": "Enterprise connector > Add Element > Data > Create Records.",
+      "why": "Qualified enterprise Accounts receive a concrete follow-up action.",
+      "checkpoint": "The Enterprise connector leads to a Create Enterprise Follow-Up card configured for the Task object.",
+      "hint_levels": [
+        "Build the action only on the Enterprise outcome.",
+        "Create one Task and populate its owner, related Account, subject, status, and priority.",
+        "From Enterprise click + > Create Records; choose One record and Use separate resources and literal values; select Task; set OwnerId to $Record.OwnerId, WhatId to $Record.Id, Subject to Review new enterprise customer, Status to Not Started, and Priority to High; click Done."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Connect the Default Outcome directly to the end of the Flow.",
+      "where": "Default Outcome connector beneath Segment by Revenue on the canvas.",
+      "why": "Accounts with blank or sub-threshold revenue exit safely without attempting enterprise work.",
+      "checkpoint": "The Default Outcome path ends without a Create Records element.",
+      "hint_levels": [
+        "The non-enterprise branch needs no action.",
+        "Leave the default route as an intentional no-op ending.",
+        "Drag the Default Outcome connector to the End node, or leave it unconnected if the canvas uses implicit path endings."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Add a Create Records fault handler named Log Task Creation Error from the red fault connector of Create Enterprise Follow-Up.",
+      "where": "Create Enterprise Follow-Up card > red Fault connector > Add Element > Data > Create Records.",
+      "why": "A failed Task insertion is captured instead of becoming an unexplained Flow error.",
+      "checkpoint": "A red connector leads from Create Enterprise Follow-Up to Log Task Creation Error.",
+      "hint_levels": [
+        "Use the error route attached to the Task-creation element.",
+        "The red Fault connector should create one Flow_Error__c record.",
+        "Select Create Enterprise Follow-Up, drag its red Fault connector, choose Create Records, and label it Log Task Creation Error."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Configure Log Task Creation Error to store the fault message and triggering Account ID in a Flow_Error__c record.",
+      "where": "Log Task Creation Error configuration panel under Set Field Values for the Flow_Error__c Record.",
+      "why": "The log identifies both the failed operation and the Account that triggered it.",
+      "checkpoint": "The element shows Flow_Error__c with Message__c mapped to $Flow.FaultMessage and Record_Id__c mapped to $Record.Id.",
+      "hint_levels": [
+        "Capture the system error and the source record.",
+        "Map Message__c from the global fault message and Record_Id__c from the triggering Account.",
+        "Choose Object Flow_Error__c; set Message__c = $Flow.FaultMessage and Record_Id__c = $Record.Id; click Done."
+      ],
+      "fade_tier": 2
+    },
+    {
+      "action": "Save the Flow as Qualify Enterprise Accounts and Create Follow-Up.",
+      "where": "Flow Builder toolbar > Save.",
+      "why": "Saving runs validation and creates a version you can test before activation.",
+      "checkpoint": "The Flow name appears in the header and no validation errors appear.",
+      "hint_levels": [
+        "Name the completed automation from the toolbar.",
+        "Use a descriptive label and accept the generated API name.",
+        "Click Save, enter Flow Label Qualify Enterprise Accounts and Create Follow-Up, keep the generated Flow API Name, then click Save."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Debug the Flow with an Account that meets the entry conditions and has Annual Revenue of at least 1000000.",
+      "where": "Flow Builder toolbar > Debug > Record-Triggered Flow debug panel.",
+      "why": "A qualifying test confirms the Enterprise route and Task creation before users rely on it.",
+      "checkpoint": "Debug Details shows the Enterprise outcome executed and Create Enterprise Follow-Up completed successfully.",
+      "hint_levels": [
+        "Test with a sandbox Account that qualifies for the enterprise branch.",
+        "Select an Account with Type Customer - Direct, a Billing Country, and Annual Revenue of at least 1,000,000, then run the debug as an updated record.",
+        "Click Debug; choose a qualifying Account; select the updated-record trigger option if shown; enable rollback mode for a non-persistent test; click Run and inspect Debug Details."
+      ],
+      "fade_tier": 3
+    },
+    {
+      "action": "Activate the tested Flow.",
+      "where": "Flow Builder toolbar > Activate.",
+      "why": "Activation makes the validated version respond to real Account changes.",
+      "checkpoint": "The Flow header displays Active and the Flows list shows the version as active.",
+      "hint_levels": [
+        "Use the status control in the Flow Builder toolbar.",
+        "Activate only after the qualifying debug follows the expected path.",
+        "Close Debug Details if open, click Activate in the upper-right toolbar, and confirm the header status is Active."
+      ],
+      "fade_tier": 3
+    }
+  ],
+  "coverSeed": 142542,
+  "codexThreadId": "019fd58d-364d-7bd2-9bca-04681360f741",
+  "createdAt": "2026-08-06T05:31:14.000Z",
+  "runs": [],
+  "track": "Salesforce",
+  "builtin": true,
+  "featured": false
+}
