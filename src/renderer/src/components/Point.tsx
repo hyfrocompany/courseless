@@ -23,6 +23,9 @@ export function pointNote(result: PointResult | null): string | null {
         : `Nothing to point at on this step — it happens at: ${result.where}`
     case 'wrong-app':
       return `Open ${result.tool || 'the app'} first, then ask again.`
+    case 'limit':
+      // Not a miss: nothing was looked at. The plan card in the runner carries the way out.
+      return result.message
     case 'error':
       return result.message
   }

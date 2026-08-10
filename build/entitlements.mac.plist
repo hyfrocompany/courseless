@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The standard hardened-runtime set for an Electron app that notarizes.
+
+  V8 writes and then executes machine code, which the hardened runtime forbids by default:
+  allow-jit covers the MAP_JIT path and allow-unsigned-executable-memory covers the rest of
+  Chromium's code generation. allow-dyld-environment-variables and disable-library-validation
+  are what let the Electron Framework and the helper apps load out of the bundle.
+
+  Nothing here asks for a TCC permission. Accessibility and screen recording are not
+  entitlements: they are grants the user makes to the app bundle, and macOS attributes them to
+  the responsible process, which is Courseless.app itself even when the reader is the nested
+  courseless-ax helper.
+-->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+  </dict>
+</plist>

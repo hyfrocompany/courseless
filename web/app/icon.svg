@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- The desktop app's own mark, vector for vector: ocean tile, white C ring with the gap on
+       the right (src/main/util/icon.ts — corner 0.22, ring 0.205..0.345, gap ±38°). -->
+  <defs>
+    <linearGradient id="cl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B2942"/>
+      <stop offset="1" stop-color="#0B96EA"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14.08" fill="url(#cl)"/>
+  <path d="M45.868 42.836 A17.6 17.6 0 1 1 45.868 21.164" fill="none" stroke="#fff" stroke-width="8.96"/>
+</svg>

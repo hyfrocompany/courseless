@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, type ReactNode } from 'react'
 import type { Lesson, SkillLevel } from '../../../shared/types'
 import { LEVELS, QUICK_STARTS } from '../lib/catalogue'
 import { LessonCard } from '../components/LessonCard'
@@ -20,7 +20,8 @@ export function Home({
   onGenerate,
   onOpenLesson,
   onSeeAll,
-  onRecord
+  onRecord,
+  note
 }: {
   lessons: Lesson[]
   ask: string
@@ -31,6 +32,8 @@ export function Home({
   onOpenLesson(id: string): void
   onSeeAll(): void
   onRecord(): void
+  /** A quiet line about the month, when there is one worth saying. Usually null. */
+  note?: ReactNode
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,6 +51,8 @@ export function Home({
 
   return (
     <div data-testid="view-home" className="mx-auto w-full max-w-[1120px] px-8 pb-16">
+      {note && <div className="pt-5" data-testid="home-note">{note}</div>}
+
       {/* ------------------------------------------------------------ hero */}
       <section className="pb-8 pt-10">
         <h1 className="rise max-w-[18ch] font-display text-[clamp(26px,3vw,36px)] font-normal leading-[1.08] tracking-[-0.03em] text-ink-900">

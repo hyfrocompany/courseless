@@ -8,12 +8,18 @@ import { IPC, type AppInfo } from '../shared/ipc'
 import { ANON_AUTHOR, buildLessonFile, exportFileName, validateLessonFile } from '../shared/lessonFile'
 import {
   EMPTY_RUNNER_STATE,
+  type AuthResult,
+  type AuthState,
+  type BillingPlanChoice,
+  type BillingStatus,
   type CoachEvent,
   type ExportResult,
   type FloatCommand,
   type GenerateEvent,
   type ImportResult,
   type Lesson,
+  type PermissionKey,
+  type PermissionsState,
   type PointRequest,
   type PointResult,
   type RecordMark,
@@ -26,8 +32,10 @@ import {
   type StepContext,
   type WinCommand
 } from '../shared/types'
-import { CodexService, toFailure } from './services/CodexService'
+import type { AuthService } from './services/AuthService'
+import { EngineService, toFailure } from './services/EngineService'
 import type { LessonStore } from './services/LessonStore'
+import type { PermissionsService } from './services/PermissionsService'
 import type { PointService } from './services/PointService'
 import type { RecordService } from './services/RecordService'
 import type { SettingsStore } from './services/SettingsStore'
@@ -55,10 +63,14 @@ export function getRunnerState(): RunnerState {
 }
 
 export interface IpcContext {
-  codex: CodexService
+  /** Null when the app was built without a backend — the account handlers then say so. */
+  auth: AuthService | null
+  engine: EngineService
   lessons: LessonStore
   settings: SettingsStore
   point: PointService
+  /** The two macOS gates pointing needs. Answers "nothing to grant" on win32. */
+  permissions: PermissionsService
   record: RecordService
   appInfo: AppInfo
   onHotkeyChange(hotkey: string): void
@@ -76,21 +88,76 @@ function sendToOthers(event: IpcMainInvokeEvent, channel: string, payload: unkno
 }
 
 export function registerIpc(ctx: IpcContext): void {
-  const { codex, lessons, settings } = ctx
+  const { auth, engine, lessons, settings } = ctx
 
-  // ---------------------------------------------------------------- codex
-  ipcMain.handle(IPC.codexStatus, async (_e, force?: boolean) => codex.detectStatus(!!force))
+  /** One sentence, once, for every account command that arrives with no backend behind it. */
+  const noBackend: AuthResult = {
+    ok: false,
+    error: 'This build has no coach service configured.'
+  }
+
+  // ---------------------------------------------------------------- account
+  ipcMain.handle(IPC.authGetState, async (): Promise<AuthState> =>
+    auth ? auth.getState() : { status: 'signed-out', user: null }
+  )
+  // This one stays pending for as long as the browser tab is open — up to five minutes.
+  ipcMain.handle(IPC.authBrowserSignIn, async (): Promise<AuthResult> =>
+    auth ? auth.startBrowserSignIn() : noBackend
+  )
+  ipcMain.handle(IPC.authBrowserCancel, async (): Promise<void> => auth?.cancelBrowserSignIn())
+  ipcMain.handle(IPC.authSignIn, async (_e, args: { email: string; password: string }): Promise<AuthResult> =>
+    auth ? auth.signIn(args.email, args.password) : noBackend
+  )
+  ipcMain.handle(IPC.authSignUp, async (_e, args: { email: string; password: string }): Promise<AuthResult> =>
+    auth ? auth.signUp(args.email, args.password) : noBackend
+  )
+  ipcMain.handle(IPC.authSignOut, async (): Promise<AuthResult> => (auth ? auth.signOut() : noBackend))
+  ipcMain.handle(IPC.authResetPassword, async (_e, email: string): Promise<AuthResult> =>
+    auth ? auth.resetPassword(email) : noBackend
+  )
+
+  // ---------------------------------------------------------------- plan
+  //
+  // Checkout and the billing portal are web pages, and a web page belongs in a browser: main
+  // fetches the one-time URL and hands it to the OS. No payment surface is ever rendered here.
+  ipcMain.handle(IPC.billingStatus, async (): Promise<Result<BillingStatus>> => {
+    try {
+      return { ok: true, value: await engine.billingStatus() }
+    } catch (e) {
+      return { ok: false, error: toFailure(e) }
+    }
+  })
+
+  const openUrl = async (make: () => Promise<string>): Promise<Result<true>> => {
+    try {
+      const url = await make()
+      await shell.openExternal(url)
+      return { ok: true, value: true }
+    } catch (e) {
+      const error = toFailure(e)
+      log('ipc', 'billing page failed', error.kind, error.message.slice(0, 200))
+      return { ok: false, error }
+    }
+  }
+
+  ipcMain.handle(IPC.billingCheckout, async (_e, plan: BillingPlanChoice) =>
+    openUrl(() => engine.billingCheckout(plan))
+  )
+  ipcMain.handle(IPC.billingPortal, async () => openUrl(() => engine.billingPortal()))
+
+  // ---------------------------------------------------------------- engine
+  ipcMain.handle(IPC.engineStatus, async (_e, force?: boolean) => engine.detectStatus(!!force))
 
   ipcMain.handle(
-    IPC.codexGenerate,
+    IPC.engineGenerate,
     async (_e, args: { ask: string; level: SkillLevel }): Promise<{ opId: string }> => {
       const opId = randomUUID()
-      const emit = (evt: GenerateEvent): void => broadcast(IPC.codexGenerateEvent, evt)
+      const emit = (evt: GenerateEvent): void => broadcast(IPC.engineGenerateEvent, evt)
       log('ipc', 'generate', opId, args.ask.slice(0, 120), args.level)
 
       void (async () => {
         try {
-          const lesson = await codex.generateLesson(args.ask, args.level, opId, {
+          const lesson = await engine.generateLesson(args.ask, args.level, opId, {
             onDelta: (text) => emit({ opId, type: 'delta', text }),
             onStatus: (message, transport) => emit({ opId, type: 'status', message, transport }),
             onMessage: (text) => emit({ opId, type: 'message', text })
@@ -109,13 +176,13 @@ export function registerIpc(ctx: IpcContext): void {
   )
 
   ipcMain.handle(
-    IPC.codexCoach,
+    IPC.engineCoach,
     async (
       _e,
       args: { lessonId: string; message: string; stepContext: StepContext | null }
     ): Promise<{ opId: string }> => {
       const opId = randomUUID()
-      const emit = (evt: CoachEvent): void => broadcast(IPC.codexCoachEvent, evt)
+      const emit = (evt: CoachEvent): void => broadcast(IPC.engineCoachEvent, evt)
       const lesson = lessons.get(args.lessonId)
       if (!lesson) {
         setTimeout(
@@ -128,14 +195,10 @@ export function registerIpc(ctx: IpcContext): void {
 
       void (async () => {
         try {
-          const res = await codex.coach(lesson, args.message, args.stepContext, opId, {
+          const res = await engine.coach(lesson, args.message, args.stepContext, opId, {
             onDelta: (text) => emit({ opId, type: 'delta', text }),
             onStatus: (message, transport) => emit({ opId, type: 'status', message, transport })
           })
-          // keep the thread id fresh (a fallback turn may have created a new one)
-          if (res.threadId && res.threadId !== lesson.codexThreadId) {
-            lessons.save({ ...lesson, codexThreadId: res.threadId })
-          }
           emit({ opId, type: 'done', text: res.text })
         } catch (e) {
           const error = toFailure(e)
@@ -149,12 +212,12 @@ export function registerIpc(ctx: IpcContext): void {
   )
 
   ipcMain.handle(
-    IPC.codexSuggestNext,
+    IPC.engineSuggestNext,
     async (_e, args: { lessonId: string; runStats: unknown }): Promise<Result<{ title: string; ask: string }>> => {
       const lesson = lessons.get(args.lessonId)
       if (!lesson) return { ok: false, error: { kind: 'UNKNOWN', message: 'Lesson not found.' } }
       try {
-        const value = await codex.suggestNext(lesson, args.runStats, randomUUID())
+        const value = await engine.suggestNext(lesson, args.runStats, randomUUID())
         return { ok: true, value }
       } catch (e) {
         return { ok: false, error: toFailure(e) }
@@ -162,13 +225,17 @@ export function registerIpc(ctx: IpcContext): void {
     }
   )
 
-  ipcMain.handle(IPC.codexCancel, async (_e, opId: string) => codex.cancel(opId))
+  ipcMain.handle(IPC.engineCancel, async (_e, opId: string) => engine.cancel(opId))
 
   // ---------------------------------------------------------------- lessons
   ipcMain.handle(IPC.lessonsList, async () => lessons.list())
   ipcMain.handle(IPC.lessonsGet, async (_e, id: string) => lessons.get(id))
   ipcMain.handle(IPC.lessonsSave, async (_e, lesson: Lesson) => lessons.save(lesson))
-  ipcMain.handle(IPC.lessonsDelete, async (_e, id: string) => lessons.delete(id))
+  ipcMain.handle(IPC.lessonsDelete, async (_e, id: string) => {
+    // The coach context is keyed by lesson id and would otherwise outlive the lesson.
+    engine.forgetCoach(id)
+    return lessons.delete(id)
+  })
   ipcMain.handle(IPC.lessonsSaveRun, async (_e, args: { lessonId: string; run: RunInput }) =>
     lessons.saveRun(args.lessonId, args.run)
   )
@@ -280,11 +347,11 @@ export function registerIpc(ctx: IpcContext): void {
     marks: RecordMark[]
   }): Promise<void> => {
     const opId = randomUUID()
-    const emit = (evt: GenerateEvent): void => broadcast(IPC.codexGenerateEvent, evt)
+    const emit = (evt: GenerateEvent): void => broadcast(IPC.engineGenerateEvent, evt)
     ctx.record.compiling(opId)
     log('ipc', 'compiling recording', session.id, `${session.marks.length} marks`)
     try {
-      const lesson = await codex.compileRecording(session, opId, {
+      const lesson = await engine.compileRecording(session, opId, {
         onDelta: (text) => emit({ opId, type: 'delta', text }),
         onStatus: (message, transport) => emit({ opId, type: 'status', message, transport }),
         onMessage: (text) => emit({ opId, type: 'message', text })
@@ -466,19 +533,33 @@ export function registerIpc(ctx: IpcContext): void {
     }
     if (result.outcome === 'point') {
       overlayShow(result.x, result.y, result.label)
-      // Stale-screen guard: windows move. If the learner has switched to a window that is
-      // neither ours nor the one the target lives in, the arrow is pointing at a coordinate that
-      // no longer means anything — take it down rather than point at the wrong place.
+      // Stale-screen guard: windows move. If the learner has switched AWAY from the window the
+      // target lives in, the arrow is pointing at a coordinate that no longer means anything —
+      // take it down rather than point at the wrong place.
+      //
+      // "Switched away" is the operative word. Pointing into a window that was already BEHIND
+      // another one is legitimate by design (PointService's `behind` bucket: "the app you are
+      // learning is the one under Courseless"), and the old unconditional check read that
+      // perfectly normal state as a navigation and pulled the arrow after 1.5s — a third of the
+      // hold. So the guard is armed only when the target window WAS in front at show time; a
+      // known-behind match keeps the full hold and lets the overlay time itself out.
       if (result.windowHwnd) {
         const mine = serial
-        setTimeout(() => {
-          void ctx.point.foreground().then((fg) => {
-            if (!fg || mine !== pointSerial) return
-            if (fg.self || fg.hwnd === result.windowHwnd) return
-            log('point', 'foreground changed under the point — dismissing', fg.title || fg.process)
-            overlayDismiss()
-          })
-        }, 1500).unref?.()
+        void ctx.point.foreground().then((at) => {
+          if (mine !== pointSerial) return
+          if (!at || at.self || at.hwnd !== result.windowHwnd) {
+            log('point', 'target window was already behind — holding the point for its full time')
+            return
+          }
+          setTimeout(() => {
+            void ctx.point.foreground().then((fg) => {
+              if (!fg || mine !== pointSerial) return
+              if (fg.self || fg.hwnd === result.windowHwnd) return
+              log('point', 'foreground changed under the point — dismissing', fg.title || fg.process)
+              overlayDismiss()
+            })
+          }, 1500).unref?.()
+        })
       }
     } else {
       overlayDismiss()
@@ -491,12 +572,18 @@ export function registerIpc(ctx: IpcContext): void {
     overlayDismiss()
   })
 
+  // ---------------------------------------------------------------- OS permissions (macOS)
+  ipcMain.handle(IPC.permissionsGet, async (): Promise<PermissionsState> => ctx.permissions.get())
+  ipcMain.handle(IPC.permissionsRequest, async (_e, which: PermissionKey): Promise<PermissionsState> =>
+    ctx.permissions.request(which)
+  )
+  ipcMain.handle(IPC.permissionsOpenSettings, async (_e, which: PermissionKey) => ctx.permissions.openSettings(which))
+
   // ---------------------------------------------------------------- settings / info
   ipcMain.handle(IPC.settingsGet, async () => settings.get())
   ipcMain.handle(IPC.settingsSet, async (_e, patch: Partial<Settings>) => {
     const before = settings.get()
     const next = settings.set(patch)
-    if (patch.model !== undefined) codex.setPreferredModel(next.model)
     if (next.hotkey !== before.hotkey) ctx.onHotkeyChange(next.hotkey)
     broadcast(IPC.settingsGet, next)
     return next
@@ -513,6 +600,47 @@ export function registerIpc(ctx: IpcContext): void {
   if (process.env.COURSELESS_REMOTE_DEBUG) {
     ipcMain.handle(IPC.trayInvoke, async (_e, label: string) => invokeTrayMenuItem(label))
   }
+}
+
+/**
+ * The account went away — take the session's world down with it.
+ *
+ * The gate reappearing in the main window is not enough on its own: the float widget, the
+ * recording pill and the pointer overlays are SEPARATE windows sitting over other applications,
+ * and a coach card still floating above someone's desktop after they signed out is the most
+ * visible possible way to get this wrong. So:
+ *  * a live recording is PARKED, not discarded. Its marks are the one thing that cannot be
+ *    redone, so they go to a draft the same way a failed compile does, and the Library offers to
+ *    finish it after the next sign-in. The mark hotkey — a global key belonging to a session that
+ *    no longer exists — is released with it.
+ *  * the runner state is reset and broadcast, so the float and the main window agree that no
+ *    lesson is running rather than each remembering the last one.
+ *  * every floating window is closed and the overlay taken down.
+ *
+ * Deliberately NOT touched: the lessons on disk. They are files in a folder the person owns, and
+ * signing out of a coach is not a reason to delete someone's library.
+ */
+export function teardownSession(ctx: Pick<IpcContext, 'record' | 'engine' | 'setMarkShortcut'>): void {
+  const recording = ctx.record.getState()
+  if (recording.phase === 'recording') {
+    const session = ctx.record.takeForCompile()
+    if (session && session.marks.length > 0) {
+      const draft = ctx.record.saveDraft(session, 'Signed out before this recording was compiled.')
+      log('ipc', 'signed out mid-recording — marks parked as a draft', draft.id, `${session.marks.length} marks`)
+    }
+  }
+  if (recording.phase !== 'idle') ctx.record.cancel()
+  ctx.setMarkShortcut(false)
+  closeRecordPill()
+
+  ctx.engine.signedOut()
+
+  runnerState = { ...EMPTY_RUNNER_STATE }
+  broadcast(IPC.runnerStateEvent, runnerState)
+
+  overlayDismiss('signed out')
+  getFloatWindow()?.hide()
+  log('ipc', 'session torn down')
 }
 
 /** Used by the tray / global shortcut to drive the runner without a renderer round-trip. */

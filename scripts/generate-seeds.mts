@@ -1,4 +1,9 @@
-// Batch harness: generates the starter library with the SAME CodexService pipeline the app uses.
+// Batch harness: generates the starter library with the SAME EngineService pipeline the app uses.
+//
+// It signs in the way the app does not: with an access token you hand it, because there is no
+// window here to sign in from.
+//
+//   COURSELESS_ACCESS_TOKEN=<supabase access token> npx tsx scripts/generate-seeds.mts
 //
 //   npx tsx scripts/generate-seeds.mts            # all 27 (sequential, continue on failure)
 //   npx tsx scripts/generate-seeds.mts --only 8   # just catalogue entry 8
@@ -12,7 +17,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import type { Lesson } from '../src/shared/types'
-import { CodexService, toFailure } from '../src/main/services/CodexService'
+import { EngineService, toFailure } from '../src/main/services/EngineService'
+import { backendConfig, loadEnvFile } from '../src/main/util/env'
 import { SEED_CATALOGUE, seedId, slugify, type SeedEntry } from './seed-catalogue'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -29,10 +35,8 @@ const only = flag('only') ? Number(flag('only')) : null
 const from = flag('from') ? Number(flag('from')) : null
 const force = !!flag('force')
 const outDir = flag('out') ? resolve(String(flag('out'))) : join(ROOT, 'resources', 'seed-lessons')
-const workDir = join(ROOT, '.codex-seed-workdir')
 
 mkdirSync(outDir, { recursive: true })
-mkdirSync(workDir, { recursive: true })
 
 const targets: SeedEntry[] = SEED_CATALOGUE.filter((e) => {
   if (only !== null) return e.index === only
@@ -45,14 +49,26 @@ if (targets.length === 0) {
   process.exit(1)
 }
 
-const codex = new CodexService({ workDir })
+loadEnvFile(join(ROOT, '.env.local'))
+const backend = backendConfig()
+const accessToken = (process.env.COURSELESS_ACCESS_TOKEN ?? '').trim()
+if (!backend || !accessToken) {
+  console.error(
+    'Cannot generate seeds: set VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY (.env.local) and COURSELESS_ACCESS_TOKEN.'
+  )
+  process.exit(2)
+}
 
-const status = await codex.detectStatus(true)
-console.log(
-  `codex: installed=${status.installed} loggedIn=${status.loggedIn} version=${status.version} model=${status.model} transport=${status.transport}`
-)
-if (!status.installed || !status.loggedIn) {
-  console.error(`Cannot generate seeds: ${status.error ?? 'codex unavailable'}`)
+const engine = new EngineService({
+  baseUrl: backend.url,
+  anonKey: backend.anonKey,
+  getAccessToken: async () => accessToken
+})
+
+const status = await engine.detectStatus(true)
+console.log(`engine: loggedIn=${status.loggedIn} plan=${status.model ?? '—'} transport=${status.transport}`)
+if (!status.loggedIn) {
+  console.error(`Cannot generate seeds: ${status.error ?? 'the engine is not reachable'}`)
   process.exit(2)
 }
 
@@ -70,7 +86,7 @@ for (const entry of targets) {
   const t0 = Date.now()
   process.stdout.write(`[${entry.index}/27] ${entry.track} — ${entry.title} … `)
   try {
-    const generated = await codex.generateLesson(entry.ask, entry.level, randomUUID(), {
+    const generated = await engine.generateLesson(entry.ask, entry.level, randomUUID(), {
       onStatus: (m) => process.stdout.write(`\n    · ${m}\n    `)
     })
     const lesson: Lesson = {
@@ -95,7 +111,7 @@ for (const entry of targets) {
   }
 }
 
-codex.dispose()
+engine.dispose()
 
 const ok = results.filter((r) => r.ok).length
 console.log(`\n=== seed generation done: ${ok}/${results.length} ok ===`)

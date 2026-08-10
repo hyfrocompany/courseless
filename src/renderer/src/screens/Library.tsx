@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Lesson, RecordDraft } from '../../../shared/types'
+import type { Lesson, RecordDraft, ShelfResult } from '../../../shared/types'
 import { tagline, trackOrder } from '../lib/catalogue'
 import { LessonRow } from '../components/LessonRow'
+import { Shelf } from '../components/Shelf'
 import { Button, Eyebrow, Icon, Mono } from '../components/ui'
 
 const ALL = 'All'
@@ -32,6 +33,10 @@ function humanError(raw: string): string {
 export function Library({
   lessons,
   drafts,
+  shelf,
+  shelfAdding,
+  shelfError,
+  onShelfAdd,
   importError,
   onOpenLesson,
   onEditLesson,
@@ -45,6 +50,11 @@ export function Library({
 }: {
   lessons: Lesson[]
   drafts: RecordDraft[]
+  /** The curated cloud shelf. Null until the first answer arrives; never blocks this screen. */
+  shelf: ShelfResult | null
+  shelfAdding: string | null
+  shelfError: string
+  onShelfAdd(id: string): void
   importError: { error: string; file?: string } | null
   onOpenLesson(id: string): void
   onEditLesson(id: string): void
@@ -346,6 +356,10 @@ export function Library({
             </section>
           ) : (
             <div className="space-y-8">
+              {/* The curated shelf, first in the column and sharing its left edge with every row
+                  below it: it is the one part of the Library that is not on this machine yet, so
+                  it sits above what is. Searching filters what you HAVE, so it steps aside then. */}
+              <Shelf shelf={shelf} adding={shelfAdding} error={shelfError} onAdd={onShelfAdd} />
               {sections.map((s) => (
                 <section key={s.name} data-testid={`section-${s.name.replace(/\W+/g, '-').toLowerCase()}`}>
                   <div className="mb-2.5 flex items-baseline gap-3 border-b border-line-2 pb-2">

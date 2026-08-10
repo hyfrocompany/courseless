@@ -1,0 +1,6 @@
+{
+  "_comment": "The three public values a packaged build needs baked in. A packaged app has no .env.local and no shell environment to read, so electron.vite.config.ts compiles these into the main bundle as a fallback (a real environment variable still wins at runtime). Neither Supabase value is a secret: the anon key is published by design and every row is guarded by row-level security. They live here rather than in .env.local so that a CI runner, which has no .env.local, builds an installer that can actually reach the backend.",
+  "VITE_SUPABASE_URL": "https://xxeagfxivrjpvofwvvmh.supabase.co",
+  "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4ZWFnZnhpdnJqcHZvZnd2dm1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMDE1ODcsImV4cCI6MjEwMTg3NzU4N30.jO8FIVOH5YhsZW6qxmtEXjA9oOj9esYLLnPUc1xt8tM",
+  "VITE_SITE_URL": "https://courseless.hyfro.org"
+}

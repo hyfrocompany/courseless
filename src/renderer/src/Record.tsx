@@ -2,9 +2,17 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { EMPTY_RECORDING, type RecordingState } from '../../shared/types'
 import { Icon, Kbd, Mono } from './components/ui'
 import { clock } from './lib/format'
+import { markHotkeyKeys } from './lib/system'
 
 const DRAG: CSSProperties = { WebkitAppRegion: 'drag' } as CSSProperties
 const NO_DRAG: CSSProperties = { WebkitAppRegion: 'no-drag' } as CSSProperties
+
+/**
+ * The mark shortcut as it is printed on THIS machine's keyboard — ⌘⇧M on a Mac, Ctrl⇧M on
+ * Windows. Computed once at module load: the pill cannot change operating system mid-recording,
+ * and re-deriving it on every render of a strip that re-renders once a second is waste.
+ */
+const MARK_KEYS = markHotkeyKeys()
 
 /**
  * The recording pill.
@@ -127,15 +135,14 @@ export default function Record() {
             >
               Mark
               <span className="flex items-center gap-1 opacity-80">
-                <Kbd className="h-[17px] min-w-0 bg-white/18 px-1 text-[9.5px] text-white ring-0 dark:bg-black/15 dark:text-[#04121d]">
-                  Ctrl
-                </Kbd>
-                <Kbd className="h-[17px] min-w-0 bg-white/18 px-1 text-[9.5px] text-white ring-0 dark:bg-black/15 dark:text-[#04121d]">
-                  ⇧
-                </Kbd>
-                <Kbd className="h-[17px] min-w-[17px] bg-white/18 px-1 text-[9.5px] text-white ring-0 dark:bg-black/15 dark:text-[#04121d]">
-                  M
-                </Kbd>
+                {MARK_KEYS.map((k) => (
+                  <Kbd
+                    key={k}
+                    className="h-[17px] min-w-[17px] bg-white/18 px-1 text-[9.5px] text-white ring-0 dark:bg-black/15 dark:text-[#04121d]"
+                  >
+                    {k}
+                  </Kbd>
+                ))}
               </span>
             </button>
             <button

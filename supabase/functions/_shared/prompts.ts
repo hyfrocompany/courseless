@@ -1,11 +1,57 @@
-// Prompt engineering + strict-JSON extraction/validation for lesson generation.
+// Prompt construction — ported verbatim from src/main/services/codex/prompts.ts so the cloud engine
+// produces the same lessons the local Codex engine did. Keep the two in sync if either moves.
 
-import type { FadeTier, Lesson, LessonStep, RecordMark, SkillLevel, StepContext } from '../../../shared/types'
+export type SkillLevel = 'never' | 'few' | 'rusty'
+
+export interface MarkElement {
+  name: string
+  controlType: string
+  automationId?: string
+  className?: string
+  rect: { x: number; y: number; w: number; h: number }
+  ancestors: string[]
+}
+
+export interface RecordMark {
+  id: string
+  /** ms since the recording started. */
+  at: number
+  windowTitle: string
+  process: string
+  cursor: { x: number; y: number }
+  element: MarkElement | null
+  note?: string
+}
+
+export interface LessonStepLike {
+  action: string
+  where: string
+  why?: string
+  checkpoint: string
+  hint_levels?: string[]
+  fade_tier?: number
+  target?: string
+}
+
+export interface StepContext {
+  stepIndex: number
+  total: number
+  step?: LessonStepLike | null
+}
+
+export interface LessonLike {
+  title: string
+  tool?: string
+  goal?: string
+  steps?: LessonStepLike[]
+}
 
 const LEVEL_TEXT: Record<SkillLevel, string> = {
-  never: 'The learner has NEVER done this before. Assume zero familiarity with the tool: name every menu, panel and button explicitly, and keep early steps very small.',
+  never:
+    'The learner has NEVER done this before. Assume zero familiarity with the tool: name every menu, panel and button explicitly, and keep early steps very small.',
   few: 'The learner has done this a few times. Skip absolute basics like "open the app", but keep locations precise.',
-  rusty: 'The learner used to know this and is rusty. Be brisk, jog the memory, lean on higher fade tiers earlier.'
+  rusty:
+    'The learner used to know this and is rusty. Be brisk, jog the memory, lean on higher fade tiers earlier.'
 }
 
 const SCHEMA = `{
@@ -34,7 +80,7 @@ export function buildGeneratePrompt(ask: string, level: SkillLevel): string {
     'You are the lesson planner for Courseless, a desktop coach that walks people through a REAL task in a REAL app, one step at a time. You never produce videos, theory, or courses — only a doing-path the learner performs themselves.',
     '',
     `LEARNER REQUEST: ${ask}`,
-    `LEARNER LEVEL: ${LEVEL_TEXT[level]}`,
+    `LEARNER LEVEL: ${LEVEL_TEXT[level] ?? LEVEL_TEXT.never}`,
     '',
     'Produce a lesson as a SINGLE JSON object matching exactly this schema:',
     SCHEMA,
@@ -81,17 +127,6 @@ function markLine(m: RecordMark, i: number): string {
   return bits.join(' · ')
 }
 
-/**
- * Turn a recording into a lesson.
- *
- * The marks are evidence, not a transcript: they say what the author touched and when, and the
- * author's notes say what they meant. Two rules carry the weight here —
- *   * `target` must be COPIED from a recorded element name, never paraphrased. That string is
- *     what B4 looks up in the accessibility tree on the recipient's machine, so a nicer-sounding
- *     rewrite silently breaks pointing for everyone the file is sent to.
- *   * the audience line rewrites the whole register. "my mom, complete beginner" and "new sales
- *     hires" are not the same lesson with a different intro; they are different sentences.
- */
 export function buildRecordPrompt(session: {
   name: string
   audience: string
@@ -99,8 +134,10 @@ export function buildRecordPrompt(session: {
 }): string {
   const tools = [...new Set(session.marks.map((m) => m.process).filter(Boolean))]
   const windows = [...new Set(session.marks.map((m) => m.windowTitle).filter(Boolean))].slice(0, 6)
-  const names = [...new Set(session.marks.map((m) => m.element?.name).filter((n): n is string => !!n))]
-  const audience = session.audience.trim()
+  const names = [
+    ...new Set(session.marks.map((m) => m.element?.name).filter((n): n is string => !!n))
+  ]
+  const audience = (session.audience ?? '').trim()
 
   return [
     'You are the lesson planner for Courseless, a desktop coach that walks people through a REAL task in a REAL app, one step at a time.',
@@ -186,19 +223,24 @@ export function buildCoachPrompt(
 }
 
 export function buildCoachFallbackPrompt(
-  lesson: Lesson,
+  lesson: LessonLike,
   message: string,
   ctx: StepContext | null
 ): string {
   return [
     'You are the Courseless coach. Here is the lesson the learner is working through (JSON):',
-    JSON.stringify({ title: lesson.title, tool: lesson.tool, goal: lesson.goal, steps: lesson.steps }),
+    JSON.stringify({
+      title: lesson.title,
+      tool: lesson.tool,
+      goal: lesson.goal,
+      steps: lesson.steps
+    }),
     '',
     buildCoachPrompt(message, ctx, lesson.title)
   ].join('\n')
 }
 
-export function buildSuggestPrompt(lesson: Lesson, runStats: unknown): string {
+export function buildSuggestPrompt(lesson: LessonLike, runStats: unknown): string {
   return [
     `The learner just finished the lesson "${lesson.title}" (${lesson.tool}).`,
     `Run statistics (JSON): ${JSON.stringify(runStats ?? {})}`,
@@ -211,13 +253,12 @@ export function buildSuggestPrompt(lesson: Lesson, runStats: unknown): string {
   ].join('\n')
 }
 
-// ---------------------------------------------------------------- JSON extraction
+// ---------------------------------------------------------------- JSON validation (server side)
 
 /** Extract the first balanced {...} block, tolerating fences and surrounding prose. */
 export function extractFirstJsonObject(raw: string): string | null {
   if (!raw) return null
   let text = raw.trim()
-  // strip a leading ```json fence if the model ignored instructions
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fence && fence[1].includes('{')) text = fence[1].trim()
 
@@ -244,117 +285,89 @@ export function extractFirstJsonObject(raw: string): string | null {
   return null
 }
 
-export interface ParsedLesson {
-  ok: boolean
-  problems: string[]
-  draft: {
-    title: string
-    tool: string
-    goal: string
-    est_minutes: number
-    prerequisites: string[]
-    steps: LessonStep[]
-  } | null
-}
-
 const MIN_STEPS = 6
 
-function asString(v: unknown, fallback = ''): string {
-  if (typeof v === 'string') return v.trim()
-  if (typeof v === 'number' || typeof v === 'boolean') return String(v)
-  return fallback
-}
-
-function defaultTier(index: number, total: number): FadeTier {
-  const p = total <= 1 ? 0 : index / (total - 1)
-  if (p < 0.34) return 1
-  if (p < 0.72) return 2
-  return 3
-}
-
-/** Parse + normalize + validate. Soft problems are repaired locally; hard ones set ok:false. */
-export function parseLessonJson(raw: string): ParsedLesson {
-  const problems: string[] = []
+/**
+ * The server-side half of parseLessonJson: only the HARD problems, the ones that would make the
+ * client throw PARSE_FAILED. Soft repairs (padding hint_levels, defaulting fade_tier, clamping
+ * est_minutes) stay on the client, which still runs the full normalizer on our output.
+ */
+export function lessonProblems(raw: string): string[] {
   const block = extractFirstJsonObject(raw)
-  if (!block) return { ok: false, problems: ['No JSON object found in the reply.'], draft: null }
-
-  let obj: any
+  if (!block) return ['No JSON object found in the reply.']
+  let obj: Record<string, unknown>
   try {
     obj = JSON.parse(block)
   } catch (e) {
-    return { ok: false, problems: [`JSON.parse failed: ${String(e).slice(0, 200)}`], draft: null }
+    return [`JSON.parse failed: ${String(e).slice(0, 200)}`]
   }
   if (!obj || typeof obj !== 'object' || Array.isArray(obj))
-    return { ok: false, problems: ['Top level value is not a JSON object.'], draft: null }
+    return ['Top level value is not a JSON object.']
 
-  const title = asString(obj.title)
-  if (!title) problems.push('Missing "title".')
+  const problems: string[] = []
+  if (typeof obj.title !== 'string' || !obj.title.trim()) problems.push('Missing "title".')
 
-  const rawSteps = Array.isArray(obj.steps) ? obj.steps : []
-  if (!Array.isArray(obj.steps)) problems.push('Missing "steps" array.')
-  else if (rawSteps.length < MIN_STEPS)
-    problems.push(`Only ${rawSteps.length} steps — the lesson needs between 6 and 12 steps.`)
-
-  const steps: LessonStep[] = []
-  rawSteps.forEach((s: any, i: number) => {
-    if (!s || typeof s !== 'object') {
-      problems.push(`Step ${i + 1} is not an object.`)
-      return
-    }
-    const action = asString(s.action)
-    if (!action) {
+  const steps = obj.steps
+  if (!Array.isArray(steps)) {
+    problems.push('Missing "steps" array.')
+    return problems
+  }
+  if (steps.length < MIN_STEPS)
+    problems.push(`Only ${steps.length} steps — the lesson needs between 6 and 12 steps.`)
+  steps.forEach((s: unknown, i: number) => {
+    const step = s as Record<string, unknown> | null
+    if (!step || typeof step !== 'object') problems.push(`Step ${i + 1} is not an object.`)
+    else if (typeof step.action !== 'string' || !step.action.trim())
       problems.push(`Step ${i + 1} has no "action".`)
-      return
-    }
-    const where = asString(s.where)
-    const why = asString(s.why)
-    const checkpoint = asString(s.checkpoint)
-    let hints: string[] = Array.isArray(s.hint_levels)
-      ? s.hint_levels.map((h: unknown) => asString(h)).filter((h: string) => h.length > 0)
-      : []
-    if (hints.length === 0) hints = [where ? `Look at: ${where}` : 'Look carefully at the screen.']
-    while (hints.length < 3) hints.push(hints[hints.length - 1])
-    hints = hints.slice(0, 3)
-
-    let tier = Number(s.fade_tier)
-    if (!Number.isFinite(tier) || tier < 1 || tier > 3) tier = defaultTier(i, rawSteps.length)
-    // `target` is optional by design: pre-B4 lessons have none and pointing mines `where` instead.
-    // A too-long "target" is a paraphrase, not a label — drop it rather than point at a guess.
-    const target = asString(s.target)
-    steps.push({
-      action,
-      where,
-      why,
-      checkpoint,
-      hint_levels: hints,
-      fade_tier: Math.round(tier) as FadeTier,
-      ...(target && target.length <= 48 ? { target } : {})
-    })
   })
-
-  if (steps.length < MIN_STEPS && !problems.some((p) => p.includes('steps'))) {
-    problems.push(`Only ${steps.length} usable steps — need at least ${MIN_STEPS}.`)
-  }
-
-  let est = Number(obj.est_minutes)
-  if (!Number.isFinite(est) || est <= 0) est = Math.max(3, steps.length * 3)
-  est = Math.min(600, Math.round(est))
-
-  const prerequisites = Array.isArray(obj.prerequisites)
-    ? obj.prerequisites.map((p: unknown) => asString(p)).filter((p: string) => p.length > 0).slice(0, 6)
-    : []
-
-  const draft = {
-    title: title || 'Untitled lesson',
-    tool: asString(obj.tool),
-    goal: asString(obj.goal),
-    est_minutes: est,
-    prerequisites,
-    steps
-  }
-
-  const hard = problems.filter(
-    (p) => p.includes('steps') || p.includes('"action"') || p.includes('Missing "title"')
-  )
-  return { ok: hard.length === 0, problems, draft }
+  return problems
 }
+
+/** Grammar-constrained output schema for the lesson object. No recursion, no extra properties. */
+export const LESSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    tool: { type: 'string' },
+    goal: { type: 'string' },
+    est_minutes: { type: 'integer' },
+    prerequisites: { type: 'array', items: { type: 'string' }, maxItems: 4 },
+    steps: {
+      type: 'array',
+      minItems: 6,
+      maxItems: 12,
+      items: {
+        type: 'object',
+        properties: {
+          action: { type: 'string' },
+          where: { type: 'string' },
+          target: { type: 'string' },
+          why: { type: 'string' },
+          checkpoint: { type: 'string' },
+          hint_levels: { type: 'array', items: { type: 'string' }, minItems: 3, maxItems: 3 },
+          fade_tier: { type: 'integer', enum: [1, 2, 3] }
+        },
+        required: [
+          'action',
+          'where',
+          'target',
+          'why',
+          'checkpoint',
+          'hint_levels',
+          'fade_tier'
+        ],
+        additionalProperties: false
+      }
+    }
+  },
+  required: ['title', 'tool', 'goal', 'est_minutes', 'prerequisites', 'steps'],
+  additionalProperties: false
+} as const
+
+/** Grammar-constrained output schema for suggestNext. */
+export const SUGGEST_SCHEMA = {
+  type: 'object',
+  properties: { title: { type: 'string' }, ask: { type: 'string' } },
+  required: ['title', 'ask'],
+  additionalProperties: false
+} as const

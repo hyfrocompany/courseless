@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Lesson, LessonRun } from '../../../shared/types'
 import { Breadcrumb, BreadcrumbBar } from '../components/Breadcrumb'
 import { Cover } from '../components/Cover'
@@ -46,7 +47,8 @@ export function Review({
   onUseSuggestion,
   onRunAgain,
   onLibrary,
-  onLesson
+  onLesson,
+  note
 }: {
   lesson: Lesson
   run: LessonRun | null
@@ -57,6 +59,8 @@ export function Review({
   onRunAgain(practice: boolean): void
   onLibrary(): void
   onLesson(): void
+  /** A quiet line about the month, when there is one worth saying. Usually null. */
+  note?: ReactNode
 }) {
   const perStep = run?.perStep ?? []
   const sum = summarise(perStep)
@@ -79,6 +83,8 @@ export function Review({
       </BreadcrumbBar>
 
       <div data-testid="view-review" className="mx-auto w-full max-w-[860px] px-8 pb-16 pt-7">
+      {note && <div className="mb-5" data-testid="review-note">{note}</div>}
+
       <Eyebrow>Run complete</Eyebrow>
       <h1 className="mt-1.5 max-w-[26ch] font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-700">
         {lesson.title}

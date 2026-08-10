@@ -1,0 +1,113 @@
+# Packaging. Two shapes out of one tree: a signed, notarized universal DMG for macOS built on a
+# Mac by scripts/release-mac.sh, and an unsigned x64 NSIS installer built by GitHub Actions.
+#
+# appId is load-bearing and permanent. NSIS derives the uninstall GUID from it, so changing it
+# would make every future installer a stranger to the copy already on the machine.
+appId: org.hyfro.courseless
+productName: Courseless
+copyright: Copyright © 2026 Hyfro
+
+directories:
+  output: release
+  buildResources: build
+
+# The renderer, main and preload bundles are the whole app; everything else in the tree is
+# tooling. Production dependencies come along automatically, minus the three that only ever
+# existed for the renderer build (their code is already inside the renderer bundle).
+files:
+  - out/**
+  - package.json
+  - '!node_modules/@fontsource/**'
+  - '!node_modules/tailwindcss/**'
+  - '!node_modules/@tailwindcss/**'
+  # Tailwind's CSS compiler, and the reason it has to go: it ships a per-architecture .node
+  # binary, and the universal merge refuses to fold two builds that both contain the arm64 one.
+  # Nothing in main or preload has ever required it — the CSS is compiled at build time.
+  - '!node_modules/lightningcss/**'
+  - '!node_modules/lightningcss-*/**'
+
+# macOS only: CFBundleURLTypes. Windows registration lives in build/installer.nsh.
+protocols:
+  - name: Courseless
+    schemes:
+      - courseless
+    role: Viewer
+
+publish:
+  provider: github
+  owner: hyfrocompany
+  repo: courseless
+
+# Notarize + staple the .app before the DMG and the update ZIP are packed from it, so both
+# artifacts carry the ticket.
+afterSign: scripts/notarize.cjs
+
+mac:
+  category: public.app-category.education
+  icon: build/icon.icns
+  darkModeSupport: true
+  # The Developer ID certificate in the login keychain. electron-builder rejects the
+  # "Developer ID Application:" prefix on purpose — it picks the certificate type itself, and the
+  # full name of the identity is "Developer ID Application: Speakl Inc. (A8PGTML9XS)".
+  identity: Speakl Inc. (A8PGTML9XS)
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # ZIP is not optional: electron-updater cannot update a Mac app from a DMG.
+  target:
+    - target: dmg
+      arch: universal
+    - target: zip
+      arch: universal
+  extendInfo:
+    LSMinimumSystemVersion: '14.0'
+    NSAccessibilityUsageDescription: Courseless reads the accessibility tree of the app you are working in so the pointer can land on the right control.
+  # main/index.ts resolves these under process.resourcesPath: seed-lessons/ and mac/courseless-ax.
+  extraResources:
+    - from: resources/seed-lessons
+      to: seed-lessons
+    - from: resources/mac/courseless-ax
+      to: mac/courseless-ax
+
+dmg:
+  # Locked: the website links straight at this filename.
+  artifactName: Courseless.dmg
+  title: Courseless
+  # Installing by dragging matters more than usual here — an app run from the mounted image
+  # registers courseless:// against a path that disappears on eject.
+  contents:
+    - x: 150
+      y: 200
+      type: file
+    - x: 400
+      y: 200
+      type: link
+      path: /Applications
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+  # main/index.ts resolves these under process.resourcesPath: seed-lessons/, uia-find.ps1,
+  # screen-shot.ps1.
+  extraResources:
+    - from: resources/seed-lessons
+      to: seed-lessons
+    - from: resources/uia-find.ps1
+      to: uia-find.ps1
+    - from: resources/screen-shot.ps1
+      to: screen-shot.ps1
+
+nsis:
+  # Locked: the website links straight at this filename.
+  artifactName: Courseless-Setup.exe
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Courseless
+  include: build/installer.nsh

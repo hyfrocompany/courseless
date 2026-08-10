@@ -7,8 +7,64 @@ import { BrowserWindow, Menu, Tray, app, nativeImage, screen, shell } from 'elec
 import { join } from 'node:path'
 import { IPC } from '../shared/ipc'
 import type { FloatCommand, FloatStatus, OverlayPoint } from '../shared/types'
-import { courselessIconPng } from './util/icon'
+import { courselessDockIconPng, courselessIconPng, courselessTemplateIconPng } from './util/icon'
 import { log } from './util/log'
+
+const IS_WIN32 = process.platform === 'win32'
+const IS_DARWIN = process.platform === 'darwin'
+
+/**
+ * The three windows that live ABOVE whatever the learner is working in — the float widget, the
+ * recording pill and the pointer overlays — are NSPanels on macOS.
+ *
+ * `type: 'panel'` is the whole macOS story in one option. It gives an NSPanel with the
+ * NonactivatingPanel mask (raising it never activates Courseless, so the app being taught keeps
+ * its focus) and force-ORs CanJoinAllSpaces | FullScreenAuxiliary into the collection behavior,
+ * which is what puts the widget on every Space and over other apps' full-screen windows.
+ *
+ * The alternative — setVisibleOnAllWorkspaces(true, {visibleOnFullScreen:true}) alone — calls
+ * Browser::DockHide() as a side effect: the Dock icon disappears for the rest of the session, the
+ * app leaves ⌘Tab and setCanHide:NO lands on every window, breaking ⌘H. Hence `skipTransform`
+ * below on every one of those calls.
+ */
+const PANEL_TYPE = IS_DARWIN ? ('panel' as const) : undefined
+
+/**
+ * setVisibleOnAllWorkspaces with the DockHide side effect defused on darwin. The panel type
+ * already delivers all-Spaces + over-full-screen; this call stays because Windows needs nothing
+ * from it and removing it on darwin would make the two platforms diverge for no gain.
+ */
+function setAllWorkspaces(win: BrowserWindow): void {
+  if (IS_DARWIN) win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
+  else win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+}
+
+/**
+ * Keep the coach out of the app's own eyes. NSWindowSharingNone means these windows are absent
+ * from ScreenCaptureKit output, so the grounding screenshot never contains the ghost cursor it is
+ * about to place — the never-see-your-own-pointer property, enforced a second way.
+ * Windows has an equivalent (WDA_EXCLUDEFROMCAPTURE) but the win32 capture path already excludes
+ * layered windows, so this is darwin-only rather than risking a behaviour change there.
+ */
+function protectFromCapture(win: BrowserWindow): void {
+  if (!IS_DARWIN) return
+  try {
+    win.setContentProtection(true)
+  } catch (e) {
+    log('windows', 'setContentProtection failed', String(e).slice(0, 120))
+  }
+}
+
+/**
+ * WM_ENTERSIZEMOVE and friends. `hookWindowMessage` exists only on Windows — calling it on macOS
+ * is a hard TypeError during window creation, which took the whole app down at launch.
+ */
+function hookMoveLoop(win: BrowserWindow, reason: string): void {
+  if (!IS_WIN32) return
+  win.hookWindowMessage(0x0231 /* WM_ENTERSIZEMOVE — native move loops (kbd move, some drags) */, () =>
+    overlayDismiss(reason)
+  )
+}
 
 let mainWindow: BrowserWindow | null = null
 let floatWindow: BrowserWindow | null = null
@@ -40,6 +96,30 @@ export function appIcon(size = 32) {
   return nativeImage.createFromBuffer(courselessIconPng(size))
 }
 
+/**
+ * Put the Courseless mark in the Dock.
+ *
+ * The `icon:` BrowserWindow option is a WINDOWS (and Linux) concept — a per-window icon for the
+ * title bar, the taskbar button and Alt-Tab. macOS has no per-window icon at all: the Dock tile,
+ * ⌘Tab and the About box all read CFBundleIconFile out of the running .app bundle. In development
+ * that bundle is node_modules/electron/dist/Electron.app, which is why the Dock shows Electron's
+ * logo no matter what every window was given — nothing was wrong with the Windows path, it simply
+ * has no macOS counterpart.
+ *
+ * `app.dock.setIcon` is the one runtime override for it, and it covers both cases: development
+ * (Electron.app) and any packaged build whose bundle icon has not been set. 512px because the
+ * Dock is drawn at up to 128pt on a 2x display and a smaller bitmap is visibly soft.
+ */
+export function setDockIcon(): void {
+  if (!IS_DARWIN) return
+  try {
+    app.dock?.setIcon(nativeImage.createFromBuffer(courselessDockIconPng(512)))
+    log('windows', 'dock icon set')
+  } catch (e) {
+    log('windows', 'dock icon failed', String(e).slice(0, 160))
+  }
+}
+
 // ---------------------------------------------------------------- main window
 
 /** `theme` only picks the pre-paint background colour — without it a dark-mode user gets a
@@ -58,7 +138,13 @@ export function createMainWindow(theme: 'light' | 'dark' = 'light'): BrowserWind
     autoHideMenuBar: true,
     // The app draws its own title bar (Nav header + WindowControls). Windows keeps the resize
     // borders and the snap layouts; everything visible is ours.
-    titleBarStyle: 'hidden',
+    //
+    // macOS is the exception, and deliberately so: the traffic lights are not decoration, they
+    // are where every Mac user's hand goes, and a red dot in the top-RIGHT corner reads as a
+    // different operating system's app. 'hiddenInset' keeps the real ones, moved down to sit on
+    // the 48px header's centre line, and the renderer hides its own WindowControls on darwin.
+    titleBarStyle: IS_DARWIN ? 'hiddenInset' : 'hidden',
+    ...(IS_DARWIN ? { trafficLightPosition: { x: 18, y: 17 } } : {}),
     webPreferences: {
       preload: preloadPath(),
       contextIsolation: true,
@@ -87,9 +173,10 @@ export function createMainWindow(theme: 'light' | 'dark' = 'light'): BrowserWind
   // the second line of defence). NOTE: app-region drags never enter the OS move loop
   // (Chromium repositions the window itself), so WM_ENTERSIZEMOVE alone is not enough — 'move'
   // fires for both mechanisms. overlayDismiss() is idempotent and cheap when nothing is shown.
-  win.hookWindowMessage(0x0231 /* WM_ENTERSIZEMOVE — native move loops (kbd move, some drags) */, () =>
-    overlayDismiss('main entersizemove')
-  )
+  //
+  // On macOS there is no message hook and none is needed: 'move' (and its alias 'moved') fire
+  // continuously through a drag, which is more than enough for a dismiss that is idempotent.
+  hookMoveLoop(win, 'main entersizemove')
   win.on('move', () => overlayDismiss('main window moved'))
   win.webContents.setWindowOpenHandler(({ url }) => {
     void shell.openExternal(url)
@@ -166,6 +253,13 @@ export function createFloatWindow(): BrowserWindow {
     hasShadow: false,
     title: 'Courseless coach',
     icon: appIcon(32),
+    // NSPanel on darwin: on every Space, over full-screen apps, and raising it never pulls the
+    // learner out of the app they are working in. NOT focusable:false — the coach has a text
+    // input, and a nonactivating panel can take keys without activating the app.
+    type: PANEL_TYPE,
+    // Transparent windows on macOS square their own corners and get their shadow suppressed
+    // anyway; saying so explicitly stops AppKit painting a rounded mask over the card's own.
+    ...(IS_DARWIN ? { roundedCorners: false } : {}),
     webPreferences: {
       preload: preloadPath(),
       contextIsolation: true,
@@ -175,18 +269,21 @@ export function createFloatWindow(): BrowserWindow {
     }
   })
   // Windows hands back a smaller client rect than asked for (measured: 380x260 -> 332x236, and
-  // each setContentSize loses another 16x8).
+  // each setContentSize loses another 16x8). macOS hands back exactly what was asked for, so the
+  // loop exits on its first comparison — harmless, and one code path instead of two.
   setContentSizeExact(win, w, h)
   win.setPosition(x + width - w - 24, y + height - h - 24)
   win.setResizable(false)
+  protectFromCapture(win)
   log('windows', 'float geometry', {
     scaleFactor: display.scaleFactor,
     contentSize: win.getContentSize(),
     bounds: win.getBounds()
   })
-  // 'screen-saver' keeps it above full-screen apps and other always-on-top windows.
+  // 'screen-saver' keeps it above full-screen apps and other always-on-top windows. A panel's
+  // own default level is only NSFloatingWindowLevel(3), so this call matters on darwin too.
   win.setAlwaysOnTop(true, 'screen-saver')
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  setAllWorkspaces(win)
 
   // keep a distinct window title (see the overlay for why)
   win.on('page-title-updated', (e) => {
@@ -203,7 +300,7 @@ export function createFloatWindow(): BrowserWindow {
     floatWindow = null
   })
   // Same drag-vs-overlay guard as the main window: moving the float dismisses the pointer.
-  win.hookWindowMessage(0x0231 /* WM_ENTERSIZEMOVE */, () => overlayDismiss('float entersizemove'))
+  hookMoveLoop(win, 'float entersizemove')
   win.on('move', () => overlayDismiss('float moved'))
   loadRoute(win, '/float')
   floatWindow = win
@@ -339,6 +436,10 @@ export function createRecordWindow(): BrowserWindow {
     hasShadow: false,
     title: 'Courseless recording',
     icon: appIcon(32),
+    // Same NSPanel reasoning as the float: the author is working in another app and raising the
+    // pill must not take the keyboard away from it.
+    type: PANEL_TYPE,
+    ...(IS_DARWIN ? { roundedCorners: false } : {}),
     webPreferences: {
       preload: preloadPath(),
       contextIsolation: true,
@@ -359,7 +460,8 @@ export function createRecordWindow(): BrowserWindow {
   }
   win.setPosition(Math.round(x + (width - PILL_W) / 2), y + height - PILL_H - 28)
   win.setAlwaysOnTop(true, 'screen-saver')
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  setAllWorkspaces(win)
+  protectFromCapture(win)
   // Distinct title, for the same reason the overlay has one: grounding resolves windows by title.
   win.on('page-title-updated', (e) => {
     e.preventDefault()
@@ -407,16 +509,34 @@ export function recordPillResize(height: number): void {
   win.setPosition(after.x, bottom - after.height)
 }
 
-/** Native handles of the pill, so grounding never searches our own strip. */
+/**
+ * The one number the OS helper needs to skip a window of ours.
+ *
+ * On Windows that is the HWND, which `getNativeWindowHandle` hands over directly. On macOS the
+ * same call returns a pointer to the NSView — an address in this process, meaningless to
+ * CGWindowList and to the helper. The CGWindowID is available instead through the desktopCapturer
+ * id, which is the string "window:<CGWindowID>:0"; the middle field is the number the helper's
+ * --exclude-window expects.
+ */
+function nativeWindowId(win: BrowserWindow): number | null {
+  try {
+    if (IS_DARWIN) {
+      const id = Number(win.getMediaSourceId().split(':')[1])
+      return Number.isFinite(id) && id > 0 ? id : null
+    }
+    const buf = win.getNativeWindowHandle()
+    return buf.length >= 8 ? Number(buf.readBigUInt64LE(0)) : buf.readUInt32LE(0)
+  } catch {
+    return null
+  }
+}
+
+/** Native window id of the pill, so grounding never searches our own strip. */
 export function recordNativeHandles(): number[] {
   const win = getRecordWindow()
   if (!win) return []
-  try {
-    const buf = win.getNativeWindowHandle()
-    return [buf.length >= 8 ? Number(buf.readBigUInt64LE(0)) : buf.readUInt32LE(0)]
-  } catch {
-    return []
-  }
+  const id = nativeWindowId(win)
+  return id === null ? [] : [id]
 }
 
 // ---------------------------------------------------------------- overlay windows (guided pointing)
@@ -471,8 +591,13 @@ function createOverlayFor(display: Electron.Display): OverlaySurface {
     acceptFirstMouse: false,
     show: false,
     title: 'Courseless pointer',
-    // 'toolbar' keeps it out of Alt-Tab on Windows
-    type: process.platform === 'win32' ? 'toolbar' : undefined,
+    // 'toolbar' keeps it out of Alt-Tab on Windows; 'panel' is the macOS equivalent and also
+    // what puts the sheet over other apps' full-screen Spaces without hiding our Dock icon.
+    type: IS_WIN32 ? 'toolbar' : PANEL_TYPE,
+    // AppKit clamps a window to the screen it is created on unless it is frameless AND explicitly
+    // allowed to be larger. Overlays are per-display and a secondary display sits at negative or
+    // far-right coordinates, so without this the sheet lands on the primary screen instead.
+    ...(IS_DARWIN ? { enableLargerThanScreen: true, roundedCorners: false } : {}),
     webPreferences: {
       preload: preloadPath(),
       contextIsolation: true,
@@ -494,7 +619,8 @@ function createOverlayFor(display: Electron.Display): OverlaySurface {
   // title-bar drag happening beneath the sheet (window "teleports" while dragging).
   win.setIgnoreMouseEvents(true)
   win.setAlwaysOnTop(true, 'screen-saver')
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  setAllWorkspaces(win)
+  protectFromCapture(win)
   // The renderer bundle's <title> is "Courseless" on every route, so without this the overlay and
   // the main window are indistinguishable to anything that looks up a window by title - including
   // our own grounding pass, which would then search a transparent empty sheet.
@@ -542,18 +668,33 @@ function armOverlayIdle(): void {
 }
 
 /**
- * Fly the ghost cursor to a PHYSICAL screen pixel on whichever display owns it.
- * Electron window bounds are DIPs, so the physical point is converted with screenToDipPoint --
- * the only correct conversion when displays have different scale factors -- and then made local
- * to that display's overlay.
+ * Fly the ghost cursor to a screen coordinate on whichever display owns it.
+ *
+ * WINDOWS: the coordinate arrives in PHYSICAL PIXELS (that is the space UIA and CopyFromScreen
+ * both speak) and Electron window bounds are DIPs, so it is converted with screenToDipPoint --
+ * the only correct conversion when displays have different scale factors.
+ *
+ * MACOS: there is nothing to convert. AX rects, CGWindowList bounds and Electron's own DIP bounds
+ * are one and the same space — top-left-origin points — so the coordinate goes straight through.
+ * This is not an optimisation: `screenToDipPoint` does not exist on darwin at all (it is a
+ * Windows-only API and throws a TypeError), and the catch below divides by the scale factor,
+ * which on a Retina Mac would silently HALVE every coordinate and put the arrow a quarter of the
+ * way to the target. Nothing would look broken — it would just point at the wrong thing, which
+ * the accuracy contract calls a hard failure.
  */
 export function overlayShow(physicalX: number, physicalY: number, label: string): OverlayPoint {
   let dip = { x: physicalX, y: physicalY }
-  try {
-    dip = screen.screenToDipPoint({ x: physicalX, y: physicalY })
-  } catch {
-    const sf = screen.getPrimaryDisplay().scaleFactor || 1
-    dip = { x: physicalX / sf, y: physicalY / sf }
+  if (!IS_DARWIN) {
+    try {
+      dip = screen.screenToDipPoint({ x: physicalX, y: physicalY })
+    } catch {
+      // Fallback only — screenToDipPoint is the correct conversion and exists on every supported
+      // Windows build. When it is unavailable, the scale factor to divide by is the one belonging
+      // to the display the point is ON, not the primary's: on a 100% secondary next to a 150%
+      // primary, dividing by 1.5 lands the arrow two thirds of the way to the target.
+      const sf = screen.getDisplayNearestPoint({ x: Math.round(physicalX), y: Math.round(physicalY) }).scaleFactor || 1
+      dip = { x: physicalX / sf, y: physicalY / sf }
+    }
   }
   const display = screen.getDisplayNearestPoint({ x: Math.round(dip.x), y: Math.round(dip.y) })
   const point: OverlayPoint = {
@@ -576,7 +717,21 @@ export function overlayShow(physicalX: number, physicalY: number, label: string)
   const surface = createOverlayFor(display)
   // showInactive, never show(): raising this window must not steal focus from the app the
   // learner is working in.
-  if (!surface.win.isVisible()) surface.win.showInactive()
+  if (!surface.win.isVisible()) {
+    surface.win.showInactive()
+    // AppKit does not run its size constraints on a hidden window, so the bounds set at creation
+    // can be quietly re-clamped the first time the sheet appears (and on mixed-scale multi-display
+    // setups the origin can double). Re-assert them once the window is real, then say what
+    // actually happened — an overlay that does not cover its display points at nothing.
+    if (IS_DARWIN) {
+      const want = display.bounds
+      const got = surface.win.getBounds()
+      if (got.x !== want.x || got.y !== want.y || got.width !== want.width || got.height !== want.height) {
+        surface.win.setBounds(want)
+        log('windows', 'overlay bounds re-applied after show', { display: display.id, want, was: got, now: surface.win.getBounds() })
+      }
+    }
+  }
   surface.win.setAlwaysOnTop(true, 'screen-saver')
   if (surface.ready) surface.win.webContents.send(IPC.overlayPoint, point)
   else surface.pending = point
@@ -614,19 +769,16 @@ export function getOverlayWindows(): BrowserWindow[] {
 }
 
 /**
- * Native HWNDs of every overlay. Grounding must never search them: they are transparent sheets
- * living in the app's own process, so anything that resolves "a window of the Courseless process"
- * can land on one and find an empty tree instead of the real window.
+ * Native window ids of every overlay (HWND on win32, CGWindowID on darwin). Grounding must never
+ * search them: they are transparent sheets living in the app's own process, so anything that
+ * resolves "a window of the Courseless process" can land on one and find an empty tree instead of
+ * the real window.
  */
 export function overlayNativeHandles(): number[] {
   const out: number[] = []
   for (const win of getOverlayWindows()) {
-    try {
-      const buf = win.getNativeWindowHandle()
-      out.push(buf.length >= 8 ? Number(buf.readBigUInt64LE(0)) : buf.readUInt32LE(0))
-    } catch {
-      /* ignore */
-    }
+    const id = nativeWindowId(win)
+    if (id !== null) out.push(id)
   }
   return out
 }
@@ -647,6 +799,22 @@ export function sendToMain(channel: string, payload: unknown): void {
 
 let trayMenu: Menu | null = null
 
+/**
+ * The menu bar is not the notification area.
+ *
+ * macOS wants a TEMPLATE image: black-and-alpha only, which the system then tints itself — white
+ * in dark mode, black in light, inverted while the item is highlighted. Colour is discarded, so
+ * the ocean-blue tile comes out as a muddy silhouette. And the item is 22pt tall on a 2x display,
+ * so a 16px bitmap is upscaled into a blur; a 32px buffer declared as scaleFactor 2 is the same
+ * 16 POINTS at full Retina detail.
+ */
+function trayIcon(): Electron.NativeImage {
+  if (!IS_DARWIN) return nativeImage.createFromBuffer(courselessIconPng(16))
+  const icon = nativeImage.createFromBuffer(courselessTemplateIconPng(32), { scaleFactor: 2.0 })
+  icon.setTemplateImage(true)
+  return icon
+}
+
 export function createTray(handlers: {
   onToggleFloat(): void
   onRecord(): void
@@ -654,8 +822,7 @@ export function createTray(handlers: {
 }): Tray | null {
   if (tray) return tray
   try {
-    const icon = nativeImage.createFromBuffer(courselessIconPng(16))
-    tray = new Tray(icon)
+    tray = new Tray(trayIcon())
     trayMenu = Menu.buildFromTemplate([
       {
         label: 'Open Courseless',
@@ -688,11 +855,29 @@ export function createTray(handlers: {
       }
     ])
     tray.setToolTip('Courseless — stop taking courses, start doing things')
-    tray.setContextMenu(trayMenu)
-    tray.on('click', () => {
-      log('windows', 'tray icon clicked')
-      showMainWindow()
-    })
+    if (IS_DARWIN) {
+      // With a context menu ATTACHED, macOS opens the menu on left-click AND fires 'click' — so
+      // the Windows arrangement would both open the menu and raise the window on every click.
+      // The Mac convention is the other way round anyway: left-click is the primary action,
+      // right-click is the menu. So the menu is popped by hand and never attached.
+      //
+      // The primary action here is the float widget, not the main window: someone reaching for
+      // the menu bar mid-lesson wants the coach back, and "Open Courseless" is one item away.
+      tray.on('click', () => {
+        log('windows', 'tray icon clicked (darwin: toggle float)')
+        handlers.onToggleFloat()
+      })
+      tray.on('right-click', () => {
+        log('windows', 'tray icon right-clicked')
+        if (trayMenu) tray?.popUpContextMenu(trayMenu)
+      })
+    } else {
+      tray.setContextMenu(trayMenu)
+      tray.on('click', () => {
+        log('windows', 'tray icon clicked')
+        showMainWindow()
+      })
+    }
     log('windows', 'tray created')
   } catch (e) {
     log('windows', 'tray creation failed', String(e))

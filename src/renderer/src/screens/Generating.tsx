@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react'
-import type { Lesson } from '../../../shared/types'
+import { useEffect, useMemo, useRef, type ReactNode } from 'react'
+import type { EngineErrorKind, Lesson } from '../../../shared/types'
 import { Button, Eyebrow, Icon, Mono } from '../components/ui'
 
 /** Pull whatever is already parseable out of the raw stream, so steps materialise as they arrive. */
@@ -21,21 +21,26 @@ export function Generating({
   raw,
   status,
   error,
+  errorKind,
   lesson,
   onCancel,
   onOpen,
   onRetry,
-  onHome
+  onHome,
+  limitCard
 }: {
   ask: string
   raw: string
   status: string
   error: string
+  errorKind: EngineErrorKind | null
   lesson: Lesson | null
   onCancel(): void
   onOpen(): void
   onRetry(): void
   onHome(): void
+  /** What a used-up allowance looks like. Supplied by the window that knows about plans. */
+  limitCard: ReactNode
 }) {
   const parsed = useMemo(() => scan(raw), [raw])
   const actions = lesson ? lesson.steps.map((s) => s.action) : parsed.actions
@@ -53,7 +58,13 @@ export function Generating({
       data-testid="view-generating"
       className="mx-auto flex min-h-full w-full max-w-[820px] flex-col px-8 pb-10 pt-10"
     >
-      {error ? (
+      {/* A used-up allowance is not a failure of the lesson: it says so plainly, in the quiet
+          frame, and offers the one thing that changes it. */}
+      {error && errorKind === 'LIMIT' ? (
+        <div className="rise" data-testid="gen-limit">
+          {limitCard}
+        </div>
+      ) : error ? (
         <div className="rise rounded-lg bg-surface p-8 ring-1 ring-[var(--c-danger-line)]" data-testid="gen-error">
           <Eyebrow tone="muted">Generation stopped</Eyebrow>
           <h1 className="mt-2.5 font-display text-[26px] leading-tight tracking-[-0.025em]">

@@ -13,7 +13,13 @@
 # capture/burst take an optional clip rect in SCREEN pixels. Capturing only the region you care
 # about is the privacy-preserving default for anything that gets written somewhere durable.
 #
-# Prints one line of compact JSON: { ok, path|paths, w, h, ms, error? }
+# Prints one line of compact JSON: { ok, path|paths, w, h, x, y, monitors, ms, error? }
+#
+# `monitors` is how many physical screens went into the capture. It exists because "is this
+# screenshot more than one monitor side by side?" cannot be answered from the width: a 3440px
+# ultrawide is one screen. PointService puts that sentence in the vision prompt, and only when
+# this says so.
+#
 # Nothing is retained: PointService deletes every file it asks for.
 
 [CmdletBinding()]
@@ -62,9 +68,14 @@ try {
   # but is negative when a monitor sits to the left of the primary — every emitted JSON carries
   # x/y so the caller can map screenshot pixels back to screen pixels.
   $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
+  # How many physical screens the untrimmed desktop spans. Additive: every existing field keeps
+  # its meaning, this one only answers a question the width could never answer on its own.
+  $monitors = @([System.Windows.Forms.Screen]::AllScreens).Count
   # an explicit clip rect narrows the capture to exactly that region of the screen
   if ($Mode -ne 'crop' -and $W -gt 0 -and $H -gt 0) {
     $b = New-Object System.Drawing.Rectangle $X, $Y, $W, $H
+    # A clipped capture is one rectangle of one screen unless it genuinely straddles two.
+    $monitors = @([System.Windows.Forms.Screen]::AllScreens | Where-Object { $_.Bounds.IntersectsWith($b) }).Count
   }
 
   function Grab([string]$dest) {
@@ -96,7 +107,7 @@ try {
     'capture' {
       if (-not $Path) { Emit ([ordered]@{ ok = $false; error = 'No -Path'; ms = 0 }) }
       Grab $Path
-      Emit ([ordered]@{ ok = $true; path = $Path; w = $b.Width; h = $b.Height; x = $b.X; y = $b.Y; ms = 0 })
+      Emit ([ordered]@{ ok = $true; path = $Path; w = $b.Width; h = $b.Height; x = $b.X; y = $b.Y; monitors = $monitors; ms = 0 })
     }
     'burst' {
       if (-not $Path) { Emit ([ordered]@{ ok = $false; error = 'No -Path'; ms = 0 }) }
@@ -107,7 +118,7 @@ try {
         $paths += $p
         if ($i -lt $Count - 1 -and $DelayMs -gt 0) { Start-Sleep -Milliseconds $DelayMs }
       }
-      Emit ([ordered]@{ ok = $true; paths = $paths; w = $b.Width; h = $b.Height; x = $b.X; y = $b.Y; ms = 0 })
+      Emit ([ordered]@{ ok = $true; paths = $paths; w = $b.Width; h = $b.Height; x = $b.X; y = $b.Y; monitors = $monitors; ms = 0 })
     }
     'crop' {
       if (-not (Test-Path $In)) { Emit ([ordered]@{ ok = $false; error = "No such capture: $In"; ms = 0 }) }

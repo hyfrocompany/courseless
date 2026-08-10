@@ -1,8 +1,12 @@
 // Typed IPC contract. Channel names live here so main / preload / renderer cannot drift.
 
 import type {
-  CodexStatus,
+  AuthResult,
+  AuthState,
+  BillingPlanChoice,
+  BillingStatus,
   CoachEvent,
+  EngineStatus,
   ExportResult,
   FloatCommand,
   FloatStatus,
@@ -12,6 +16,8 @@ import type {
   NextSuggestion,
   OpStarted,
   OverlayPoint,
+  PermissionKey,
+  PermissionsState,
   PointRequest,
   PointResult,
   RecordDraft,
@@ -21,20 +27,39 @@ import type {
   RunnerAction,
   RunnerState,
   Settings,
+  ShelfAddResult,
+  ShelfResult,
   SkillLevel,
   StepContext,
   WinCommand
 } from './types'
 
 export const IPC = {
-  // codex
-  codexStatus: 'codex:status',
-  codexGenerate: 'codex:generate',
-  codexGenerateEvent: 'codex:generate:event',
-  codexCoach: 'codex:coach',
-  codexCoachEvent: 'codex:coach:event',
-  codexSuggestNext: 'codex:suggest-next',
-  codexCancel: 'codex:cancel',
+  // engine
+  engineStatus: 'engine:status',
+  engineGenerate: 'engine:generate',
+  engineGenerateEvent: 'engine:generate:event',
+  engineCoach: 'engine:coach',
+  engineCoachEvent: 'engine:coach:event',
+  engineSuggestNext: 'engine:suggest-next',
+  engineCancel: 'engine:cancel',
+
+  // account
+  /** The primary way in: pair with the browser, come back signed in. */
+  authBrowserSignIn: 'auth:browser-sign-in',
+  authBrowserCancel: 'auth:browser-cancel',
+  authSignIn: 'auth:sign-in',
+  authSignUp: 'auth:sign-up',
+  authSignOut: 'auth:sign-out',
+  authResetPassword: 'auth:reset-password',
+  authGetState: 'auth:get-state',
+  /** main -> every window, whenever the session appears, refreshes or goes away */
+  authStateEvent: 'auth:state',
+
+  // plan
+  billingStatus: 'billing:status',
+  billingCheckout: 'billing:checkout',
+  billingPortal: 'billing:portal',
 
   // lessons
   lessonsList: 'lessons:list',
@@ -45,6 +70,10 @@ export const IPC = {
   lessonsExport: 'lessons:export',
   lessonsImport: 'lessons:import',
   lessonsDuplicate: 'lessons:duplicate',
+
+  // curated cloud library (the shelf Courseless publishes)
+  libraryShelf: 'library:shelf',
+  libraryAdd: 'library:add',
 
   // recording (authoring)
   recordStart: 'record:start',
@@ -85,10 +114,20 @@ export const IPC = {
   overlayPoint: 'overlay:point',
   overlayDismiss: 'overlay:dismiss',
 
+  // OS permissions (macOS; on win32 these answer "nothing to grant")
+  permissionsGet: 'permissions:get',
+  permissionsRequest: 'permissions:request',
+  permissionsOpenSettings: 'permissions:open-settings',
+
   // settings / misc
   settingsGet: 'settings:get',
   settingsSet: 'settings:set',
   appInfo: 'app:info',
+
+  // background updates
+  updateGetState: 'update:get-state',
+  /** main -> every window, whenever the background update changes phase */
+  updateStateEvent: 'update:state',
   openDataDir: 'app:open-data-dir',
   /** verification-harness only; registered when COURSELESS_REMOTE_DEBUG is set */
   trayInvoke: 'app:tray-invoke'
@@ -102,17 +141,58 @@ export interface AppInfo {
   isDev: boolean
   /** COURSELESS_STALL_MS — debug override for the stall-coach threshold. */
   stallMsOverride: number | null
+  /** False when this build has no coach service behind it — the account screens say so. */
+  backendConfigured: boolean
+  /** process.platform, so the renderer can stop guessing from a deprecated navigator field. */
+  platform: string
+}
+
+/**
+ * Where the silent background update has got to. `ready` means a new version is on disk and will
+ * be in place the next time the app starts — there is nothing for anyone to click.
+ */
+export interface UpdateState {
+  status: 'idle' | 'checking' | 'downloading' | 'ready'
+  /** The version being fetched, or the one waiting. Null when there is nothing in flight. */
+  version: string | null
 }
 
 /** The surface exposed on window.courseless by the preload script. */
 export interface CourselessApi {
-  codexStatus(force?: boolean): Promise<CodexStatus>
+  engineStatus(force?: boolean): Promise<EngineStatus>
   generateLesson(ask: string, level: SkillLevel): Promise<OpStarted>
   onGenerateEvent(cb: (e: GenerateEvent) => void): () => void
   coachSend(lessonId: string, message: string, stepContext: StepContext | null): Promise<OpStarted>
   onCoachEvent(cb: (e: CoachEvent) => void): () => void
   suggestNext(lessonId: string, runStats: unknown): Promise<Result<NextSuggestion>>
   cancel(opId: string): Promise<boolean>
+
+  /**
+   * The account. Tokens never cross this bridge: the renderer sends an address and a password,
+   * and gets back either "done" or the sentence to show. The session itself lives in main.
+   */
+  auth: {
+    /**
+     * The way in: Courseless pairs with a browser tab, opens it, and waits. Resolves only when
+     * the handoff finishes, is cancelled, or times out — up to five minutes.
+     */
+    browserSignIn(): Promise<AuthResult>
+    /** Stop waiting. The pending `browserSignIn` resolves as cancelled. */
+    cancelBrowserSignIn(): Promise<void>
+    signIn(email: string, password: string): Promise<AuthResult>
+    signUp(email: string, password: string): Promise<AuthResult>
+    signOut(): Promise<AuthResult>
+    resetPassword(email: string): Promise<AuthResult>
+    getState(): Promise<AuthState>
+    onState(cb: (s: AuthState) => void): () => void
+  }
+
+  /** Plan and usage. `checkout` and `portal` open the page in the system browser. */
+  billing: {
+    status(): Promise<Result<BillingStatus>>
+    checkout(plan: BillingPlanChoice): Promise<Result<true>>
+    portal(): Promise<Result<true>>
+  }
 
   lessons: {
     list(): Promise<Lesson[]>
@@ -129,6 +209,17 @@ export interface CourselessApi {
     import(payload?: { text: string; name?: string }): Promise<ImportResult>
     /** Copy any lesson to a fresh, editable one of your own. */
     duplicate(id: string): Promise<Lesson | null>
+  }
+
+  /**
+   * The shelf Courseless publishes. Read straight from the public catalogue — no session, no
+   * engine — and cached in main for ten minutes, so opening the Library is free.
+   */
+  library: {
+    /** `force` skips the cache. Offline answers with the last list and says so. */
+    shelf(force?: boolean): Promise<ShelfResult>
+    /** Add one shelf lesson to this machine, through the ordinary import path. */
+    add(id: string): Promise<ShelfAddResult>
   }
 
   /**
@@ -182,6 +273,21 @@ export interface CourselessApi {
     onOverlayDismiss(cb: () => void): () => void
   }
 
+  /**
+   * The two macOS gates pointing needs. Cheap enough to poll (~1s) while a surface that shows
+   * them is visible; on win32 every call answers `supported: false` and nothing renders.
+   */
+  permissions: {
+    get(): Promise<PermissionsState>
+    /**
+     * Ask the OS once. macOS shows its own dialog the FIRST time and silently ignores every
+     * later request, so after that this falls through to opening System Settings.
+     */
+    request(which: PermissionKey): Promise<PermissionsState>
+    /** Open the System Settings pane for one of the two gates. */
+    openSettings(which: PermissionKey): Promise<boolean>
+  }
+
   runner: {
     setState(state: RunnerState): Promise<void>
     getState(): Promise<RunnerState>
@@ -195,6 +301,16 @@ export interface CourselessApi {
     set(patch: Partial<Settings>): Promise<Settings>
     /** Fires in every window whenever settings change (the main process already broadcasts them). */
     onChange(cb: (s: Settings) => void): () => void
+  }
+
+  /**
+   * The background updater, read-only on purpose: nothing in the UI may trigger a check, a
+   * download or a restart. About shows a line when a build is staged, and that is the whole
+   * surface.
+   */
+  update: {
+    getState(): Promise<UpdateState>
+    onState(cb: (s: UpdateState) => void): () => void
   }
 
   appInfo(): Promise<AppInfo>

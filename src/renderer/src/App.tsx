@@ -1,17 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  EMPTY_AUTH_STATE,
   EMPTY_RUNNER_STATE,
+  type AuthState,
+  type BillingPlanChoice,
+  type BillingStatus,
   type CoachLine,
-  type CodexStatus,
+  type EngineErrorKind,
+  type EngineStatus,
   type GenerateEvent,
   type Lesson,
   type LessonRun,
+  type PlanId,
   type PointPhase,
   type PointResult,
   type RecordDraft,
   type RunnerCoachState,
   type RunStepStat,
   type Settings,
+  type ShelfResult,
   type SkillLevel
 } from '../../shared/types'
 import type { AppInfo } from '../../shared/ipc'
@@ -26,7 +33,9 @@ import { COACH_DRAWER, Runner } from './screens/Runner'
 import { Review } from './screens/Review'
 import { SettingsScreen } from './screens/Settings'
 import { FirstRun } from './screens/FirstRun'
+import { LimitCard, UpgradeNote } from './components/Upgrade'
 import { HOME, navigate, parentOf, useRoute, type Route } from './lib/router'
+import { planState } from './lib/plan'
 
 const TAB_FOR: Record<Route['name'], NavTab> = {
   home: 'home',
@@ -44,14 +53,22 @@ export default function App() {
   const route = useRoute()
 
   // ---------------------------------------------------------------- global
-  const [status, setStatus] = useState<CodexStatus | null>(null)
+  const [status, setStatus] = useState<EngineStatus | null>(null)
   const [checking, setChecking] = useState(true)
   const [info, setInfo] = useState<AppInfo | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [booted, setBooted] = useState(false)
-  const [firstRun, setFirstRun] = useState(false)
+
+  // account
+  const [auth, setAuth] = useState<AuthState>(EMPTY_AUTH_STATE)
+  const [billing, setBilling] = useState<BillingStatus | null>(null)
+  const [billingError, setBillingError] = useState('')
+  /** The plan signature a nudge was waved away at. It comes back when the count moves on. */
+  const [nudgeOff, setNudgeOff] = useState('')
+  /** Settings opens with the plan picker already unfolded when a nudge sent you there. */
+  const [plansIntent, setPlansIntent] = useState(false)
 
   // generation
   const [ask, setAsk] = useState('')
@@ -59,6 +76,7 @@ export default function App() {
   const [genStatus, setGenStatus] = useState('')
   const [genRaw, setGenRaw] = useState('')
   const [genError, setGenError] = useState('')
+  const [genErrorKind, setGenErrorKind] = useState<EngineErrorKind | null>(null)
   const [generated, setGenerated] = useState<Lesson | null>(null)
   const genOpRef = useRef<string | null>(null)
 
@@ -82,6 +100,7 @@ export default function App() {
   const [coachStream, setCoachStream] = useState('')
   const [coachBusy, setCoachBusy] = useState(false)
   const [coachStatus, setCoachStatus] = useState('')
+  const [coachLimit, setCoachLimit] = useState('')
   const coachOpRef = useRef<string | null>(null)
 
   // suggestion
@@ -95,6 +114,11 @@ export default function App() {
 
   // stall coach
   const [stalled, setStalled] = useState(false)
+
+  // curated cloud shelf
+  const [shelf, setShelf] = useState<ShelfResult | null>(null)
+  const [shelfAdding, setShelfAdding] = useState<string | null>(null)
+  const [shelfError, setShelfError] = useState('')
 
   // authoring: record / share / import
   const [recordOpen, setRecordOpen] = useState(false)
@@ -110,16 +134,39 @@ export default function App() {
     setDrafts(await api.record.drafts())
   }, [api])
 
+  const refreshShelf = useCallback(
+    async (force = false) => {
+      setShelf(await api.library.shelf(force))
+    },
+    [api]
+  )
+
+  const billingAtRef = useRef(0)
+  const refreshBilling = useCallback(async () => {
+    billingAtRef.current = Date.now()
+    const res = await api.billing.status()
+    if (res.ok) {
+      setBilling(res.value)
+      setBillingError('')
+    } else {
+      setBilling(null)
+      setBillingError(res.error.message)
+    }
+  }, [api])
+
   const refreshStatus = useCallback(
     async (force = false) => {
       setChecking(true)
       try {
-        setStatus(await api.codexStatus(force))
+        const s = await api.engineStatus(force)
+        setStatus(s)
+        if (s.loggedIn) void refreshBilling()
+        else setBilling(null)
       } finally {
         setChecking(false)
       }
     },
-    [api]
+    [api, refreshBilling]
   )
 
   // ---------------------------------------------------------------- boot
@@ -128,14 +175,55 @@ export default function App() {
     void refreshLessons()
     void refreshDrafts()
     void api.appInfo().then(setInfo)
+    void api.auth.getState().then(setAuth)
     void api.settings.get().then((s) => {
       setSettings(s)
-      setFirstRun(!s.onboarded)
       // normalise the URL so the first history entry is a real route
       navigate(HOME, { replace: true })
       setBooted(true)
     })
   }, [api, refreshDrafts, refreshLessons, refreshStatus])
+
+  // Signing in or out is the one thing that changes what the engine can do, so the whole status
+  // is re-read from main rather than guessed at here.
+  useEffect(
+    () =>
+      api.auth.onState((s) => {
+        setAuth(s)
+        void refreshStatus(true)
+      }),
+    [api, refreshStatus]
+  )
+
+  // The month's counts move on the server — after a checkout in the browser, or after an op ran
+  // in another window. Coming back to this window is the moment to find out.
+  useEffect(() => {
+    const onFocus = (): void => {
+      if (auth.status !== 'signed-in') return
+      if (Date.now() - billingAtRef.current < 20_000) return
+      void refreshBilling()
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [auth.status, refreshBilling])
+
+  // What the plan allows, said once so Home, Review and the runner agree.
+  const plan = useMemo(() => planState(billing), [billing])
+  const showNudge = plan.nudgeable && plan.near && !!plan.note && nudgeOff !== plan.signature
+
+  /**
+   * Which tier is being paid for, as the Nav pill needs it. Null while it is genuinely unknown —
+   * the pill would otherwise offer Pro to somebody on Max for the length of one round trip.
+   */
+  const planId: PlanId | null = billing?.plan ?? status?.plan ?? null
+
+  // ---------------------------------------------------------------- curated shelf
+  // Opening the Library asks for it. Main answers out of its ten-minute cache unless that has
+  // gone stale, so coming back to this screen costs nothing.
+  useEffect(() => {
+    if (route.name !== 'library') return
+    void refreshShelf()
+  }, [route.name, refreshShelf])
 
   // ---------------------------------------------------------------- recording
   // The pill and the compile both live in the main process, so this window only has to open the
@@ -150,6 +238,7 @@ export default function App() {
           setRecordOpen(false)
           setGenRaw('')
           setGenError('')
+          setGenErrorKind(null)
           setGenerated(null)
           setAsk(s.name)
           setGenStatus('Turning your recording into a path')
@@ -247,10 +336,12 @@ export default function App() {
           setGenRaw(e.text)
           break
         case 'done':
-          setGenStatus(`${e.lesson.steps.length} steps · thread ${e.lesson.codexThreadId ? 'kept' : 'none'}`)
+          setGenStatus(`${e.lesson.steps.length} steps · ${e.lesson.est_minutes} min`)
           setGenerated(e.lesson)
           setLesson(e.lesson)
           void refreshLessons()
+          // A lesson was just spent — the count on Home and in Settings should already know.
+          void refreshBilling()
           break
         case 'error':
           if (e.error.kind === 'CANCELLED') {
@@ -258,14 +349,17 @@ export default function App() {
             genOpRef.current = null
             navigate(HOME)
           } else {
-            setGenError(`${e.error.message} (${e.error.kind})`)
+            // A used-up allowance is not a fault to debug — it needs no error code after it.
+            setGenErrorKind(e.error.kind)
+            setGenError(e.error.kind === 'LIMIT' ? e.error.message : `${e.error.message} (${e.error.kind})`)
             setGenStatus('')
+            if (e.error.kind === 'LIMIT') void refreshBilling()
           }
           break
       }
     })
     return off
-  }, [api, refreshLessons])
+  }, [api, refreshBilling, refreshLessons])
 
   // ---------------------------------------------------------------- coach stream
   useEffect(() => {
@@ -282,16 +376,24 @@ export default function App() {
           setChat((c) => [...c, { role: 'coach', text: e.text }])
           setCoachStream('')
           setCoachBusy(false)
+          void refreshBilling()
           break
         case 'error':
-          setChat((c) => [...c, { role: 'coach', text: `${e.error.message} (${e.error.kind})` }])
+          // The coach answers in sentences, so its failures do too. A used-up allowance is not
+          // one of those sentences: it gets the calm card above the input, not a reply.
+          if (e.error.kind === 'LIMIT') {
+            setCoachLimit(e.error.message)
+            void refreshBilling()
+          } else {
+            setChat((c) => [...c, { role: 'coach', text: `${e.error.message} (${e.error.kind})` }])
+          }
           setCoachStream('')
           setCoachBusy(false)
           break
       }
     })
     return off
-  }, [api])
+  }, [api, refreshBilling])
 
   // ---------------------------------------------------------------- runner actions
   const commitStep = useCallback((index: number, opts: { skipped?: boolean; done?: boolean }) => {
@@ -417,8 +519,10 @@ export default function App() {
       if (seq !== pointSeqRef.current) return
       setPointResult(res)
       setPointPhase(res.outcome === 'point' ? 'shown' : 'idle')
+      // Only a look at the screen is counted, and only the engine knows whether it took one.
+      if (res.outcome === 'point' || res.outcome === 'limit') void refreshBilling()
     },
-    [api, lesson, runIndex]
+    [api, lesson, refreshBilling, runIndex]
   )
 
   const dismissPoint = useCallback(() => {
@@ -621,6 +725,7 @@ export default function App() {
     if (!text) return
     setGenRaw('')
     setGenError('')
+    setGenErrorKind(null)
     setGenerated(null)
     setGenStatus('Waking your coach')
     genOpRef.current = 'pending'
@@ -655,6 +760,7 @@ export default function App() {
     setHintLevel(0)
     setChat([])
     setCoachOpen(false)
+    setCoachLimit('')
     setLastRun(null)
     setRunLessonId(l.id)
     navigate({ name: 'run', id: l.id })
@@ -713,6 +819,28 @@ export default function App() {
     }
   }
 
+  /**
+   * One click on the shelf. The lesson is copied here through the ordinary import path, so what
+   * lands is an ordinary lesson of yours — the row then says "Added" and the list below has it.
+   */
+  async function addFromShelf(id: string): Promise<void> {
+    if (shelfAdding) return
+    setShelfError('')
+    setShelfAdding(id)
+    try {
+      const res = await api.library.add(id)
+      if (!res.ok) {
+        setShelfError(res.error)
+        return
+      }
+      await refreshLessons()
+      // Cached, so this is free: it only re-asks main which rows are here now.
+      await refreshShelf()
+    } finally {
+      setShelfAdding(null)
+    }
+  }
+
   async function duplicateLesson(id: string): Promise<void> {
     const copy = await api.lessons.duplicate(id)
     if (!copy) return
@@ -735,6 +863,7 @@ export default function App() {
     if (text === undefined) setCoachInput('')
     setCoachStream('')
     setCoachStatus('')
+    setCoachLimit('')
     setCoachBusy(true)
     const { opId } = await api.coachSend(lesson.id, msg, {
       stepIndex: runIndex,
@@ -769,20 +898,87 @@ export default function App() {
     setSettings(await api.settings.set(patch))
   }
 
+  // ---------------------------------------------------------------- account
+  //
+  // The gate owns sign-in; Settings owns everything after it. Both go through main, which is the
+  // only place that ever holds a session.
+
+  async function onCheckout(choice: BillingPlanChoice): Promise<void> {
+    const res = await api.billing.checkout(choice)
+    if (!res.ok) setBillingError(res.error.message)
+  }
+
+  /** "See plans" from anywhere: Settings owns the plans, so it opens there with them in view. */
+  function goPlans(): void {
+    setPlansIntent(true)
+    navigate({ name: 'settings' })
+  }
+
+  /**
+   * The Nav pill. It buys the next tier up at whichever cadence was last chosen on the plan cards,
+   * and it goes straight to checkout — the pill is the short path; Settings is the long one.
+   */
+  function upgradeFromNav(): void {
+    const annual = settings?.planInterval === 'annual'
+    const choice: BillingPlanChoice =
+      planId === 'pro' ? (annual ? 'max_annual' : 'max_monthly') : annual ? 'pro_annual' : 'pro_monthly'
+    void onCheckout(choice)
+  }
+
+  /** The one card that says "this month is spent", wherever a screen needs to show it. */
+  function renderLimit(message: string, compact = false): React.ReactNode {
+    return (
+      <LimitCard
+        title="That is this month’s allowance."
+        message={message}
+        compact={compact}
+        onUpgrade={(c) => void onCheckout(c)}
+        onPlans={goPlans}
+      />
+    )
+  }
+
+  async function onPortal(): Promise<void> {
+    const res = await api.billing.portal()
+    if (!res.ok) setBillingError(res.error.message)
+  }
+
+  async function onSignOut(): Promise<void> {
+    await api.auth.signOut()
+    setBilling(null)
+    setBillingError('')
+    navigate(HOME)
+  }
+
   // ---------------------------------------------------------------- render
-  if (!booted) {
+  //
+  // THE GATE. Not "first run" — SIGNED OUT.
+  //
+  // There is exactly one way past this and it is an authenticated session. No skip, no "look
+  // around first", no session-scoped bypass: every lesson is built and coached by the engine
+  // behind the account, so an app shell reached without one is a library of things that cannot
+  // be run. Signing out later lands right back here, and so does a returning person whose
+  // session expired, `onboarded` or not — the flag records that the welcome has been read, never
+  // that the gate has been passed.
+  if (!booted || auth.status === 'unknown') {
     return <div className="min-h-screen bg-paper" />
   }
 
-  if (firstRun) {
+  const onboarded = settings?.onboarded === true
+  if (auth.status !== 'signed-in' || !onboarded) {
     return (
       <FirstRun
-        status={status}
-        checking={checking}
-        onRecheck={() => void refreshStatus(true)}
-        onContinue={() => {
+        configured={info?.backendConfigured !== false}
+        onboarded={onboarded}
+        signedIn={auth.status === 'signed-in'}
+        isMac={info?.platform === 'darwin'}
+        onBrowserSignIn={() => api.auth.browserSignIn()}
+        onCancelBrowserSignIn={() => void api.auth.cancelBrowserSignIn()}
+        onSignIn={(email, password) => api.auth.signIn(email, password)}
+        onSignUp={(email, password) => api.auth.signUp(email, password)}
+        onResetPassword={(email) => api.auth.resetPassword(email)}
+        onFinish={() => {
           void patchSettings({ onboarded: true })
-          setFirstRun(false)
           navigate(HOME, { replace: true })
         }}
       />
@@ -799,10 +995,15 @@ export default function App() {
       <Nav
         status={status}
         tab={TAB_FOR[route.name]}
+        plan={planId}
         onHome={() => navigate(HOME)}
         onLibrary={() => navigate({ name: 'library' })}
-        onSettings={() => navigate({ name: 'settings' })}
+        onSettings={() => {
+          setPlansIntent(false)
+          navigate({ name: 'settings' })
+        }}
         onStatusClick={() => navigate({ name: 'settings' })}
+        onUpgrade={upgradeFromNav}
       />
 
       {/* The coach drawer shrinks the scroll container rather than padding it — padding would
@@ -823,6 +1024,16 @@ export default function App() {
           onOpenLesson={openLesson}
           onSeeAll={() => navigate({ name: 'library' })}
           onRecord={() => setRecordOpen(true)}
+          note={
+            showNudge ? (
+              <UpgradeNote
+                note={plan.note ?? ''}
+                onUpgrade={(c) => void onCheckout(c)}
+                onPlans={goPlans}
+                onDismiss={() => setNudgeOff(plan.signature)}
+              />
+            ) : null
+          }
         />
       )}
 
@@ -830,6 +1041,10 @@ export default function App() {
         <Library
           lessons={lessons}
           drafts={drafts}
+          shelf={shelf}
+          shelfAdding={shelfAdding}
+          shelfError={shelfError}
+          onShelfAdd={(id) => void addFromShelf(id)}
           importError={importError}
           onOpenLesson={openLesson}
           onEditLesson={(id) => navigate({ name: 'edit', id })}
@@ -851,7 +1066,20 @@ export default function App() {
           raw={genRaw}
           status={genStatus}
           error={genError}
+          errorKind={genErrorKind}
           lesson={generated}
+          limitCard={
+            <LimitCard
+              title="That is the last lesson on this plan."
+              message={genError}
+              onUpgrade={(c) => void onCheckout(c)}
+              onPlans={goPlans}
+              onDismiss={() => {
+                genOpRef.current = null
+                navigate(HOME)
+              }}
+            />
+          }
           onCancel={() => void onCancelGenerate()}
           onOpen={() => {
             if (generated) {
@@ -913,6 +1141,8 @@ export default function App() {
           coachStream={coachStream}
           coachBusy={coachBusy}
           coachStatus={coachStatus}
+          coachLimit={coachLimit}
+          renderLimit={renderLimit}
           coachInput={coachInput}
           setCoachInput={setCoachInput}
           onSendCoach={() => void sendCoach()}
@@ -942,18 +1172,40 @@ export default function App() {
           onRunAgain={(isPractice) => startRun(routeLesson, isPractice)}
           onLibrary={() => navigate({ name: 'library' })}
           onLesson={() => navigate({ name: 'lesson', id: routeLesson.id })}
+          note={
+            showNudge ? (
+              <UpgradeNote
+                note={plan.note ?? ''}
+                onUpgrade={(c) => void onCheckout(c)}
+                onPlans={goPlans}
+                onDismiss={() => setNudgeOff(plan.signature)}
+              />
+            ) : null
+          }
         />
       )}
 
       {route.name === 'settings' && (
         <SettingsScreen
           status={status}
+          billing={billing}
+          billingError={billingError}
+          openPlans={plansIntent}
           settings={settings}
           info={info}
           checking={checking}
           onRecheck={() => void refreshStatus(true)}
+          onCheckout={(plan) => void onCheckout(plan)}
+          onPortal={() => void onPortal()}
+          // Signed out, Settings is unreachable — the gate has the window. This exists for the
+          // instant between the session going away and the gate mounting: start the handoff.
+          onSignIn={() => void api.auth.browserSignIn()}
+          onSignOut={() => void onSignOut()}
           onPatch={(p) => void patchSettings(p)}
-          onBack={() => navigate(HOME)}
+          onBack={() => {
+            setPlansIntent(false)
+            navigate(HOME)
+          }}
         />
       )}
       </main>

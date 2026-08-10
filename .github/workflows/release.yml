@@ -1,0 +1,69 @@
+# The Windows half of a release.
+#
+# macOS is built on a Mac by scripts/release-mac.sh, because it needs a Developer ID certificate
+# and a notarytool session that only exist there. This workflow deliberately builds nothing for
+# macOS: an unsigned Mac job would either overwrite the signed DMG or add a second, worse one to
+# the same release.
+#
+# Push a tag and the installer appears on the release for that tag:
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# The backend values come from build/public-env.json, which is committed for exactly this reason:
+# a runner has no .env.local, and an installer that cannot reach the backend cannot sign anyone in.
+
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build the Windows installer for
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx electron-vite build
+
+      # Unsigned on purpose. electron-updater only verifies a Windows signature when latest.yml
+      # carries a publisherName, and an unsigned build does not produce one, so updates keep
+      # working until a certificate shows up.
+      - name: electron-builder (nsis x64)
+        run: npx electron-builder --win --publish never
+
+      - name: Check the artifacts the site links to
+        shell: bash
+        run: |
+          test -f release/Courseless-Setup.exe
+          test -f release/latest.yml
+          ls -l release
+
+      - name: Upload to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "Courseless ${TAG#v}" --notes "Courseless ${TAG#v}" --latest
+          files=(release/Courseless-Setup.exe release/latest.yml)
+          [ -f release/Courseless-Setup.exe.blockmap ] && files+=(release/Courseless-Setup.exe.blockmap)
+          gh release upload "$TAG" "${files[@]}" --clobber

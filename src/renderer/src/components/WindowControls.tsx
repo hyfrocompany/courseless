@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { isMacPlatform } from '../lib/system'
 
 /**
  * The window's own minimize / maximize / close buttons.
@@ -6,7 +7,16 @@ import { useEffect, useState } from 'react'
  * These replace the native Windows title bar, so they carry its whole job: they must be exactly
  * where the muscle memory expects them (flush into the top-right corner, no rounding, no gap)
  * and the hover state must be unmistakable — a full-height block fill, red for close.
+ *
+ * ON MACOS THEY DO NOT EXIST. The window is created with `titleBarStyle: 'hiddenInset'`, which
+ * keeps the real traffic lights in the top-LEFT corner where every Mac user's hand already goes;
+ * drawing a second, differently-shaped set in the opposite corner would give the window two close
+ * buttons that do not even mean the same thing (macOS zoom is not Windows maximize). The drag
+ * strip stays on both platforms — that is the header, not the buttons.
  */
+
+/** Fixed for the life of the window: the OS does not change under a running renderer. */
+const IS_MAC = isMacPlatform()
 
 const BOX = 'h-full w-[46px] shrink-0 app-no-drag inline-flex items-center justify-center'
 const BASE =
@@ -53,9 +63,12 @@ export function WindowControls({ position = 'absolute' }: { position?: 'absolute
   const [maximized, setMaximized] = useState(false)
 
   useEffect(() => {
+    if (IS_MAC) return
     void api.winControl('query').then(setMaximized)
     return api.onWinState(setMaximized)
   }, [api])
+
+  if (IS_MAC) return null
 
   const run = (cmd: 'minimize' | 'maximize' | 'close'): void => {
     void api.winControl(cmd).then(setMaximized)

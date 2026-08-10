@@ -2,10 +2,14 @@
 // The renderer gets exactly this object on window.courseless and nothing else.
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC, type AppInfo, type CourselessApi } from '../shared/ipc'
+import { IPC, type AppInfo, type CourselessApi, type UpdateState } from '../shared/ipc'
 import type {
+  AuthResult,
+  AuthState,
+  BillingPlanChoice,
+  BillingStatus,
   CoachEvent,
-  CodexStatus,
+  EngineStatus,
   ExportResult,
   FloatCommand,
   FloatStatus,
@@ -14,6 +18,8 @@ import type {
   Lesson,
   NextSuggestion,
   OverlayPoint,
+  PermissionKey,
+  PermissionsState,
   PointRequest,
   PointResult,
   RecordDraft,
@@ -23,6 +29,8 @@ import type {
   RunnerAction,
   RunnerState,
   Settings,
+  ShelfAddResult,
+  ShelfResult,
   SkillLevel,
   StepContext,
   WinCommand
@@ -38,20 +46,40 @@ function sub<T>(channel: string, cb: (payload: T) => void): () => void {
 }
 
 const api: CourselessApi = {
-  codexStatus: (force?: boolean) => ipcRenderer.invoke(IPC.codexStatus, force) as Promise<CodexStatus>,
+  engineStatus: (force?: boolean) => ipcRenderer.invoke(IPC.engineStatus, force) as Promise<EngineStatus>,
 
   generateLesson: (ask: string, level: SkillLevel) =>
-    ipcRenderer.invoke(IPC.codexGenerate, { ask, level }) as Promise<{ opId: string }>,
-  onGenerateEvent: (cb: (e: GenerateEvent) => void) => sub<GenerateEvent>(IPC.codexGenerateEvent, cb),
+    ipcRenderer.invoke(IPC.engineGenerate, { ask, level }) as Promise<{ opId: string }>,
+  onGenerateEvent: (cb: (e: GenerateEvent) => void) => sub<GenerateEvent>(IPC.engineGenerateEvent, cb),
 
   coachSend: (lessonId: string, message: string, stepContext: StepContext | null) =>
-    ipcRenderer.invoke(IPC.codexCoach, { lessonId, message, stepContext }) as Promise<{ opId: string }>,
-  onCoachEvent: (cb: (e: CoachEvent) => void) => sub<CoachEvent>(IPC.codexCoachEvent, cb),
+    ipcRenderer.invoke(IPC.engineCoach, { lessonId, message, stepContext }) as Promise<{ opId: string }>,
+  onCoachEvent: (cb: (e: CoachEvent) => void) => sub<CoachEvent>(IPC.engineCoachEvent, cb),
 
   suggestNext: (lessonId: string, runStats: unknown) =>
-    ipcRenderer.invoke(IPC.codexSuggestNext, { lessonId, runStats }) as Promise<Result<NextSuggestion>>,
+    ipcRenderer.invoke(IPC.engineSuggestNext, { lessonId, runStats }) as Promise<Result<NextSuggestion>>,
 
-  cancel: (opId: string) => ipcRenderer.invoke(IPC.codexCancel, opId) as Promise<boolean>,
+  cancel: (opId: string) => ipcRenderer.invoke(IPC.engineCancel, opId) as Promise<boolean>,
+
+  // Credentials go up, an answer comes back. No token is ever exposed on this bridge.
+  auth: {
+    browserSignIn: () => ipcRenderer.invoke(IPC.authBrowserSignIn) as Promise<AuthResult>,
+    cancelBrowserSignIn: () => ipcRenderer.invoke(IPC.authBrowserCancel) as Promise<void>,
+    signIn: (email: string, password: string) =>
+      ipcRenderer.invoke(IPC.authSignIn, { email, password }) as Promise<AuthResult>,
+    signUp: (email: string, password: string) =>
+      ipcRenderer.invoke(IPC.authSignUp, { email, password }) as Promise<AuthResult>,
+    signOut: () => ipcRenderer.invoke(IPC.authSignOut) as Promise<AuthResult>,
+    resetPassword: (email: string) => ipcRenderer.invoke(IPC.authResetPassword, email) as Promise<AuthResult>,
+    getState: () => ipcRenderer.invoke(IPC.authGetState) as Promise<AuthState>,
+    onState: (cb: (s: AuthState) => void) => sub<AuthState>(IPC.authStateEvent, cb)
+  },
+
+  billing: {
+    status: () => ipcRenderer.invoke(IPC.billingStatus) as Promise<Result<BillingStatus>>,
+    checkout: (plan: BillingPlanChoice) => ipcRenderer.invoke(IPC.billingCheckout, plan) as Promise<Result<true>>,
+    portal: () => ipcRenderer.invoke(IPC.billingPortal) as Promise<Result<true>>
+  },
 
   lessons: {
     list: () => ipcRenderer.invoke(IPC.lessonsList) as Promise<Lesson[]>,
@@ -64,6 +92,11 @@ const api: CourselessApi = {
     import: (payload?: { text: string; name?: string }) =>
       ipcRenderer.invoke(IPC.lessonsImport, payload) as Promise<ImportResult>,
     duplicate: (id: string) => ipcRenderer.invoke(IPC.lessonsDuplicate, id) as Promise<Lesson | null>
+  },
+
+  library: {
+    shelf: (force?: boolean) => ipcRenderer.invoke(IPC.libraryShelf, force) as Promise<ShelfResult>,
+    add: (id: string) => ipcRenderer.invoke(IPC.libraryAdd, id) as Promise<ShelfAddResult>
   },
 
   record: {
@@ -96,6 +129,14 @@ const api: CourselessApi = {
     onOverlayDismiss: (cb: () => void) => sub<null>(IPC.overlayDismiss, () => cb())
   },
 
+  permissions: {
+    get: () => ipcRenderer.invoke(IPC.permissionsGet) as Promise<PermissionsState>,
+    request: (which: PermissionKey) =>
+      ipcRenderer.invoke(IPC.permissionsRequest, which) as Promise<PermissionsState>,
+    openSettings: (which: PermissionKey) =>
+      ipcRenderer.invoke(IPC.permissionsOpenSettings, which) as Promise<boolean>
+  },
+
   runner: {
     setState: (state: RunnerState) => ipcRenderer.invoke(IPC.runnerSetState, state) as Promise<void>,
     getState: () => ipcRenderer.invoke(IPC.runnerGetState) as Promise<RunnerState>,
@@ -110,6 +151,11 @@ const api: CourselessApi = {
     // main broadcasts the new settings on the same channel after every set — this lets the float
     // window follow the theme without a second IPC surface.
     onChange: (cb: (s: Settings) => void) => sub<Settings>(IPC.settingsGet, cb)
+  },
+
+  update: {
+    getState: () => ipcRenderer.invoke(IPC.updateGetState) as Promise<UpdateState>,
+    onState: (cb: (s: UpdateState) => void) => sub<UpdateState>(IPC.updateStateEvent, cb)
   },
 
   appInfo: () => ipcRenderer.invoke(IPC.appInfo) as Promise<AppInfo>,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { CoachLine, FadeTier, Lesson, PointPhase, PointResult } from '../../../shared/types'
 import { Breadcrumb } from '../components/Breadcrumb'
 import { FadeDot, TIER_LABEL } from '../components/FadeDots'
@@ -33,6 +33,8 @@ export function Runner({
   coachStream,
   coachBusy,
   coachStatus,
+  coachLimit,
+  renderLimit,
   coachInput,
   setCoachInput,
   onSendCoach,
@@ -65,6 +67,10 @@ export function Runner({
   coachStream: string
   coachBusy: boolean
   coachStatus: string
+  /** Set when the coach hit this month's ceiling: the panel says so calmly instead of erroring. */
+  coachLimit: string
+  /** Supplied by the window that knows about plans; the runner only decides where it goes. */
+  renderLimit?(message: string, compact?: boolean): ReactNode
   coachInput: string
   setCoachInput(v: string): void
   onSendCoach(): void
@@ -186,7 +192,12 @@ export function Runner({
 
           {/* the honest half of the accuracy contract: when the arrow cannot be given, say so
               here — right under the words that describe the same place */}
-          {note && <div className="mt-2">{<PointNote text={note} />}</div>}
+          {/* A used-up allowance is not a failed point: it gets the calm card, not the miss note. */}
+          {pointResult?.outcome === 'limit' && renderLimit ? (
+            <div className="mt-3 max-w-[520px]">{renderLimit(pointResult.message)}</div>
+          ) : (
+            note && <div className="mt-2">{<PointNote text={note} />}</div>
+          )}
 
           {step.why && (
             <p className="mt-1.5 text-[13px] italic leading-relaxed text-ink-400">{step.why}</p>
@@ -377,6 +388,7 @@ export function Runner({
             </div>
 
             <div className="shrink-0 border-t border-line px-4 py-3">
+              {coachLimit && renderLimit && <div className="mb-3">{renderLimit(coachLimit, true)}</div>}
               {coachStatus && <div className="mb-2 font-mono text-[10px] text-ink-400">{coachStatus}</div>}
               <div className="relative">
                 <input

@@ -19,8 +19,8 @@ falls), not merely watches or completes a quiz.
 
 ## Mechanism and position
 - Lessons are compiled on demand, not recorded or authored ahead: any task anyone can
-  name, day one, always current. This kills the community-recording cold start that
-  defines competitors (Basics/trybasics.ai et al.).
+  name, day one, always current. There is no library cold start: the catalogue is as
+  large as what people ask for.
 - Guidance, not agency: the AI never does the task for the user. Stated ideology:
   "when an agent does it for you, the skill stays the machine's."
 - Pedagogy commitments (research-backed, durable): learning-by-doing over watching;

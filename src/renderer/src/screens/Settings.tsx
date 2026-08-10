@@ -1,9 +1,110 @@
-import { useState } from 'react'
-import type { CodexStatus, Settings as SettingsType } from '../../../shared/types'
-import type { AppInfo } from '../../../shared/ipc'
+import { useEffect, useRef, useState } from 'react'
+import type {
+  BillingPlanChoice,
+  BillingStatus,
+  EngineStatus,
+  PlanId,
+  PlanInterval,
+  Settings as SettingsType
+} from '../../../shared/types'
+import type { AppInfo, UpdateState } from '../../../shared/ipc'
 import { Breadcrumb, BreadcrumbBar } from '../components/Breadcrumb'
-import { Button, Eyebrow, Icon, Kbd, Mono } from '../components/ui'
-import { copyText, openInExplorer, prettyHotkey } from '../lib/system'
+import { PermissionsPanel } from '../components/PermissionsPanel'
+import { Button, Chip, Eyebrow, Icon, Kbd, Mono } from '../components/ui'
+import { copyText, markHotkeyKeys, openInExplorer, prettyHotkey } from '../lib/system'
+
+const PLAN_NAME: Record<string, string> = { free: 'Free', pro: 'Pro', max: 'Max' }
+
+/** The three things the month is counted in, in the words the app uses for them. */
+const METERS: { key: keyof BillingStatus['usage']; label: string }[] = [
+  { key: 'lessons', label: 'lessons built' },
+  { key: 'coachTurns', label: 'coach replies' },
+  { key: 'visionCalls', label: 'times it looked at the screen' }
+]
+
+/**
+ * The three plans, always on screen, in the order you grow through them.
+ *
+ * Everything a plan is, is here: what it costs at both cadences and the three counts it lifts.
+ * There is no hidden fourth tier and no "contact us" — the whole ladder fits on one row of cards,
+ * which is the point.
+ */
+interface PlanCardSpec {
+  id: PlanId
+  title: string
+  line: string
+  includes: string[]
+  /** Null on Free: there is nothing to buy. */
+  checkout: Record<PlanInterval, BillingPlanChoice> | null
+  price: Record<PlanInterval, { amount: string; sub: string }>
+}
+
+const PLANS: PlanCardSpec[] = [
+  {
+    id: 'free',
+    title: 'Free',
+    line: 'Enough to find out whether learning this way suits you.',
+    includes: ['3 lessons a month', '20 coach replies', '15 looks at the screen'],
+    checkout: null,
+    price: { monthly: { amount: 'Free', sub: 'no card' }, annual: { amount: 'Free', sub: 'no card' } }
+  },
+  {
+    id: 'pro',
+    title: 'Pro',
+    line: 'For picking up something new most weeks.',
+    includes: ['150 lessons a month', '2000 coach replies', '1000 looks at the screen'],
+    checkout: { monthly: 'pro_monthly', annual: 'pro_annual' },
+    price: {
+      monthly: { amount: '$20', sub: 'per month' },
+      annual: { amount: '$192', sub: 'per year · $16 a month' }
+    }
+  },
+  {
+    id: 'max',
+    title: 'Max',
+    line: 'Fair use, for the months you are in a new tool every day.',
+    includes: ['Unlimited lessons', 'Unlimited coach replies', 'Unlimited looks at the screen'],
+    checkout: { monthly: 'max_monthly', annual: 'max_annual' },
+    price: {
+      monthly: { amount: '$50', sub: 'per month' },
+      annual: { amount: '$480', sub: 'per year · $40 a month' }
+    }
+  }
+]
+
+/** Which way is up. Everything above your plan is an upgrade; everything below is a billing change. */
+const RANK: Record<PlanId, number> = { free: 0, pro: 1, max: 2 }
+
+/** One month, one count. No bar at all on the unlimited plan — there is nothing to fill. */
+function Meter({ label, used, limit }: { label: string; used: number; limit: number | null }) {
+  if (limit === null) {
+    return (
+      <div className="flex items-baseline justify-between gap-4 border-b border-line-2 py-2 last:border-b-0">
+        <span className="text-[12.5px] text-ink-500">{label}</span>
+        <Mono className="text-[11px] text-ink-700">{used} · unlimited</Mono>
+      </div>
+    )
+  }
+  const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+  return (
+    <div className="border-b border-line-2 py-2 last:border-b-0">
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="text-[12.5px] text-ink-500">{label}</span>
+        <Mono className="text-[11px] text-ink-700">
+          {used} / {limit}
+        </Mono>
+      </div>
+      <div className="mt-1.5 h-[4px] overflow-hidden rounded-full bg-sunken">
+        <div
+          className={`h-full rounded-full transition-[width] duration-300 ease-out ${
+            pct >= 100 ? 'bg-warn' : 'bg-ocean-500'
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  )
+}
 
 /** A labelled on/off switch. Reads as a switch, not a checkbox — these change app behaviour. */
 function Toggle({
@@ -64,27 +165,169 @@ function Row({
   )
 }
 
+/**
+ * One plan. The plan you are on is marked and offers nothing — a card that tries to sell you what
+ * you already pay for is the salesy thing this section is built to avoid. Above your plan is an
+ * upgrade; below it is a change, and changes belong on the billing page where the money is.
+ */
+function PlanCard({
+  spec,
+  current,
+  interval,
+  onCheckout,
+  onPortal
+}: {
+  spec: PlanCardSpec
+  current: PlanId
+  interval: PlanInterval
+  onCheckout(plan: BillingPlanChoice): void
+  onPortal(): void
+}) {
+  const isCurrent = spec.id === current
+  const isUpgrade = RANK[spec.id] > RANK[current]
+  const price = spec.price[interval]
+
+  return (
+    <div
+      data-testid={`plan-card-${spec.id}`}
+      data-current={isCurrent ? 'true' : undefined}
+      className={`flex min-w-0 flex-col rounded-sm p-3.5 ${
+        isCurrent ? 'bg-surface ring-1 ring-[var(--c-accent)]' : 'bg-sunken'
+      }`}
+    >
+      {/* Every card is the same five bands in the same order — name, price, one line, three
+          counts, one action — so the eye compares prices instead of re-reading layouts. */}
+      <div className="flex h-[22px] items-center gap-2">
+        <span className="text-[13px] font-semibold text-ink-900">{spec.title}</span>
+        {isCurrent && (
+          <span data-testid={`plan-current-${spec.id}`} className="ml-auto">
+            <Chip tone="ocean" className="px-2 py-px text-[11px]">
+              Your plan
+            </Chip>
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2 h-[44px]">
+        <Mono className="block text-[17px] font-medium leading-[24px] text-ink-900">{price.amount}</Mono>
+        <span className="block text-[11.5px] leading-[18px] text-ink-400">{price.sub}</span>
+      </div>
+
+      {/* Fixed at two lines: the bullet lists below have to start on the same baseline in all
+          three cards, and a sentence that wraps to three would drop one of them by 18px. */}
+      <p className="mt-2 h-[36px] text-[12px] leading-[18px] text-ink-500">{spec.line}</p>
+
+      <ul className="mt-2.5 space-y-1">
+        {spec.includes.map((item) => (
+          <li key={item} className="flex items-start gap-1.5 text-[12px] leading-[1.45] text-ink-700">
+            <span className="mt-[3px] shrink-0 text-ocean-600 dark:text-ocean-400">{Icon.check({ size: 12 })}</span>
+            <span className="min-w-0">{item}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* mt-auto and full width: three actions on three different baselines read as three
+          unrelated boxes. One row, one height, one edge-to-edge shape per card. */}
+      <div className="mt-auto pt-4">
+        {isCurrent ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            data-testid={`plan-current-cta-${spec.id}`}
+            className="w-full"
+          >
+            Current plan
+          </Button>
+        ) : isUpgrade && spec.checkout ? (
+          <Button
+            size="sm"
+            data-testid={`checkout-${spec.checkout[interval]}`}
+            onClick={() => onCheckout(spec.checkout![interval])}
+            className="w-full"
+          >
+            Upgrade to {spec.title}
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid={`plan-change-${spec.id}`}
+            onClick={onPortal}
+            className="w-full"
+          >
+            Change in billing
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function SettingsScreen({
   status,
+  billing,
+  billingError,
+  openPlans = false,
   settings,
   info,
   checking,
   onRecheck,
+  onCheckout,
+  onPortal,
+  onSignIn,
+  onSignOut,
   onPatch,
   onBack
 }: {
-  status: CodexStatus | null
+  status: EngineStatus | null
+  billing: BillingStatus | null
+  billingError: string
+  /** True when a nudge sent you here: the page opens with the Plans section in view. */
+  openPlans?: boolean
   settings: SettingsType | null
   info: AppInfo | null
   checking: boolean
   onRecheck(): void
+  onCheckout(plan: BillingPlanChoice): void
+  onPortal(): void
+  onSignIn(): void
+  onSignOut(): void
   onPatch(patch: Partial<SettingsType>): void
   onBack(): void
 }) {
   const [hotkey, setHotkey] = useState(settings?.hotkey ?? '')
-  const [model, setModel] = useState(settings?.model ?? '')
   const [displayName, setDisplayName] = useState(settings?.displayName ?? '')
   const [copied, setCopied] = useState('')
+  const [update, setUpdate] = useState<UpdateState>({ status: 'idle', version: null })
+  const plansRef = useRef<HTMLElement>(null)
+
+  const plan: PlanId = billing?.plan ?? status?.plan ?? 'free'
+  const interval: PlanInterval = settings?.planInterval === 'annual' ? 'annual' : 'monthly'
+  const signedIn = !!status?.loggedIn
+  const isMac = info?.platform === 'darwin'
+  const renews =
+    billing?.currentPeriodEnd && billing.status !== 'none'
+      ? new Date(billing.currentPeriodEnd).toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+      : null
+
+  // Updates arrive on their own and install themselves on quit. About is the only place that says
+  // so, and only once there is something staged.
+  useEffect(() => {
+    void window.courseless.update.getState().then(setUpdate)
+    return window.courseless.update.onState(setUpdate)
+  }, [])
+
+  // A nudge that says "see plans" has to LAND on them. The section is always there, so this only
+  // has to scroll — no state, nothing to unfold, nothing that can be open or shut.
+  useEffect(() => {
+    if (!openPlans) return
+    plansRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [openPlans])
 
   async function copy(value: string, key: string): Promise<void> {
     if (await copyText(value)) {
@@ -103,70 +346,166 @@ export function SettingsScreen({
       <Eyebrow>Settings</Eyebrow>
       <h1 className="mt-1.5 font-display text-[28px] leading-tight tracking-[-0.03em]">Yours, on this machine.</h1>
       <p className="mt-2 max-w-[62ch] text-[13.5px] text-ink-500">
-        No account, no server, no telemetry. Lessons are plain JSON files in a folder you own.
+        Lessons are plain JSON files in a folder you own. The account exists so your coach knows
+        who is asking.
       </p>
 
       <div className="mt-7">
-        <Row label="Engine" hint="The local AI that builds and coaches your lessons. Courseless never holds an API key.">
-          <div className="rounded-md bg-surface p-4 ring-hairline">
-            <div className="flex items-center gap-2.5">
+        <Row
+          label="Account"
+          hint="Your asks go to the engine that builds and coaches lessons. Everything it makes is saved here."
+        >
+          <div className="rounded-md bg-surface p-4 ring-hairline" data-testid="account-card">
+            <div className="flex flex-wrap items-center gap-2.5">
               <span
                 className={`h-[8px] w-[8px] rounded-full ${
-                  checking ? 'bg-ink-300 pulse-dot' : status?.loggedIn ? 'bg-success' : 'bg-warn'
+                  checking ? 'bg-ink-300 pulse-dot' : signedIn ? 'bg-success' : 'bg-warn'
                 }`}
               />
-              <span className="text-[13.5px] font-medium text-ink-900">
-                {checking
-                  ? 'Checking'
-                  : status?.loggedIn
-                    ? 'Connected'
-                    : status?.installed
-                      ? 'Installed, not signed in'
-                      : 'No engine found'}
+              <span className="text-[13.5px] font-medium text-ink-900" data-testid="account-email">
+                {checking ? 'Checking' : signedIn ? status?.email || 'Signed in' : 'Signed out'}
               </span>
+              {signedIn && (
+                <span data-testid="plan-badge">
+                  <Chip tone={plan === 'free' ? 'quiet' : 'ocean'}>{PLAN_NAME[plan] ?? plan}</Chip>
+                </span>
+              )}
               <Button variant="ghost" size="sm" data-testid="recheck-btn" onClick={onRecheck} className="ml-auto">
                 {Icon.refresh({ size: 14 })} Re-check
               </Button>
             </div>
-            <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono text-[11px] text-ink-500">
-              <div className="flex justify-between gap-3 border-b border-line-2 pb-1.5">
-                <dt>version</dt>
-                <dd data-testid="status-installed" className="text-ink-700">
-                  {status?.version ?? '—'}
-                </dd>
+
+            {signedIn ? (
+              <>
+                <div className="mt-3">
+                  {billing ? (
+                    <div data-testid="usage-meters">
+                      <div className="mb-1 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink-400">
+                        this month
+                      </div>
+                      {METERS.map((m) => (
+                        <Meter
+                          key={m.key}
+                          label={m.label}
+                          used={billing.usage?.[m.key] ?? 0}
+                          limit={billing.limits ? billing.limits[m.key] : null}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[12.5px] text-ink-500">
+                      {billingError || 'Reading your plan…'}
+                    </p>
+                  )}
+                </div>
+
+                {renews && (
+                  <p className="mt-2.5 text-[12px] text-ink-500" data-testid="period-end">
+                    {billing?.status === 'canceled'
+                      ? `Your plan runs until ${renews}.`
+                      : `Renews ${renews}.`}
+                  </p>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {plan !== 'free' && (
+                    <Button variant="outline" size="sm" data-testid="portal-btn" onClick={onPortal}>
+                      Manage billing
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="sm" data-testid="signout-btn" onClick={onSignOut}>
+                    Sign out
+                  </Button>
+                </div>
+
+                {plan !== 'free' && (
+                  <p className="mt-2.5 max-w-[54ch] text-[12px] leading-[1.5] text-ink-500">
+                    Changing plan, cancelling, payment methods and invoices all live on the billing
+                    page, which opens in your browser.
+                  </p>
+                )}
+                {billing && billingError && (
+                  <p className="mt-2.5 text-[12.5px] text-warn" data-testid="billing-error">
+                    {billingError}
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="mt-3">
+                <p className="max-w-[52ch] text-[13px] leading-relaxed text-ink-500">
+                  Lessons you already have still run. Building a new one, coaching and pointing
+                  need an account.
+                </p>
+                <Button size="sm" data-testid="signin-btn" onClick={onSignIn} className="mt-3">
+                  Sign in
+                </Button>
               </div>
-              <div className="flex justify-between gap-3 border-b border-line-2 pb-1.5">
-                <dt>model</dt>
-                <dd data-testid="status-model" className="truncate text-ink-700">
-                  {status?.model ?? 'default'}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt>transport</dt>
-                <dd data-testid="status-transport" className="text-ink-700">
-                  {status?.transport ?? '—'}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt>signed in</dt>
-                <dd className="text-ink-700">{status?.loggedIn ? 'yes' : 'no'}</dd>
-              </div>
-            </dl>
+            )}
+
             {status?.error && <p className="mt-3 text-[13px] text-warn">{status.error}</p>}
           </div>
         </Row>
 
-        <Row label="Model override" hint="Leave empty to use the engine's default.">
-          <input
-            data-testid="settings-model"
-            value={model}
-            placeholder="gpt-5.6-sol"
-            spellCheck={false}
-            onChange={(e) => setModel(e.target.value)}
-            onBlur={() => onPatch({ model: model.trim() || null })}
-            className="h-10 w-full max-w-[320px] rounded-sm bg-surface px-3 font-mono text-[13px] ring-hairline focus:outline-none focus:shadow-[inset_0_0_0_1px_var(--c-focus)]"
-          />
-        </Row>
+        {/* ---------------------------------------------------------------- plans
+            Always here, never behind a button. Three cards, the one you are on marked, and the
+            cadence switch that decides which price the buttons buy. It spans both columns of the
+            settings grid on purpose: this is the one row that is a comparison, not a control. */}
+        <section
+          ref={plansRef}
+          data-testid="plans-section"
+          className="border-b border-line-2 py-5"
+          aria-label="Plans"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-semibold text-ink-900">Plans</div>
+              <div className="mt-0.5 max-w-[52ch] text-[12px] leading-relaxed text-ink-500">
+                Every plan counts the same three things a month. You are on{' '}
+                <span className="text-ink-700">{PLAN_NAME[plan] ?? plan}</span>.
+              </div>
+            </div>
+
+            <div
+              role="radiogroup"
+              aria-label="Billing cadence"
+              className="inline-flex shrink-0 rounded-full bg-sunken p-[3px]"
+            >
+              {(['monthly', 'annual'] as const).map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="radio"
+                  aria-checked={interval === i}
+                  data-testid={`interval-${i}`}
+                  onClick={() => onPatch({ planInterval: i })}
+                  className={`inline-flex items-center rounded-full px-3.5 py-[6px] text-[12.5px] font-medium capitalize transition-colors duration-150 ${
+                    interval === i ? 'bg-surface text-ink-900 ring-hairline' : 'text-ink-500 hover:text-ink-900'
+                  }`}
+                >
+                  {i}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {PLANS.map((spec) => (
+              <PlanCard
+                key={spec.id}
+                spec={spec}
+                current={plan}
+                interval={interval}
+                onCheckout={onCheckout}
+                onPortal={onPortal}
+              />
+            ))}
+          </div>
+
+          <p className="mt-3 max-w-[70ch] text-[12px] leading-[1.5] text-ink-500">
+            Checkout opens in your browser. The plan applies here the moment it is paid, and
+            cancelling never takes a lesson away — everything already built stays on this machine.
+          </p>
+        </section>
 
         <Row
           label="Start lessons pinned"
@@ -200,17 +539,28 @@ export function SettingsScreen({
             />
             <p className="max-w-[58ch] text-[12.5px] leading-[1.5] text-ink-500">
               With this off, pointing happens only when you ask — the <Kbd className="h-[19px] px-1.5 text-[10.5px]">P</Kbd>{' '}
-              key or the Show me button. Courseless first reads the element straight from Windows;
-              only if that finds nothing does it look at the screen.
+              key or the Show me button.{' '}
+              {isMac
+                ? 'Courseless first reads the element through macOS accessibility; only if that finds nothing does it look at the screen.'
+                : 'Courseless first reads the element straight from Windows; only if that finds nothing does it look at the screen.'}
             </p>
             <div className="rounded-sm bg-sunken p-3 text-[12.5px] leading-[1.5] text-ink-500">
               <span className="font-medium text-ink-700">What gets captured.</span> Your screen is
-              captured only when you ask it to point and only if reading the element failed. The
-              image goes to your local engine and is deleted the moment the answer comes back —
-              nothing is stored, nothing is uploaded by Courseless.
+              captured only when you ask it to point and only if reading the element failed. That
+              one image is sent to the engine to be read, deleted from this machine as soon as the
+              answer arrives, and never stored on either end.
             </div>
           </div>
         </Row>
+
+        {isMac && (
+          <Row
+            label="Permissions"
+            hint="macOS asks before any app can read the screen. Pointing is the only thing that needs it."
+          >
+            <PermissionsPanel live />
+          </Row>
+        )}
 
         <Row label="Voice" hint="Off by default. Courseless is quiet unless you ask it not to be.">
           <div className="flex flex-col gap-3.5">
@@ -249,15 +599,15 @@ export function SettingsScreen({
           />
           <p className="mt-2 max-w-[58ch] text-[12.5px] leading-[1.5] text-ink-500">
             Leave it empty and shared lessons say{' '}
-            <span className="text-ink-700">“from a Courseless user”</span>. It is a label in a file
-            you send — there is no account behind it and nothing is sent anywhere.
+            <span className="text-ink-700">“from a Courseless user”</span>. It is a label written
+            into the file you hand over, nothing more — your account address stays out of it.
           </p>
         </Row>
 
         <Row label="Summon hotkey" hint="Shows the window, or toggles the float widget while a lesson is running.">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
-              {prettyHotkey(settings?.hotkey ?? '').map((k) => (
+              {prettyHotkey(settings?.hotkey ?? '', isMac).map((k) => (
                 <Kbd key={k} className="h-7 px-2 text-[12px]">
                   {k}
                 </Kbd>
@@ -274,10 +624,13 @@ export function SettingsScreen({
           </div>
           <p className="mt-2.5 max-w-[58ch] text-[12.5px] leading-[1.5] text-ink-500">
             While you are recording a walkthrough,{' '}
-            <Kbd className="h-[19px] px-1.5 text-[10.5px]">Ctrl</Kbd>{' '}
-            <Kbd className="h-[19px] px-1.5 text-[10.5px]">⇧</Kbd>{' '}
-            <Kbd className="h-[19px] min-w-[19px] px-1.5 text-[10.5px]">M</Kbd> marks a moment. That
-            one is fixed, and it exists only while the recording pill is on screen.
+            {markHotkeyKeys(isMac).map((k) => (
+              <span key={k}>
+                <Kbd className="h-[19px] min-w-[19px] px-1.5 text-[10.5px]">{k}</Kbd>{' '}
+              </span>
+            ))}
+            marks a moment. That one is fixed, and it exists only while the recording pill is on
+            screen.
           </p>
         </Row>
 
@@ -302,7 +655,7 @@ export function SettingsScreen({
           </div>
         </Row>
 
-        <Row label="Data folder" hint="Lessons, settings and the log. Delete the folder and Courseless forgets everything.">
+        <Row label="Data folder" hint="Lessons, settings and the log. Delete the folder and this machine forgets everything.">
           <div className="rounded-sm bg-sunken p-3">
             <Mono className="block break-all text-[11.5px] text-ink-700">{info?.lessonsPath ?? '…'}</Mono>
           </div>
@@ -325,6 +678,11 @@ export function SettingsScreen({
           <Mono className="text-[11.5px] text-ink-500">
             Courseless {info?.version ?? ''} {info?.isDev ? '· dev' : ''}
           </Mono>
+          {update.status === 'ready' && (
+            <Mono data-testid="update-ready" className="mt-1.5 block text-[11.5px] text-ocean-600">
+              Update ready{update.version ? ` (${update.version})` : ''} — restarts to apply
+            </Mono>
+          )}
           <p className="mt-2.5 max-w-[54ch] font-display text-[16px] italic leading-[1.45] text-ink-700">
             When an agent does it for you, the skill stays the machine&apos;s. Keep it yours.
           </p>

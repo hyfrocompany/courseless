@@ -1,0 +1,2275 @@
+/* ============================================================================
+   Courseless : the site.
+   This is the app's own design system, ported: the ocean ramp, the semantic
+   surface/ink tokens, Newsreader / Manrope / JetBrains Mono, hairline-inlaid
+   surfaces (inset 1px), pill controls, mono microdata.
+   Source of truth: src/renderer/src/index.css and components/ui.tsx.
+   The ocean gradient appears in exactly one place, as it does in the app:
+   lesson cover art. It is never a page background.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- type */
+
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/newsreader-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/manrope-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/manrope-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/manrope-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/manrope-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+}
+
+/* ---------------------------------------------------------------- tokens */
+
+:root {
+  color-scheme: light;
+
+  /* ocean ramp : constant across themes (identity) */
+  --o-50: #eff8ff;
+  --o-100: #dcf0ff;
+  --o-200: #b9e2ff;
+  --o-300: #7dccff;
+  --o-400: #36b0fa;
+  --o-500: #0b96ea;
+  --o-600: #0077c8;
+  --o-700: #0a5fa0;
+  --o-800: #0f4c80;
+  --o-900: #123f69;
+  --o-950: #0b2942;
+
+  --paper: #f7f9fb;
+  --surface: #ffffff;
+  --sunken: #f1f5f8;
+  --ink-900: #0e1a22;
+  --ink-700: #33434d;
+  --ink-500: #5e6e79;
+  --ink-400: #8996a0;
+  --ink-300: #b6c0c7;
+  --line-1: #e4eaee;
+  --line-2: #edf1f4;
+
+  --mist: #eff8ff;
+  --mist-line: #b9e2ff;
+  --mist-ink: #0f4c80;
+  --chip: #dcf0ff;
+  --chip-ink: #0f4c80;
+
+  --link: #0a5fa0;
+  --accent: #0b96ea;
+  --fill: #0077c8;
+  --fill-hover: #0a5fa0;
+  --fill-ink: #ffffff;
+  --cta: #0e1a22;
+  --cta-ink: #ffffff;
+  --cta-hover: #000000;
+  --focus: #0b96ea;
+  --danger: #d14343;
+  --danger-bg: #fdf1f1;
+  --danger-line: #f0cfcf;
+  /* the checkpoint mark in the mock sheet; same green the app uses for a met checkpoint */
+  --success: #0e9f6e;
+
+  /* the app you are learning, behind the coach: neutral, never ours */
+  --desk: #ffffff;
+  --desk-bar: #f2f4f6;
+  --desk-line: #e7eaed;
+  --desk-mark: #dfe3e7;
+
+  --shadow-float: 0 18px 46px -14px rgb(9 30 48 / 0.34), 0 4px 12px -4px rgb(9 30 48 / 0.16);
+  --shadow-lift: 0 12px 32px -10px rgb(14 26 34 / 0.14), 0 4px 10px -4px rgb(14 26 34 / 0.06);
+  --glass: rgb(247 249 251 / 0.86);
+
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  /* radii, straight from the app's @theme */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+
+  /* one spacing rhythm for the whole page */
+  --wrap: 1120px;
+  --gutter: clamp(20px, 4.4vw, 40px);
+  --sp-section: clamp(56px, 6.4vw, 88px);
+  --sp-head: 40px;
+  --sp-block: 24px;
+}
+
+/* The app opens on paper (main.ts: createMainWindow defaults to 'light'), so the site is
+   light, full stop. No prefers-color-scheme branch: one surface, the one the product has. */
+
+/* ---------------------------------------------------------------- base */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink-900);
+  font-family: var(--font-sans);
+  font-size: 15.5px;
+  line-height: 1.6;
+  letter-spacing: -0.004em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variant-ligatures: none;
+  overflow-wrap: break-word;
+}
+
+::selection {
+  background: var(--o-200);
+  color: var(--o-950);
+}
+/* One focus ring, drawn with outline so it follows each shape's own radius instead of
+   flattening pills into rounded rectangles, and so it never eats an inset hairline. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure,
+table {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---------------------------------------------------------------- atoms */
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* mono microdata, exactly as the app uses it: facts, counts, keys : never decoration */
+.micro {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-500);
+}
+
+kbd,
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  min-width: 22px;
+  padding-inline: 6px;
+  border-radius: 5px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink-700);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+
+.note {
+  color: var(--ink-500);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* ---------------------------------------------------------------- headings */
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(25px, 2.9vw, 34px);
+  line-height: 1.14;
+  letter-spacing: -0.028em;
+  max-width: 22ch;
+  text-wrap: balance;
+}
+
+.sub {
+  margin-top: 12px;
+  max-width: 62ch;
+  color: var(--ink-500);
+  font-size: 15.5px;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding-inline: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-900);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+.btn:hover {
+  background: var(--sunken);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn svg {
+  flex: none;
+}
+.btn.primary {
+  background: var(--cta);
+  color: var(--cta-ink);
+  box-shadow: none;
+}
+/* near-black to black is not a perceptible hover on its own, so the lift does the talking */
+.btn.primary:hover {
+  background: var(--cta-hover);
+  box-shadow: var(--shadow-lift);
+}
+.btn.ocean:hover {
+  box-shadow: var(--shadow-lift);
+}
+.btn.ocean {
+  background: var(--fill);
+  color: var(--fill-ink);
+  box-shadow: none;
+}
+.btn.ocean:hover {
+  background: var(--fill-hover);
+}
+.btn.block {
+  width: 100%;
+}
+
+.link {
+  color: var(--link);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------- header (mirrors Nav.tsx) */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line-1);
+}
+
+.topbar-in {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 52px;
+}
+
+/* The app's own lockup (components/Nav.tsx): lowercase Manrope 700 plus the ocean dot.
+   One class, used by every page, so the two pieces can never drift apart. The row centers
+   on the box; the dot carries a small optical nudge because it reads low against
+   lowercase letterforms with no ascenders beside it. */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+  text-decoration: none;
+  color: var(--ink-900);
+}
+.wordmark span {
+  display: block;
+  line-height: 1;
+  transform: translateY(0.5px);
+}
+/* The dot centres on the x-height of the lowercase, not on the line box: measured at 4x, a
+   2px nudge sat 1.5px under the middle of the o. */
+.wordmark i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--o-500);
+  transform: translateY(0.5px);
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+/* :not(.btn) matters: the Download pill is an <a> too, and a bare `.topnav a:hover`
+   outranks `.btn.primary`, which repainted its label in the same ink as its own fill. */
+.topnav a:not(.btn) {
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  color: var(--ink-500);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.topnav a:not(.btn):hover {
+  color: var(--ink-900);
+}
+.topnav .btn {
+  height: 32px;
+  margin-left: 8px;
+  padding-inline: 14px;
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .topnav .hide-sm {
+    display: none;
+  }
+}
+/* At 320 the row stopped fitting and pushed the page sideways. Pricing and the download
+   stay; signing in is a returning-user errand and lives in the footer too. */
+@media (max-width: 400px) {
+  .topnav a[href='/login'] {
+    display: none;
+  }
+  .topnav {
+    gap: 0;
+  }
+  .topnav a:not(.btn) {
+    padding-inline: 6px;
+  }
+  .topnav .btn {
+    margin-left: 4px;
+    padding-inline: 12px;
+  }
+}
+
+/* ---------------------------------------------------------------- hero */
+
+.hero {
+  padding-block: clamp(44px, 6vw, 76px) var(--sp-section);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: center;
+}
+@media (max-width: 980px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 44px;
+  }
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(36px, 5vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.032em;
+  max-width: 13ch;
+}
+.hero h1 .soft {
+  display: block;
+  color: var(--ink-500);
+}
+
+.hero .lede {
+  margin-top: 20px;
+  max-width: 48ch;
+  color: var(--ink-700);
+  font-size: 16.5px;
+  line-height: 1.6;
+}
+
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+/* The platform you are on leads; the other stays one click away. The choice is stamped on
+   <html> before first paint, so nothing flips while you are looking at it. */
+:root:not([data-os]) #dl-mac,
+[data-os='mac'] #dl-mac,
+[data-os='win'] #dl-win {
+  order: -1;
+  background: var(--cta);
+  color: var(--cta-ink);
+  box-shadow: none;
+}
+:root:not([data-os]) #dl-mac:hover,
+[data-os='mac'] #dl-mac:hover,
+[data-os='win'] #dl-win:hover {
+  background: var(--cta-hover);
+}
+
+.dl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+/* ---------------------------------------------------------------- the work surface */
+
+/* Everything inside a stage scales from one container-relative base, so the mock keeps
+   the app's real proportions at any width. */
+.stage-wrap {
+  container-type: inline-size;
+  width: 100%;
+}
+
+.stage {
+  position: relative;
+  font-size: clamp(7.4px, 1.58cqw, 11px);
+  isolation: isolate;
+}
+
+.hero-stage {
+  aspect-ratio: 16 / 11;
+}
+
+/* the app you are learning : abstract on purpose; this is a mock, not a screenshot */
+.desk {
+  position: absolute;
+  inset: 0 4% 14% 0;
+  border-radius: var(--r-md);
+  background: var(--desk);
+  box-shadow:
+    inset 0 0 0 1px var(--line-1),
+    var(--shadow-lift);
+  overflow: hidden;
+}
+
+.desk-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  height: 2.4em;
+  padding-inline: 1em;
+  background: var(--desk-bar);
+  border-bottom: 1px solid var(--desk-line);
+}
+.desk-bar i {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 999px;
+  background: var(--desk-mark);
+}
+.desk-file {
+  margin-left: 0.9em;
+  font-size: 1.05em;
+  color: var(--ink-500);
+}
+
+/* the ribbon: text, because a row of grey pills is not a ribbon */
+.ribbon {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  height: 2.7em;
+  padding-inline: 0.8em;
+  border-bottom: 1px solid var(--desk-line);
+  font-size: 1.06em;
+  color: var(--ink-500);
+}
+.ribbon .tab {
+  padding: 0.3em 0.6em;
+  border-radius: 0.4em;
+}
+/* the element the current step names */
+.ribbon .tab.target {
+  color: var(--ink-900);
+  box-shadow: inset 0 0 0 1.5px var(--o-400);
+}
+
+.fbar {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  height: 2.3em;
+  padding-inline: 0.8em;
+  border-bottom: 1px solid var(--desk-line);
+  font-size: 1em;
+  color: var(--ink-500);
+}
+.fbar .namebox {
+  width: 4.2em;
+  padding: 0.15em 0.5em;
+  border-radius: 0.3em;
+  box-shadow: inset 0 0 0 1px var(--desk-line);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--ink-700);
+}
+.fbar .fx {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-style: italic;
+  color: var(--ink-400);
+}
+.fbar .fval {
+  color: var(--ink-700);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2.4em repeat(4, 1fr);
+  align-content: start;
+}
+.grid .ch,
+.grid .rh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.9em;
+  background: var(--desk-bar);
+  border-right: 1px solid var(--desk-line);
+  border-bottom: 1px solid var(--desk-line);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--ink-400);
+}
+.grid .rh {
+  height: 2.2em;
+}
+.grid .cell {
+  display: flex;
+  align-items: center;
+  height: 2.2em;
+  padding-inline: 0.6em;
+  border-right: 1px solid var(--desk-line);
+  border-bottom: 1px solid var(--desk-line);
+  font-size: 1.02em;
+  color: var(--ink-700);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.grid .cell.head {
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.grid .cell.num {
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+/* the checkpoint of step 1: one cell inside the data carries the selection border */
+.grid .cell.sel {
+  box-shadow: inset 0 0 0 1.5px var(--success);
+}
+
+/* ---------------------------------------------------------------- ghost cursor */
+
+/* The same marks the overlay draws on your desktop (src/renderer/src/Overlay.tsx):
+   a tinted arrow with a white keyline, a double ripple on arrival, and a callout that
+   names what it found. */
+.ghost {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 3;
+  animation: fly 8s var(--ease-enter) infinite;
+}
+
+.ghost-arrow {
+  position: absolute;
+  left: -0.2em;
+  top: -0.14em;
+  width: 2.9em;
+  height: 2.9em;
+  /* the anchor is zero-width, so the global max-width would collapse the glyph */
+  max-width: none;
+  filter: drop-shadow(0 3px 7px rgba(6, 22, 38, 0.4));
+}
+
+.ripple {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 9.6em;
+  height: 9.6em;
+  border-radius: 999px;
+  border: 0.24em solid var(--o-500);
+  box-shadow:
+    0 0 0 0.14em rgb(255 255 255 / 0.5),
+    inset 0 0 0 0.14em rgb(255 255 255 / 0.4);
+  opacity: 0;
+  animation: ripple 8s var(--ease-enter) infinite;
+}
+.ripple.r2 {
+  border-color: var(--o-300);
+  animation-name: ripple2;
+}
+
+.callout {
+  position: absolute;
+  left: 2.1em;
+  top: 1.9em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.65em 1.15em 0.65em 0.95em;
+  border-radius: 1em;
+  background: #ffffff;
+  color: #0e1a22;
+  font-family: var(--font-sans);
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 0 0 1px rgb(14 26 34 / 0.14),
+    0 10px 26px -8px rgb(6 22 38 / 0.5);
+  opacity: 0;
+  animation: calloutIn 8s var(--ease-enter) infinite;
+}
+.callout i {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 999px;
+  background: var(--o-500);
+  box-shadow: 0 0 0 0.2em rgb(11 150 234 / 0.18);
+}
+
+/* The flight comes up from the lower left. Approaching from the right threw the arrow past
+   the right edge mid-flight on a phone, which pushed the whole page sideways. */
+@keyframes fly {
+  0% {
+    transform: translate(-7em, 11em);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  26% {
+    transform: translate(0, 0);
+  }
+  42% {
+    transform: translate(0, -0.34em);
+  }
+  58% {
+    transform: translate(0, 0);
+  }
+  74% {
+    transform: translate(0, -0.34em);
+  }
+  88% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  96%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+}
+@keyframes ripple {
+  0%,
+  24% {
+    transform: translate(-50%, -50%) scale(0.16);
+    opacity: 0;
+  }
+  26% {
+    transform: translate(-50%, -50%) scale(0.16);
+    opacity: 0.9;
+  }
+  33% {
+    opacity: 0.42;
+  }
+  36%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes ripple2 {
+  0%,
+  26% {
+    transform: translate(-50%, -50%) scale(0.16);
+    opacity: 0;
+  }
+  28% {
+    transform: translate(-50%, -50%) scale(0.16);
+    opacity: 0.9;
+  }
+  35% {
+    opacity: 0.42;
+  }
+  38%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes calloutIn {
+  0%,
+  27% {
+    opacity: 0;
+    transform: translateY(-0.3em) scale(0.97);
+  }
+  33%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------- the pinned widget */
+
+/* A faithful mock of the always-on-top coach (src/renderer/src/Float.tsx): same order,
+   same weights, same controls, same key row. */
+.widget {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 34em;
+  z-index: 4;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--line-1),
+    var(--shadow-float);
+  overflow: hidden;
+}
+
+.w-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  padding: 0.7em 1.05em;
+  border-bottom: 1px solid var(--line-2);
+}
+.w-dots {
+  display: grid;
+  grid-template-columns: repeat(3, 0.3em);
+  gap: 0.3em;
+}
+.w-dots i {
+  width: 0.3em;
+  height: 0.3em;
+  border-radius: 999px;
+  background: var(--ink-300);
+}
+.w-prog {
+  font-family: var(--font-mono);
+  font-size: 1.05em;
+  font-weight: 500;
+  color: var(--o-700);
+}
+.w-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1em;
+  color: var(--ink-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.w-ico {
+  width: 1.7em;
+  height: 1.7em;
+  border-radius: 999px;
+  color: var(--ink-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.w-ico svg {
+  width: 1.2em;
+  height: 1.2em;
+  max-width: none;
+}
+
+.w-body {
+  padding: 1.05em 1.2em 0.4em;
+}
+.w-action {
+  font-size: 1.42em;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink-900);
+}
+.w-where {
+  margin-top: 0.4em;
+  font-size: 1.16em;
+  line-height: 1.45;
+  color: var(--ink-500);
+}
+.w-check {
+  margin-top: 0.85em;
+  padding: 0.65em 0.85em;
+  border-radius: var(--r-sm);
+  background: var(--sunken);
+  font-size: 1.06em;
+  line-height: 1.42;
+  color: var(--ink-500);
+}
+.w-check em {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.86em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-400);
+}
+
+.w-actions {
+  margin-top: 0.85em;
+  padding: 0.85em 1.2em 1em;
+  border-top: 1px solid var(--line-2);
+}
+.w-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65em;
+}
+.w-btn {
+  height: 3em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  padding-inline: 1.05em;
+  border-radius: 999px;
+  font-size: 1.18em;
+  font-weight: 500;
+  color: var(--ink-700);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+.w-btn svg {
+  width: 1.1em;
+  height: 1.1em;
+  max-width: none;
+}
+.w-btn.did {
+  flex: 1;
+  background: var(--fill);
+  color: var(--fill-ink);
+  box-shadow: none;
+}
+.w-btn.show {
+  background: var(--chip);
+  color: var(--chip-ink);
+  box-shadow: none;
+}
+.w-btn.quiet {
+  color: var(--ink-500);
+  box-shadow: none;
+}
+.w-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85em;
+  margin-top: 0.8em;
+  font-size: 1em;
+  color: var(--ink-400);
+}
+.w-keys span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42em;
+}
+.w-keys b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.7em;
+  min-width: 1.7em;
+  padding-inline: 0.4em;
+  border-radius: 0.45em;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  font-weight: 500;
+  color: var(--ink-700);
+}
+
+/* a coach exchange, floating where it actually appears: over the work, near the widget */
+.coachcard {
+  position: absolute;
+  left: 0;
+  bottom: 2.5em;
+  z-index: 5;
+  width: 25em;
+  padding: 1em;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--line-1),
+    var(--shadow-float);
+}
+.coachcard .cc-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin-bottom: 0.7em;
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--o-700);
+}
+.coachcard .cc-head span {
+  color: var(--ink-400);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.cc-you,
+.cc-coach {
+  font-size: 1.14em;
+  line-height: 1.45;
+  padding: 0.6em 0.8em;
+  border-radius: var(--r-sm);
+}
+.cc-you {
+  margin-left: auto;
+  max-width: 88%;
+  width: fit-content;
+  border-bottom-right-radius: var(--r-xs);
+  background: var(--chip);
+  color: var(--chip-ink);
+}
+.cc-coach {
+  margin-top: 0.5em;
+  border-bottom-left-radius: var(--r-xs);
+  background: var(--sunken);
+  color: var(--ink-700);
+}
+
+/* ---------------------------------------------------------------- sections */
+
+.section {
+  padding-block: var(--sp-section);
+  border-top: 1px solid var(--line-1);
+}
+
+.section-head {
+  margin-bottom: var(--sp-head);
+}
+
+/* How it works. Four ruled rows on the page's own left edge, the way the app lists a lesson:
+   the numeral appears once (the <ol> and the rule carry the rest of the order), and the
+   sentence sits in its own column so the row fills the measure instead of stacking a card. */
+.steps {
+  border-top: 1px solid var(--line-1);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 19rem) minmax(0, 1fr);
+  column-gap: clamp(16px, 3vw, 40px);
+  align-items: baseline;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line-1);
+}
+.step-n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+.step h3 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+.step p {
+  color: var(--ink-500);
+  font-size: 14.5px;
+  line-height: 1.5;
+  max-width: 52ch;
+}
+@media (max-width: 720px) {
+  .step {
+    grid-template-columns: 26px minmax(0, 1fr);
+    row-gap: 4px;
+    padding: 16px 0;
+  }
+  .step p {
+    grid-column: 2;
+  }
+}
+
+/* feature rows */
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  gap: clamp(28px, 4.5vw, 64px);
+  align-items: center;
+}
+.feature + .feature {
+  margin-top: clamp(48px, 5.2vw, 72px);
+  padding-top: clamp(48px, 5.2vw, 72px);
+  border-top: 1px solid var(--line-2);
+}
+.feature.flip {
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+}
+@media (max-width: 860px) {
+  .feature,
+  .feature.flip {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .feature.flip .feature-art {
+    order: 2;
+  }
+}
+.feature h3 {
+  text-wrap: balance;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.16;
+  letter-spacing: -0.028em;
+  max-width: 20ch;
+}
+.feature p {
+  margin-top: 14px;
+  max-width: 46ch;
+  color: var(--ink-700);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.feature .note {
+  margin-top: 14px;
+  max-width: 46ch;
+}
+.feature-art {
+  min-width: 0;
+}
+
+/* the pointing demo: one app window, one flight */
+.point-stage {
+  aspect-ratio: 16 / 10;
+}
+.point-stage .desk {
+  inset: 0;
+}
+
+.honest {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  background: var(--sunken);
+  color: var(--ink-500);
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-width: 46ch;
+}
+.honest svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--ink-400);
+}
+
+/* coach panel, as the widget draws it */
+.chatcard {
+  padding: 20px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--line-1),
+    var(--shadow-lift);
+}
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--o-700);
+}
+.chat-head span {
+  color: var(--ink-400);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.bubble {
+  /* a chat line is still prose: hold it near the reading measure however wide the column gets */
+  max-width: min(86%, 44ch);
+  width: fit-content;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.bubble.you {
+  margin-left: auto;
+  border-bottom-right-radius: var(--r-xs);
+  background: var(--chip);
+  color: var(--chip-ink);
+}
+.bubble.coach {
+  margin-top: 8px;
+  border-bottom-left-radius: var(--r-xs);
+  background: var(--sunken);
+  color: var(--ink-700);
+}
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.chat-input .fake {
+  flex: 1;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding-inline: 13px;
+  border-radius: 999px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  color: var(--ink-500);
+  font-size: 13px;
+}
+.chat-input .ask {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 15px;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--fill-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* record & share */
+.marks {
+  padding: 8px 18px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+.mark-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  font-size: 14px;
+  color: var(--ink-700);
+}
+.mark-row + .mark-row {
+  border-top: 1px solid var(--line-2);
+}
+.mark-row .d {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--o-500);
+  flex: none;
+}
+.mark-row .t {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-500);
+  min-width: 42px;
+}
+.filecard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  color: var(--ink-500);
+}
+.filecard .name {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The keys, laid out the way the widget lays them out: key, what it does, what that means.
+   Ruled rows on the same left edge as everything else, not six boxes. */
+.keys {
+  border-top: 1px solid var(--line-1);
+}
+.key {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 11rem) minmax(0, 1fr);
+  column-gap: clamp(16px, 3vw, 40px);
+  align-items: baseline;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line-1);
+}
+.key kbd {
+  justify-self: start;
+}
+.key .what {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.key .where {
+  font-size: 14.5px;
+  color: var(--ink-500);
+}
+@media (max-width: 720px) {
+  .key {
+    grid-template-columns: 66px minmax(0, 1fr);
+    row-gap: 2px;
+  }
+  .key .where {
+    grid-column: 2;
+  }
+}
+
+/* starter library : the one place the ocean gradient lives, exactly as in the app */
+/* Four featured lessons in four columns: the row has to end on the same right edge as the
+   dense list under it, or the section reads as a shelf with a gap on the end. */
+.covers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .covers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.covercard {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+.cover {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.28), transparent 55%),
+    linear-gradient(180deg, transparent 45%, rgba(6, 24, 40, 0.42) 100%);
+}
+.cover-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.cover-tool,
+.cover-min {
+  position: absolute;
+  z-index: 2;
+  bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: #fff;
+}
+.cover-tool {
+  left: 8px;
+  max-width: 66%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgb(6 24 40 / 0.28);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  backdrop-filter: blur(3px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cover-min {
+  right: 10px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.9);
+}
+.covercard .cname {
+  /* two lines are reserved whether the title needs them or not, so every card's
+     meta row lands on one baseline across the shelf */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-height: calc(2 * 1.3em);
+  margin-top: 12px;
+  padding-inline: 2px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+}
+.covercard .cmeta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 0 2px 2px;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink-700);
+}
+
+/* dense library rows, as the app lists lessons */
+.lrows {
+  margin-top: 12px;
+  padding: 4px 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+.lrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 6px;
+  border-radius: var(--r-sm);
+}
+.lrow + .lrow {
+  border-top: 1px solid var(--line-2);
+}
+.lthumb {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ltitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ltool {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 190px;
+  font-size: 12.5px;
+  color: var(--ink-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 620px) {
+  .ltool {
+    display: none;
+  }
+}
+.lmin {
+  flex: none;
+  width: 56px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  color: var(--ink-500);
+}
+
+/* pricing : a quiet table, and it only tells you the shape of the plans */
+.pricing {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+.pricing th,
+.pricing td {
+  text-align: left;
+  padding: 16px 20px 16px 0;
+  border-bottom: 1px solid var(--line-1);
+  vertical-align: top;
+}
+.pricing thead th {
+  padding-top: 0;
+  padding-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.004em;
+  color: var(--ink-500);
+}
+.pricing tbody th {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+}
+.pricing td {
+  color: var(--ink-700);
+}
+.pricing thead th:last-child,
+.pricing tbody td:last-child {
+  text-align: right;
+  padding-right: 0;
+}
+/* The number is data, so it keeps the app's tabular mono. The sentence around it is not,
+   so it stays in the reading face at a size a person can actually read. */
+.pricing .price {
+  font-variant-numeric: tabular-nums;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+.pricing .price span {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-500);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.004em;
+}
+.pricing tbody tr:last-child th,
+.pricing tbody tr:last-child td {
+  border-bottom: 0;
+}
+@media (max-width: 720px) {
+  .pricing,
+  .pricing thead,
+  .pricing tbody,
+  .pricing tr,
+  .pricing th,
+  .pricing td {
+    display: block;
+    width: 100%;
+  }
+  .pricing thead {
+    display: none;
+  }
+  .pricing tbody tr {
+    padding-block: 18px;
+    border-bottom: 1px solid var(--line-1);
+  }
+  .pricing tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .pricing th,
+  .pricing td {
+    border-bottom: 0;
+    padding: 0;
+  }
+  .pricing tbody td {
+    margin-top: 5px;
+  }
+  .pricing .price {
+    margin-top: 8px;
+  }
+}
+.fineprint {
+  margin-top: 18px;
+  color: var(--ink-500);
+  font-size: 13.5px;
+}
+
+/* closing action: the band has to carry weight across the whole measure, not sit in the
+   left third of an empty stripe */
+.closer {
+  padding-block: clamp(52px, 6vw, 80px);
+  border-top: 1px solid var(--line-1);
+  background: var(--surface);
+}
+.closer-in {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px 48px;
+  flex-wrap: wrap;
+}
+.closer .h2 {
+  max-width: 17ch;
+}
+.closer .sub {
+  margin-top: 10px;
+  max-width: 42ch;
+}
+.closer .downloads {
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------------- footer */
+
+.foot {
+  border-top: 1px solid var(--line-1);
+  padding-block: 32px 48px;
+  color: var(--ink-500);
+  font-size: 13.5px;
+}
+/* The lockup keeps the page's left edge, the links sit beside it, and the promise takes the
+   far right. Nothing floats at an arbitrary centre. */
+.foot-in {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 40px;
+  align-items: baseline;
+}
+.foot .said {
+  margin-left: auto;
+}
+.foot a {
+  text-decoration: none;
+  color: var(--ink-500);
+}
+.foot a:hover {
+  color: var(--ink-900);
+}
+.foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.foot .said {
+  color: var(--ink-500);
+}
+
+/* ---------------------------------------------------------------- auth */
+
+.auth-main {
+  display: flex;
+  justify-content: center;
+  padding-block: clamp(40px, 7vw, 80px) 72px;
+}
+.auth {
+  width: 100%;
+  max-width: 400px;
+}
+.auth-head {
+  margin-bottom: 22px;
+}
+.auth-head h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 4.4vw, 32px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+.auth-head p {
+  margin-top: 10px;
+  color: var(--ink-500);
+  font-size: 14.5px;
+}
+.auth-card {
+  padding: 22px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--line-1),
+    var(--shadow-lift);
+}
+.field + .field {
+  margin-top: 12px;
+}
+.field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-700);
+}
+.field input {
+  width: 100%;
+  height: 42px;
+  padding-inline: 13px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--sunken);
+  color: var(--ink-900);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  font-size: 14.5px;
+  transition: box-shadow 0.15s ease;
+}
+.field input::placeholder {
+  color: var(--ink-400);
+}
+.field input:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px var(--focus),
+    0 0 0 4px color-mix(in oklab, var(--focus) 16%, transparent);
+}
+.auth-card form .btn {
+  margin-top: 18px;
+}
+.auth-sep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: var(--ink-500);
+  font-size: 13px;
+}
+.auth-sep::before,
+.auth-sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-1);
+}
+.auth-alt {
+  margin-top: 14px;
+  text-align: center;
+  color: var(--ink-500);
+  font-size: 13px;
+}
+.auth-alt button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font-size: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.msg {
+  margin-top: 14px;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.msg.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  box-shadow: inset 0 0 0 1px var(--danger-line);
+}
+.msg.info {
+  background: var(--mist);
+  color: var(--mist-ink);
+  box-shadow: inset 0 0 0 1px var(--mist-line);
+}
+.pairnote {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  background: var(--mist);
+  color: var(--mist-ink);
+  box-shadow: inset 0 0 0 1px var(--mist-line);
+  font-size: 13px;
+}
+.pairnote .d {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--o-500);
+  flex: none;
+}
+.rows .row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+.rows .row:last-child {
+  border-bottom: 0;
+}
+.rows .k {
+  font-size: 13.5px;
+  color: var(--ink-500);
+}
+.rows .v {
+  font-size: 14px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.rows .v.plan {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+.done-mark {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--chip-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-card h1.done-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.028em;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.spin {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -2px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------- motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ghost {
+    animation: none;
+    opacity: 1;
+  }
+  .callout {
+    animation: none;
+    opacity: 1;
+  }
+  .ripple {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- the pointer close-up */
+
+.point-stage {
+  aspect-ratio: 16 / 10;
+  font-size: clamp(8px, 2.05cqw, 12.5px);
+  /* the desktop the overlay draws on, kept clear of the window it points into */
+  --mini-right: 6%;
+}
+.mini {
+  position: absolute;
+  /* room at the right for the arrival marks: the overlay draws on the desktop,
+     not inside the window it is pointing at */
+  inset: 0 var(--mini-right) 0 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-md);
+  background: var(--desk);
+  box-shadow:
+    inset 0 0 0 1px var(--line-1),
+    var(--shadow-lift);
+  overflow: hidden;
+}
+.mini-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  height: 2.4em;
+  padding-inline: 1em;
+  background: var(--desk-bar);
+  border-bottom: 1px solid var(--desk-line);
+}
+.mini-bar i {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 999px;
+  background: var(--desk-mark);
+}
+.mini-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.mini-canvas {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  background: var(--sunken);
+}
+.dcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+  width: 58%;
+  padding: 1.5em;
+  border-radius: 0.7em;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--o-400);
+}
+.davatar {
+  width: 2.6em;
+  height: 2.6em;
+  margin-bottom: 0.3em;
+  border-radius: 999px;
+  background: var(--chip);
+}
+.dname {
+  font-size: 1.35em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-900);
+}
+.drole {
+  font-size: 1.1em;
+  color: var(--ink-500);
+}
+.dside {
+  width: 33%;
+  padding: 1em 1.1em;
+  border-left: 1px solid var(--desk-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+}
+.dsec {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-500);
+  /* wrapping this label pushed every row below it down, and the pointer with them */
+  white-space: nowrap;
+  overflow: hidden;
+}
+.drow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8em;
+  font-size: 1.05em;
+  color: var(--ink-500);
+  /* a wrapped label would push the row the pointer is aimed at off its mark */
+  white-space: nowrap;
+}
+.drow > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbtn {
+  display: grid;
+  place-items: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 0.4em;
+  box-shadow: inset 0 0 0 1px var(--line-1);
+  font-size: 1em;
+  line-height: 1;
+  color: var(--ink-500);
+}
+.drow.target {
+  color: var(--ink-900);
+}
+.drow.target .dbtn {
+  box-shadow: inset 0 0 0 1.5px var(--o-400);
+  color: var(--o-600);
+}
+
+/* Where each flight lands: the centre of the element the step names. Everything inside a
+   stage is sized in em off one container-relative base, so the landing point is written in
+   em too and stays on the target at every width. A percentage only tracked one viewport,
+   and at phone width the pointer was landing on Home instead of Insert. */
+.hero-ghost {
+  left: 10.52em;
+  top: 3.77em;
+}
+.point-ghost {
+  /* the panel's right edge, less its padding and half the control */
+  left: calc(100% - var(--mini-right) - 2.05em);
+  top: 11.86em;
+}
+/* near the right edge the callout flips, exactly as the overlay does */
+.point-ghost .callout {
+  left: auto;
+  right: 2.1em;
+}
+
+/* On a phone the two surfaces stack instead of overlapping: the work above, the coach
+   pinned across the bottom, at a size you can actually read. */
+@media (max-width: 700px) {
+  .stage {
+    font-size: clamp(9px, 3.15cqw, 12px);
+  }
+  .hero-stage {
+    aspect-ratio: 3 / 4;
+  }
+  .hero-stage .desk {
+    inset: 0 0 40% 0;
+  }
+  .hero-stage .coachcard {
+    display: none;
+  }
+  .hero-stage .widget {
+    width: 100%;
+  }
+  /* the inspector needs room for its own labels down here, or every row reads as an ellipsis */
+  .dside {
+    width: 42%;
+  }
+  .point-stage {
+    aspect-ratio: 4 / 3;
+    /* the marks are relatively larger down here, so the desktop around the window widens
+       to hold them: nothing of the flight may push the page sideways */
+    --mini-right: 17%;
+  }
+}
+
+/* ---------------------------------------------------------------- pointer and scrollbars */
+
+/* No custom cursor. The visitor's own pointer is the one affordance they already trust, and
+   the only arrow on this page that should look like the product's is the one the product
+   draws in the demo. Buttons and links get the hand, so clickability is never a guess. */
+a,
+button,
+summary,
+label,
+[role='button'],
+.btn {
+  cursor: pointer;
+}
+
+/* Scrollability has to be visible, so the thumb is a real mark rather than a hairline.
+   It warms to ocean under the pointer. Same rule as the app's index.css. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-300) transparent;
+}
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-300);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--o-400);
+  background-clip: content-box;
+}
+
+/* ---------------------------------------------------------------- share card (build-time)
+
+   Styles for /og-src, the 1200x630 composition the social card is photographed from. They stay
+   in the sheet (a few hundred bytes, gzipped to nothing) so the card can be re-shot from the
+   real design system whenever the page changes, instead of drifting into a stale JPEG. */
+
+.og {
+  position: relative;
+  width: 1200px;
+  height: 630px;
+  display: grid;
+  grid-template-columns: 446px minmax(0, 1fr);
+  align-items: center;
+  gap: 44px;
+  padding: 60px 54px 60px 68px;
+  background: var(--paper);
+  overflow: hidden;
+}
+/* the ocean appears once, as a hairline of identity along the top edge */
+.og::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--o-950), var(--o-600) 38%, var(--o-400) 68%, var(--o-200));
+}
+.og-mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  color: var(--ink-900);
+}
+.og-mark svg {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+}
+.og h1 {
+  margin-top: 30px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 53px;
+  line-height: 1.03;
+  letter-spacing: -0.034em;
+}
+.og h1 span {
+  display: block;
+  color: var(--ink-500);
+}
+.og-sub {
+  margin-top: 22px;
+  max-width: 30ch;
+  color: var(--ink-700);
+  font-size: 19.5px;
+  line-height: 1.45;
+}
+/* the mock is the subject: it sits whole inside the frame, because a card that crops its own
+   product mid-button reads as a broken image rather than as depth */
+.og-right {
+  min-width: 0;
+}
+/* the card is a photograph, so every flight is already over: the pointer has landed, the
+   callout is up, and nothing is mid-fade */
+.og .ghost,
+.og .callout,
+.og .ripple {
+  animation: none;
+}
+.og .callout {
+  opacity: 1;
+}
+.og .ripple {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- billing return pages */
+
+/* Two dead ends of Stripe Checkout, /billing/success and /billing/cancelled. They borrow the
+   auth card wholesale so the round trip through Stripe lands back on our own surface. */
+.bill-card {
+  text-align: center;
+  padding: 30px 24px 24px;
+}
+/* the mark is the only celebration on the page: the chip circle inside two widening rings of the
+   ocean ramp, so success reads as ours rather than as a generic green tick. Drawn with spread
+   shadows rather than a pseudo-element, which would need a stacking context to sit behind the
+   circle and would otherwise fall behind the white card entirely. */
+.bill-mark {
+  margin-inline: auto;
+  margin-bottom: 26px;
+  width: 46px;
+  height: 46px;
+  box-shadow:
+    0 0 0 7px color-mix(in oklab, var(--o-100) 72%, transparent),
+    0 0 0 15px color-mix(in oklab, var(--o-50) 70%, transparent);
+}
+/* a cancel is not a failure and not a party: same shape, no bloom, ink instead of ocean */
+.bill-mark.quiet {
+  background: var(--sunken);
+  color: var(--ink-500);
+  box-shadow: inset 0 0 0 1px var(--line-1);
+}
+.bill-note {
+  margin-top: 10px;
+  margin-inline: auto;
+  max-width: 34ch;
+}
+.bill-cta {
+  margin-top: 22px;
+}
+.bill-alt {
+  margin-top: 10px;
+}
+/* the session ref, kept quiet: a fact to quote in a support email, not a headline */
+.bill-ref {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+.bill-ref code {
+  font-size: 11.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-500);
+}
+.bill-foot {
+  margin-top: 16px;
+  text-align: center;
+}

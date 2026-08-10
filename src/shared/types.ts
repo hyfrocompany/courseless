@@ -60,7 +60,11 @@ export interface Lesson {
   steps: LessonStep[]
   /** Deterministic seed for the generated ocean-gradient cover art. */
   coverSeed: number
-  /** Codex thread/session id — coaching continuity lives here. */
+  /**
+   * Legacy engine thread id. The engine is stateless now — coach context is rebuilt from the
+   * lesson plus the last few turns held in the main process — so this is always null on new
+   * lessons and is kept only so older files still load.
+   */
   codexThreadId: string | null
   createdAt: string
   runs: LessonRun[]
@@ -91,32 +95,47 @@ export interface RunInput {
   perStep: RunStepStat[]
 }
 
-// ---------------------------------------------------------------- codex
+// ---------------------------------------------------------------- engine
 
-export type CodexTransport = 'app-server' | 'exec'
+/** How the turn was carried. Streaming ops are `app-server`; one-shot JSON ops are `exec`. */
+export type EngineTransport = 'app-server' | 'exec'
 
-export interface CodexStatus {
+/**
+ * What the engine can do right now. The field names outlive the local-CLI era on purpose — the
+ * whole UI reads them — but the meanings are the hosted ones:
+ *   installed  the engine is a service, so this is always true
+ *   loggedIn   there is a signed-in account
+ *   version    'cloud'
+ *   model      the plan label the account is being served on
+ *   exePath    always null
+ *   transport  set once the service answered
+ */
+export interface EngineStatus {
   installed: boolean
   loggedIn: boolean
   version: string | null
   model: string | null
   exePath: string | null
-  transport: CodexTransport | null
+  transport: EngineTransport | null
   error?: string
+  /** The signed-in address, when there is one. */
+  email?: string | null
+  plan?: PlanId
 }
 
-export type CodexErrorKind =
-  | 'NOT_INSTALLED'
+export type EngineErrorKind =
   | 'NOT_LOGGED_IN'
   | 'TIMEOUT'
   | 'PARSE_FAILED'
   | 'TURN_FAILED'
   | 'CANCELLED'
   | 'TRANSPORT'
+  /** This month's allowance is used up. The only failure a plan change fixes. */
+  | 'LIMIT'
   | 'UNKNOWN'
 
-export interface CodexFailure {
-  kind: CodexErrorKind
+export interface EngineFailure {
+  kind: EngineErrorKind
   message: string
 }
 
@@ -126,22 +145,75 @@ export interface RateLimitInfo {
   resetsAt?: string | number | null
 }
 
+// Names the rest of the app grew up with. Same shapes.
+export type CodexTransport = EngineTransport
+export type CodexStatus = EngineStatus
+export type CodexErrorKind = EngineErrorKind
+export type CodexFailure = EngineFailure
+
+// ---------------------------------------------------------------- account
+
+export interface AuthUser {
+  id: string
+  email: string
+}
+
+export interface AuthState {
+  /** `unknown` only until the persisted session has been read at boot. */
+  status: 'unknown' | 'signed-in' | 'signed-out'
+  user: AuthUser | null
+}
+
+export const EMPTY_AUTH_STATE: AuthState = { status: 'unknown', user: null }
+
+/**
+ * Every auth command answers the same way: it worked, or here is the sentence to show.
+ * `cancelled` marks the one failure that is not news — the person changed their mind.
+ */
+export type AuthResult =
+  | { ok: true; needsConfirmation?: boolean }
+  | { ok: false; error: string; cancelled?: boolean }
+
+// ---------------------------------------------------------------- plan / usage
+
+export type PlanId = 'free' | 'pro' | 'max'
+export type SubscriptionStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'canceled'
+
+/** Counted per calendar month, UTC. */
+export interface UsageCounts {
+  lessons: number
+  coachTurns: number
+  visionCalls: number
+}
+
+export interface BillingStatus {
+  plan: PlanId
+  status: SubscriptionStatus
+  currentPeriodEnd: string | null
+  usage: UsageCounts
+  /** Null on the unlimited plan — there is no meter to draw. */
+  limits: UsageCounts | null
+}
+
+/** What checkout was asked for: which plan, and at which cadence. */
+export type BillingPlanChoice = 'pro_monthly' | 'pro_annual' | 'max_monthly' | 'max_annual'
+
 // ---------------------------------------------------------------- streaming events
 
 export type GenerateEvent =
-  | { opId: string; type: 'status'; message: string; transport?: CodexTransport }
+  | { opId: string; type: 'status'; message: string; transport?: EngineTransport }
   | { opId: string; type: 'delta'; text: string }
   | { opId: string; type: 'message'; text: string }
   | { opId: string; type: 'rateLimits'; rateLimits: RateLimitInfo | null; raw?: unknown }
   | { opId: string; type: 'done'; lesson: Lesson }
-  | { opId: string; type: 'error'; error: CodexFailure }
+  | { opId: string; type: 'error'; error: EngineFailure }
 
 export type CoachEvent =
-  | { opId: string; type: 'status'; message: string; transport?: CodexTransport }
+  | { opId: string; type: 'status'; message: string; transport?: EngineTransport }
   | { opId: string; type: 'delta'; text: string }
   | { opId: string; type: 'message'; text: string }
   | { opId: string; type: 'done'; text: string }
-  | { opId: string; type: 'error'; error: CodexFailure }
+  | { opId: string; type: 'error'; error: EngineFailure }
 
 export interface StepContext {
   stepIndex: number
@@ -265,10 +337,18 @@ export interface PointRequest {
 export type PointResult =
   | {
       outcome: 'point'
-      /** Physical screen pixels — the same space as UIA rects and CopyFromScreen. */
+      /**
+       * The one screen coordinate space this app has, per platform:
+       *   win32  physical screen pixels — the same space as UIA rects and CopyFromScreen.
+       *   darwin POINTS, top-left origin — the same space as AX rects, CGWindowList bounds and
+       *          Electron's own DIP screen/window bounds. NOT pixels: on a Retina display a point
+       *          is two pixels, and the only place the two spaces meet is the screenshot boundary
+       *          (PointService multiplies/divides by the helper's `scaleFactor` there).
+       */
       x: number
       y: number
       label: string
+      /** `uia` means "read out of the OS accessibility tree" — UIA on win32, AX on darwin. */
       method: 'uia' | 'vision'
       verified: boolean
       /** The element name / description that was actually matched. */
@@ -279,6 +359,8 @@ export type PointResult =
     }
   | { outcome: 'miss'; where: string; tried: string; ms: number }
   | { outcome: 'wrong-app'; tool: string; foreground: string; ms: number }
+  /** This month's looks at the screen are used up. Not a miss: nothing was even tried. */
+  | { outcome: 'limit'; message: string; ms: number }
   | { outcome: 'error'; message: string; ms: number }
 
 /** What the overlay window renders. Coordinates are CSS px local to the overlay window. */
@@ -294,19 +376,52 @@ export interface OverlayPoint {
   screen: { x: number; y: number; width: number; height: number }
 }
 
+// ---------------------------------------------------------------- OS permissions (macOS)
+
+/**
+ * `unknown` is not "probably fine": it is the honest answer before anything has been asked, and
+ * on win32 forever — Windows has no equivalent gate, so the UI that renders these never appears
+ * there.
+ */
+export type PermissionState = 'unknown' | 'granted' | 'denied'
+
+export interface PermissionsState {
+  accessibility: PermissionState
+  screenRecording: PermissionState
+  /**
+   * True once Screen Recording has been granted to a process that started without it. macOS does
+   * not hand the grant to a running process — the app has to be relaunched — and saying so is the
+   * difference between "granted, still broken" and an instruction the person can act on.
+   */
+  needsRelaunch: boolean
+  /** False on win32: there is nothing to grant, so nothing to show. */
+  supported: boolean
+}
+
+export const UNKNOWN_PERMISSIONS: PermissionsState = {
+  accessibility: 'unknown',
+  screenRecording: 'unknown',
+  needsRelaunch: false,
+  supported: false
+}
+
+/** Which of the two gates a request/deep-link is about. */
+export type PermissionKey = 'accessibility' | 'screenRecording'
+
 // ---------------------------------------------------------------- recording (authoring)
 
 /**
- * The element under the cursor at the moment a mark was taken, straight out of the
- * accessibility tree (uia-find.ps1 --from-point). `name` is what the app CALLS the thing, which
- * is exactly what a step's `target` needs to be for pointing to work on someone else's machine.
+ * The element under the cursor at the moment a mark was taken, straight out of the accessibility
+ * tree (uia-find.ps1 -Mode from-point on win32, courseless-ax --mode at-point on darwin). `name`
+ * is what the app CALLS the thing, which is exactly what a step's `target` needs to be for
+ * pointing to work on someone else's machine.
  */
 export interface MarkElement {
   name: string
   controlType: string
   automationId?: string
   className?: string
-  /** Physical screen pixels. */
+  /** Physical screen pixels on win32; POINTS (top-left origin) on darwin. See PointResult.x. */
   rect: { x: number; y: number; w: number; h: number }
   /** Named ancestors, nearest first — the label a person would say is often a level up. */
   ancestors: string[]
@@ -386,12 +501,51 @@ export type ImportResult =
   | { ok: false; cancelled: true }
   | { ok: false; cancelled?: false; error: string; file?: string }
 
+// ---------------------------------------------------------------- curated cloud library
+
+/**
+ * One row of the shelf Courseless publishes. The lesson payload itself never crosses the bridge —
+ * the renderer only needs enough to draw a row and decide whether it is already here.
+ */
+export interface ShelfLesson {
+  /** The published slug. Stable across re-publishes, and what `library:add` is asked for. */
+  id: string
+  title: string
+  tool: string
+  /** Shelf grouping ("Excel", "Claude Code"). Shelf metadata, not part of the lesson. */
+  track: string
+  featured: boolean
+  goal: string
+  steps: number
+  estMinutes: number
+  /** Deterministic seed for the cover art, carried from the published lesson. */
+  coverSeed: number
+  /** Already in this library — the row says so instead of offering to add it twice. */
+  added: boolean
+}
+
+/**
+ * What the shelf looks like right now. `offline` is the honest state: the fetch failed and what
+ * is in `items` is whatever was cached, which may be nothing at all.
+ */
+export interface ShelfResult {
+  items: ShelfLesson[]
+  offline: boolean
+  /** When the list in hand arrived. Null when nothing ever has. */
+  fetchedAt: string | null
+}
+
+/** Adding a shelf lesson runs through the same import path a dropped file does. */
+export type ShelfAddResult = { ok: true; lesson: Lesson } | { ok: false; error: string }
+
+/** Monthly or annual — what the plan cards are priced in, and what the upgrade pill buys. */
+export type PlanInterval = 'monthly' | 'annual'
+
 // ---------------------------------------------------------------- settings / float
 
 export interface Settings {
   hotkey: string
   theme: 'light' | 'dark'
-  model: string | null
   /** Ids of builtin (seed) lessons the user deleted — they must not resurrect on next launch. */
   deletedBuiltins: string[]
   /** False until the first-run screen has been dismissed. */
@@ -411,12 +565,18 @@ export interface Settings {
   startPinned: boolean
   /** The one-time "Courseless gets out of the way" card has been shown in the float. */
   pinExplainerSeen: boolean
+  /**
+   * Ids of curated shelf lessons already added. The lesson itself gets a fresh uuid on import, so
+   * the published slug has to be remembered here for the shelf to know what it has already given.
+   */
+  libraryAdded: string[]
+  /** Last cadence chosen on the plan cards. The upgrade pill buys at the same one. */
+  planInterval: PlanInterval
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   hotkey: 'CommandOrControl+Shift+Space',
   theme: 'light',
-  model: null,
   deletedBuiltins: [],
   onboarded: false,
   pointAsYouGo: false,
@@ -424,7 +584,9 @@ export const DEFAULT_SETTINGS: Settings = {
   stallCoach: true,
   displayName: '',
   startPinned: true,
-  pinExplainerSeen: false
+  pinExplainerSeen: false,
+  libraryAdded: [],
+  planInterval: 'monthly'
 }
 
 /**
@@ -445,7 +607,7 @@ export interface FloatStatus {
 // ---------------------------------------------------------------- ipc results
 
 export type Ok<T> = { ok: true; value: T }
-export type Err = { ok: false; error: CodexFailure }
+export type Err = { ok: false; error: EngineFailure }
 export type Result<T> = Ok<T> | Err
 
 export interface OpStarted {
