@@ -9,7 +9,7 @@ import {
 import { json, preflight } from '../_shared/http.ts'
 import { stripeCall } from '../_shared/stripe.ts'
 
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://courseless.app'
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://courseless.hyfro.org'
 /** The marketing/account site. Falls back to APP_URL while they are the same origin. */
 const SITE_URL = (Deno.env.get('SITE_URL') ?? APP_URL).replace(/\/$/, '')
 const PORTAL_CONFIGURATION_ID = Deno.env.get('STRIPE_PORTAL_CONFIGURATION_ID') ?? ''

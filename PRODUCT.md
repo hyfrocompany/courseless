@@ -30,16 +30,19 @@ falls), not merely watches or completes a quiz.
 - Quiet by default: text-first coaching, no voice, keyboard-first (Space/H/S/C).
 
 ## Engine (deliberately abstracted)
-Current engine: the user's local Codex CLI (spawned via app-server JSON-RPC with exec
-fallback) — chosen for zero-key, zero-account local bootstrapping. This is a test/bridge
-engine: the product plans to swap/add hosted LLM APIs (e.g. DeepSeek) behind the same
-CodexService-shaped interface. UI copy must therefore stay provider-neutral ("your
-coach", "engine"); provider names appear only in Settings detection detail and setup
-instructions. Courseless never holds an API key for the local engine.
+Current engine: a hosted backend (Supabase Edge Functions proxying AWS Bedrock; Qwen3
+models for lessons, coaching and screen grounding), called through the same
+service-shaped interface the app has always had (EngineService). The desktop app holds
+no model API keys; entitlement and metering are enforced server-side. UI copy stays
+provider-neutral ("your coach", "engine"); model or vendor names never appear in body
+copy. Swapping or adding models is a backend-only change. Confirmed 2026-08.
 
 ## Durable constraints and facts
-- Local-only: lessons/settings are plain JSON under the user's data folder; no accounts,
-  no server, no telemetry. "Yours, on this machine" is a product promise.
+- Local-first lessons: lessons/runs/settings are plain JSON under the user's data
+  folder and export as portable files. Accounts exist (sign-in required); asks and
+  pointing screenshots are processed by the engine backend; lesson files themselves
+  stay on the machine. Plans: Free (3 lessons/mo) / Pro $20 / Max $50; lessons are the
+  only metered thing. Confirmed 2026-08.
 - Starter library: 27 built-in generated lessons across 10 tracks (Claude Code,
   Photoshop, Excel, Figma, NetSuite, Salesforce, Notion, Blender, Premiere, Onboarding);
   first run never looks empty. Users can delete builtins (tombstoned) and regenerate.
