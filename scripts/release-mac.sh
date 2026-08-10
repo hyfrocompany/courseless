@@ -68,32 +68,8 @@ zip="$(ls -1 "$out"/*.zip 2>/dev/null | head -1 || true)"
 [ -n "$zip" ] || { echo "no .zip in $out — electron-updater cannot update a Mac from a DMG" >&2; exit 1; }
 test -f "$out/latest-mac.yml" || { echo "no latest-mac.yml — the updater feed is missing" >&2; exit 1; }
 
-# The .app inside is already notarized and stapled (scripts/notarize.cjs, run as afterSign), but
-# the disk image is a separate signed object with its own cdhash. Without this, Gatekeeper judges
-# the download by the app it eventually finds inside, and `spctl` on the .dmg says "no usable
-# signature" — which is also what a user sees if they check before opening.
-#
-# Stapling rewrites the file, so the digest electron-builder wrote into latest-mac.yml has to be
-# recomputed afterwards. Only the ZIP is ever used for updates, but a wrong digest in the feed is
-# a trap for whoever reads it next.
 echo
-echo "==> signing, notarizing and stapling the disk image"
-codesign --force --timestamp --sign "Developer ID Application: Speakl Inc. (A8PGTML9XS)" "$dmg"
-xcrun notarytool submit "$dmg" --keychain-profile courseless-notary --wait
-xcrun stapler staple "$dmg"
-node -e '
-const fs = require("fs"), crypto = require("crypto")
-const [yml, dmg] = process.argv.slice(1)
-const buf = fs.readFileSync(dmg)
-const sha = crypto.createHash("sha512").update(buf).digest("base64")
-let text = fs.readFileSync(yml, "utf8")
-const next = text.replace(/(- url: Courseless\.dmg\n\s+sha512: )[^\n]+(\n\s+size: )\d+/, `$1${sha}$2${buf.length}`)
-if (next === text) { console.error("could not find the dmg entry in " + yml); process.exit(1) }
-fs.writeFileSync(yml, next)
-console.log("latest-mac.yml: dmg digest refreshed after stapling")
-' "$out/latest-mac.yml" "$dmg"
-# The stapled bytes no longer match this, and nothing reads it: mac updates come from the ZIP.
-rm -f "$dmg.blockmap"
+bash "$root/scripts/notarize-dmg.sh" "$dmg" "$out/latest-mac.yml"
 
 echo
 echo "==> verification"

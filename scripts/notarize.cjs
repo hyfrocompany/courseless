@@ -3,19 +3,35 @@
 // This runs BEFORE the DMG and the update ZIP are packed, which is the whole point — stapling the
 // .app means both artifacts ship with the ticket inside, and a first launch works with no network.
 //
-// Credentials come from a notarytool keychain profile, so nothing secret is ever in the repo, in
-// the environment, or in a log line. Create it once:
-//   xcrun notarytool store-credentials courseless-notary \
-//     --apple-id <apple-id> --team-id A8PGTML9XS --password <app-specific-password>
+// Two ways to authenticate, and no secret in the repo either way.
+//
+//   locally  a notarytool keychain profile, created once:
+//              xcrun notarytool store-credentials courseless-notary \
+//                --apple-id <apple-id> --team-id A8PGTML9XS --password <app-specific-password>
+//   in CI    an App Store Connect API key, from APPLE_API_KEY (path to the .p8),
+//            APPLE_API_KEY_ID and APPLE_API_ISSUER.
+//
+// The API key wins when it is present, because a runner has no keychain profile and a developer's
+// Mac usually has no .p8 lying around.
 //
 // Set SKIP_NOTARIZE=1 for a local unsigned smoke build.
 
 const { execFileSync } = require('node:child_process')
 const { basename, join } = require('node:path')
-const { mkdtempSync, rmSync } = require('node:fs')
+const { existsSync, mkdtempSync, rmSync } = require('node:fs')
 const { tmpdir } = require('node:os')
 
 const PROFILE = process.env.COURSELESS_NOTARY_PROFILE || 'courseless-notary'
+
+/** The credential half of a notarytool command line. Shared with scripts/notarize-dmg.sh. */
+function notarytoolAuth() {
+  const { APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER } = process.env
+  if (APPLE_API_KEY && APPLE_API_KEY_ID && APPLE_API_ISSUER) {
+    if (!existsSync(APPLE_API_KEY)) throw new Error(`APPLE_API_KEY is not a file: ${APPLE_API_KEY}`)
+    return ['--key', APPLE_API_KEY, '--key-id', APPLE_API_KEY_ID, '--issuer', APPLE_API_ISSUER]
+  }
+  return ['--keychain-profile', PROFILE]
+}
 
 /**
  * A universal build packs x64 and arm64 into throwaway directories first and merges them, and the
@@ -50,11 +66,9 @@ exports.default = async function notarizing(context) {
     execFileSync('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', appPath, zipPath], {
       stdio: 'inherit'
     })
-    execFileSync(
-      'xcrun',
-      ['notarytool', 'submit', zipPath, '--keychain-profile', PROFILE, '--wait'],
-      { stdio: 'inherit' }
-    )
+    execFileSync('xcrun', ['notarytool', 'submit', zipPath, ...notarytoolAuth(), '--wait'], {
+      stdio: 'inherit'
+    })
     execFileSync('xcrun', ['stapler', 'staple', appPath], { stdio: 'inherit' })
     console.log('  • notarize    stapled')
   } finally {

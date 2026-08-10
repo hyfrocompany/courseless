@@ -1,15 +1,19 @@
-# The Windows half of a release.
+# A release, from a tag and nothing else.
 #
-# macOS is built on a Mac by scripts/release-mac.sh, because it needs a Developer ID certificate
-# and a notarytool session that only exist there. This workflow deliberately builds nothing for
-# macOS: an unsigned Mac job would either overwrite the signed DMG or add a second, worse one to
-# the same release.
-#
-# Push a tag and the installer appears on the release for that tag:
 #   git tag v0.1.0 && git push origin v0.1.0
 #
-# The backend values come from build/public-env.json, which is committed for exactly this reason:
-# a runner has no .env.local, and an installer that cannot reach the backend cannot sign anyone in.
+# Two jobs land on the same GitHub release and never touch each other's files:
+#
+#   macos    universal DMG + ZIP, signed with the Developer ID certificate, hardened runtime,
+#            notarized through an App Store Connect API key and stapled. Uploads Courseless.dmg,
+#            the ZIP that electron-updater needs, and latest-mac.yml.
+#   windows  x64 NSIS installer, unsigned. Uploads Courseless-Setup.exe and latest.yml.
+#
+# scripts/release-mac.sh does exactly what the macos job does and stays the fallback for when
+# something needs to be built by hand on a Mac.
+#
+# Secrets are only ever exposed to a tag push or a manual dispatch. There is deliberately no
+# pull_request trigger: a fork's PR must never be able to reach the signing certificate.
 
 name: release
 
@@ -20,15 +24,120 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing tag to build the Windows installer for
+        description: Existing tag to build from
         required: true
 
 permissions:
   contents: write
 
+env:
+  # Compiled into the main bundle so the installed app can reach the backend. All three are public
+  # (the anon key is meant to ship in clients); build/public-env.json holds the same values for
+  # anyone building locally.
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+  VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
+
 jobs:
+  macos:
+    runs-on: macos-latest
+    # Notarization is two round trips to Apple, on a 200 MB app and then a 200 MB disk image.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # electron-builder can import a .p12 itself (CSC_LINK), but it does so into a temporary
+      # keychain it deletes afterwards, and the disk image has to be signed after the build. So the
+      # certificate goes into a keychain this job owns, with a one-time random password, on the
+      # search list for the rest of the run. The runner is destroyed at the end of the job.
+      - name: Import the Developer ID certificate
+        env:
+          MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          keychain="$RUNNER_TEMP/courseless-signing.keychain-db"
+          pw="$(openssl rand -base64 24)"
+          echo "$MAC_CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$pw" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$pw" "$keychain"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MAC_CERT_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$pw" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -s "$keychain"
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning "$keychain"
+          echo "CSC_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+
+      - name: Write the notarization API key
+        env:
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          key="$RUNNER_TEMP/notary.p8"
+          printf '%s' "$APPLE_API_KEY_P8" > "$key"
+          chmod 600 "$key"
+          echo "APPLE_API_KEY=$key" >> "$GITHUB_ENV"
+
+      - run: npx electron-vite build
+
+      # Signs, then notarizes and staples the .app from the afterSign hook, then packs the DMG and
+      # the ZIP from the stapled bundle.
+      - name: electron-builder (universal, signed, notarized, stapled)
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: npx electron-builder --mac --publish never
+
+      - name: Sign, notarize and staple the disk image
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: bash scripts/notarize-dmg.sh release/Courseless.dmg release/latest-mac.yml
+
+      - name: Verify
+        run: |
+          set -euo pipefail
+          app=release/mac-universal/Courseless.app
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign --verify --strict --verbose=2 "$app/Contents/Resources/mac/courseless-ax"
+          spctl -a -t exec -vv "$app"
+          spctl -a -t open --context context:primary-signature -vv release/Courseless.dmg
+          xcrun stapler validate "$app"
+          xcrun stapler validate release/Courseless.dmg
+          # What main/index.ts resolves under process.resourcesPath.
+          test -x "$app/Contents/Resources/mac/courseless-ax"
+          test "$(ls -1 "$app/Contents/Resources/seed-lessons" | wc -l | tr -d ' ')" = "27"
+          ls -l release
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" >/dev/null 2>&1 \
+            || gh release create "$TAG" --title "Courseless ${TAG#v}" --notes "Courseless ${TAG#v}" --latest \
+            || gh release view "$TAG" >/dev/null
+          files=(release/Courseless.dmg release/latest-mac.yml)
+          for z in release/*.zip; do files+=("$z"); done
+          for b in release/*.zip.blockmap; do [ -f "$b" ] && files+=("$b") || true; done
+          gh release upload "$TAG" "${files[@]}" --clobber
+
   windows:
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,8 +171,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
-          gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" --title "Courseless ${TAG#v}" --notes "Courseless ${TAG#v}" --latest
+          gh release view "$TAG" >/dev/null 2>&1 \
+            || gh release create "$TAG" --title "Courseless ${TAG#v}" --notes "Courseless ${TAG#v}" --latest \
+            || gh release view "$TAG" >/dev/null
           files=(release/Courseless-Setup.exe release/latest.yml)
           [ -f release/Courseless-Setup.exe.blockmap ] && files+=(release/Courseless-Setup.exe.blockmap)
           gh release upload "$TAG" "${files[@]}" --clobber

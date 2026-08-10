@@ -39,7 +39,8 @@ publish:
   repo: courseless
 
 # Notarize + staple the .app before the DMG and the update ZIP are packed from it, so both
-# artifacts carry the ticket.
+# artifacts carry the ticket. electron-builder's own notarize step is off: with App Store Connect
+# credentials in the environment it would fire too, and the app would go to Apple twice.
 afterSign: scripts/notarize.cjs
 
 mac:
@@ -52,6 +53,7 @@ mac:
   identity: Speakl Inc. (A8PGTML9XS)
   hardenedRuntime: true
   gatekeeperAssess: false
+  notarize: false
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   # ZIP is not optional: electron-updater cannot update a Mac app from a DMG.
