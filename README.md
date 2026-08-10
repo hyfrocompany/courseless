@@ -116,7 +116,7 @@ Useful commands:
 | `npm run typecheck` | TypeScript across main, preload, renderer and shared |
 | `npm run build` | electron-vite production build into `out/` |
 | `npm run pack:mac` / `npm run pack:win` | local installer, no upload |
-| `npm run release:mac` | signed, notarized, stapled DMG plus the updater ZIP, uploaded to the release for the current version (needs the Developer ID certificate and a `courseless-notary` keychain profile) |
+| `npm run release:mac` | the macOS release by hand: signed, notarized, stapled DMG plus the updater ZIP, uploaded to the release for the current version (needs the Developer ID certificate and a `courseless-notary` keychain profile). CI normally does this |
 | `npm run icons` | regenerate `build/icon.icns` and `build/icon.png` from the mark drawn in code |
 | `npm run seeds` | regenerate the starter library; makes real engine calls, rarely needed |
 
@@ -127,15 +127,21 @@ Launching with `COURSELESS_REMOTE_DEBUG=9333 npm run dev` exposes a CDP port the
 Version lives in `package.json` and nowhere else.
 
 1. Bump the version, commit, push.
-2. `npm run release:mac` on a Mac. It builds, signs, notarizes, staples, verifies with `spctl` and
-   `stapler`, creates the GitHub release if it does not exist, and uploads `Courseless.dmg`, the
-   universal ZIP that electron-updater needs, and `latest-mac.yml`.
-3. `git tag vX.Y.Z && git push origin vX.Y.Z`. The `release` workflow builds the unsigned Windows
-   installer and adds `Courseless-Setup.exe` and `latest.yml` to the same release.
+2. `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
-macOS is built locally because the signing certificate lives there; CI never touches the Mac
-artifacts. `docs/WINDOWS-SMOKE-TEST.md` is the checklist for validating a Windows build on a real
-machine.
+That is the whole release. The `release` workflow runs two jobs onto the same GitHub release:
+macOS builds the universal app, signs it with the Developer ID certificate, notarizes it through
+an App Store Connect API key, staples both the app and the disk image, and uploads
+`Courseless.dmg`, the ZIP that electron-updater needs, and `latest-mac.yml`; Windows builds the
+unsigned x64 installer and uploads `Courseless-Setup.exe` and `latest.yml`. Neither job touches
+the other's files. Secrets are only ever exposed to a tag push or a manual dispatch, and there is
+no `pull_request` trigger.
+
+`npm run release:mac` does the same macOS work on a developer's Mac (Developer ID certificate in
+the login keychain, a `courseless-notary` notarytool profile) and is the fallback when something
+has to be built by hand.
+
+`docs/WINDOWS-SMOKE-TEST.md` is the checklist for validating a Windows build on a real machine.
 
 ## Repo tour
 

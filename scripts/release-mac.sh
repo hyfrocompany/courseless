@@ -100,10 +100,10 @@ if ! gh release view "$tag" >/dev/null 2>&1; then
 fi
 
 # --clobber so re-running the script after a fix replaces the artifact instead of erroring. The
-# blockmaps make electron-updater download only the changed bytes; harmless when absent.
+# ZIP blockmap lets electron-updater fetch only the changed bytes; the DMG's was deleted by
+# notarize-dmg.sh, because stapling made it wrong and nothing reads it.
 files=("$dmg" "$zip" "$out/latest-mac.yml")
 [ -f "$zip.blockmap" ] && files+=("$zip.blockmap")
-[ -f "$dmg.blockmap" ] && files+=("$dmg.blockmap")
 gh release upload "$tag" "${files[@]}" --clobber
 
 echo

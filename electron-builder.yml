@@ -1,5 +1,6 @@
-# Packaging. Two shapes out of one tree: a signed, notarized universal DMG for macOS built on a
-# Mac by scripts/release-mac.sh, and an unsigned x64 NSIS installer built by GitHub Actions.
+# Packaging. Two shapes out of one tree: a signed, notarized universal DMG for macOS and an
+# unsigned x64 NSIS installer for Windows. Both are built by .github/workflows/release.yml on a
+# tag push; scripts/release-mac.sh does the macOS half by hand when it has to be done locally.
 #
 # appId is load-bearing and permanent. NSIS derives the uninstall GUID from it, so changing it
 # would make every future installer a stranger to the copy already on the machine.
@@ -47,7 +48,8 @@ mac:
   category: public.app-category.education
   icon: build/icon.icns
   darkModeSupport: true
-  # The Developer ID certificate in the login keychain. electron-builder rejects the
+  # The Developer ID certificate, from the login keychain locally or the one the workflow builds
+  # for the length of the run. electron-builder rejects the
   # "Developer ID Application:" prefix on purpose — it picks the certificate type itself, and the
   # full name of the identity is "Developer ID Application: Speakl Inc. (A8PGTML9XS)".
   identity: Speakl Inc. (A8PGTML9XS)
