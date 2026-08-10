@@ -39,6 +39,8 @@ import type { PermissionsService } from './services/PermissionsService'
 import type { PointService } from './services/PointService'
 import type { RecordService } from './services/RecordService'
 import type { SettingsStore } from './services/SettingsStore'
+import { backendConfig } from './util/env'
+import { billingUrl } from './util/links'
 import { log } from './util/log'
 import {
   broadcast,
@@ -130,7 +132,16 @@ export function registerIpc(ctx: IpcContext): void {
 
   const openUrl = async (make: () => Promise<string>): Promise<Result<true>> => {
     try {
-      const url = await make()
+      const raw = await make()
+      // The learner does not get a second click before this opens, so the URL has to be one we
+      // would have been willing to build ourselves: https, on Stripe's hosts or our own site.
+      const url = billingUrl(raw, backendConfig()?.siteUrl ?? '')
+      if (!url) {
+        return {
+          ok: false,
+          error: { kind: 'TURN_FAILED', message: 'That billing page did not look right, so it was not opened.' }
+        }
+      }
       await shell.openExternal(url)
       return { ok: true, value: true }
     } catch (e) {

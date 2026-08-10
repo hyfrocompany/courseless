@@ -190,6 +190,16 @@ export interface BillingStatus {
   plan: PlanId
   status: SubscriptionStatus
   currentPeriodEnd: string | null
+  /**
+   * A cancel is already scheduled. Stripe keeps `status: 'active'` until the period actually ends,
+   * so this is the only thing that separates "renews on the 9th" from "stops on the 9th".
+   */
+  cancelAtPeriodEnd: boolean
+  /**
+   * There is a Stripe customer behind this account, whatever plan it is on today. Someone who
+   * cancelled is on Free and still needs the billing page for their invoices and receipts.
+   */
+  hasBillingAccount: boolean
   usage: UsageCounts
   /** Null on the unlimited plan — there is no meter to draw. */
   limits: UsageCounts | null

@@ -582,7 +582,15 @@ export class EngineService extends EventEmitter {
   async billingStatus(): Promise<BillingStatus> {
     return this.withOp(null, STATUS_TIMEOUT_MS, async (signal) => {
       const res = await this.send('billing', { action: 'status' }, signal)
-      return (await res.json()) as BillingStatus
+      const body = (await res.json()) as Partial<BillingStatus>
+      // Two booleans the UI branches on, so they are booleans here and not "undefined from an
+      // older backend": a missing field must read as "no cancel scheduled, no billing account",
+      // which is the same thing the app showed before these fields existed.
+      return {
+        ...(body as BillingStatus),
+        cancelAtPeriodEnd: body.cancelAtPeriodEnd === true,
+        hasBillingAccount: body.hasBillingAccount === true
+      }
     })
   }
 

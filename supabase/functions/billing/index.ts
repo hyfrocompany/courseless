@@ -47,6 +47,12 @@ async function status(userId: string) {
     plan: ent.plan,
     status: ent.status,
     currentPeriodEnd: ent.currentPeriodEnd,
+    // Stripe leaves a cancelled-but-not-yet-ended subscription at status 'active'. Without this
+    // the app would tell the customer their plan renews on the day it actually stops.
+    cancelAtPeriodEnd: ent.cancelAtPeriodEnd,
+    // Not the same question as "are they paying". Invoices and receipts outlive the subscription,
+    // so the portal stays reachable for anyone who has ever had one.
+    hasBillingAccount: ent.hasBillingAccount,
     usage: ent.usage,
     // Max is sold as unlimited: the fair-use ceiling is enforced but never shown as a plan limit.
     limits: ent.plan === 'max' ? null : ent.limits
@@ -116,10 +122,11 @@ async function ensureCustomer(userId: string, email: string | null): Promise<str
       'Content-Type': 'application/json',
       Prefer: 'resolution=merge-duplicates'
     },
+    // Only the customer id. Writing back the `status` we just read would let this request clobber
+    // a webhook that landed in between — the row's entitlement fields belong to the webhook alone.
     body: JSON.stringify({
       user_id: userId,
       stripe_customer_id: customer.id,
-      status: sub.status,
       updated_at: new Date().toISOString()
     })
   })

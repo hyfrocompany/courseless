@@ -16,7 +16,13 @@ import { log } from '../util/log'
 
 const IS_DARWIN = process.platform === 'darwin'
 
-/** The System Settings panes, one per gate. */
+/**
+ * The System Settings panes, one per gate.
+ *
+ * These are the one deliberate exception to util/links: the scheme is not https and cannot be,
+ * because the destination is macOS itself. It is safe for the reason the https rule exists — the
+ * strings are constants here, chosen by `which`, and no input reaches `shell.openExternal`.
+ */
 const DEEP_LINK: Record<PermissionKey, string> = {
   accessibility: 'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility',
   screenRecording: 'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture'

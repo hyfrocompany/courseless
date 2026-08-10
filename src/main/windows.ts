@@ -8,6 +8,7 @@ import { join } from 'node:path'
 import { IPC } from '../shared/ipc'
 import type { FloatCommand, FloatStatus, OverlayPoint } from '../shared/types'
 import { courselessDockIconPng, courselessIconPng, courselessTemplateIconPng } from './util/icon'
+import { externalUrl } from './util/links'
 import { log } from './util/log'
 
 const IS_WIN32 = process.platform === 'win32'
@@ -178,8 +179,12 @@ export function createMainWindow(theme: 'light' | 'dark' = 'light'): BrowserWind
   // continuously through a drag, which is more than enough for a dismiss that is idempotent.
   hookMoveLoop(win, 'main entersizemove')
   win.on('move', () => overlayDismiss('main window moved'))
+  // A link in the window opens in the real browser, never in a second Electron window. The guard
+  // matters because lesson content is imported from files and from the shared shelf: an https link
+  // is a link, anything else is a scheme handler being reached through us.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    void shell.openExternal(url)
+    const safe = externalUrl(url, 'main window link')
+    if (safe) void shell.openExternal(safe)
     return { action: 'deny' }
   })
   loadRoute(win)

@@ -72,6 +72,8 @@ export interface Subscription {
   status: SubStatus
   priceId: string | null
   currentPeriodEnd: string | null
+  /** True when the plan is still live but stops at `currentPeriodEnd` instead of renewing. */
+  cancelAtPeriodEnd: boolean
   stripeCustomerId: string | null
   stripeSubscriptionId: string | null
 }
@@ -80,13 +82,14 @@ const EMPTY_SUB: Subscription = {
   status: 'none',
   priceId: null,
   currentPeriodEnd: null,
+  cancelAtPeriodEnd: false,
   stripeCustomerId: null,
   stripeSubscriptionId: null
 }
 
 export async function getSubscription(userId: string): Promise<Subscription> {
   const res = await admin(
-    `/rest/v1/subscriptions?user_id=eq.${userId}&select=status,price_id,current_period_end,stripe_customer_id,stripe_subscription_id`
+    `/rest/v1/subscriptions?user_id=eq.${userId}&select=status,price_id,current_period_end,cancel_at_period_end,stripe_customer_id,stripe_subscription_id`
   )
   if (!res.ok) return EMPTY_SUB
   const rows = await res.json().catch(() => [])
@@ -96,6 +99,7 @@ export async function getSubscription(userId: string): Promise<Subscription> {
     status: (row.status ?? 'none') as SubStatus,
     priceId: row.price_id ?? null,
     currentPeriodEnd: row.current_period_end ?? null,
+    cancelAtPeriodEnd: row.cancel_at_period_end === true,
     stripeCustomerId: row.stripe_customer_id ?? null,
     stripeSubscriptionId: row.stripe_subscription_id ?? null
   }
@@ -180,6 +184,13 @@ export interface Entitlement {
   plan: Plan
   status: SubStatus
   currentPeriodEnd: string | null
+  /** A cancel is scheduled: entitled until `currentPeriodEnd`, then not. */
+  cancelAtPeriodEnd: boolean
+  /**
+   * There is a Stripe customer behind this user, whatever they are paying today. A churned
+   * customer still needs the portal to reach their invoices and receipts.
+   */
+  hasBillingAccount: boolean
   usage: Usage
   limits: Limits
 }
@@ -187,7 +198,15 @@ export interface Entitlement {
 export async function getEntitlement(userId: string): Promise<Entitlement> {
   const [sub, usage] = await Promise.all([getSubscription(userId), getUsage(userId)])
   const plan = planFromPriceId(sub.priceId, sub.status)
-  return { plan, status: sub.status, currentPeriodEnd: sub.currentPeriodEnd, usage, limits: LIMITS[plan] }
+  return {
+    plan,
+    status: sub.status,
+    currentPeriodEnd: sub.currentPeriodEnd,
+    cancelAtPeriodEnd: sub.cancelAtPeriodEnd,
+    hasBillingAccount: !!sub.stripeCustomerId,
+    usage,
+    limits: LIMITS[plan]
+  }
 }
 
 /** The 402 message differs by tier: "max" users hit fair use, not a plan limit. */

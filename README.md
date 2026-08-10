@@ -121,6 +121,12 @@ Useful commands:
 | `npm run seeds` | regenerate the starter library; makes real engine calls, rarely needed |
 
 Launching with `COURSELESS_REMOTE_DEBUG=9333 npm run dev` exposes a CDP port the test harness uses.
+It also adds the harness hook `trayInvoke` to the preload bridge, which is absent otherwise.
+
+**Never set `COURSELESS_REMOTE_DEBUG` for an end user.** A CDP port is unauthenticated total
+control of the app: anything that can reach it runs arbitrary code inside the renderers, which hold
+the account, billing and lesson bridge. It is a development switch, nothing in the app or the
+installer sets it, and nothing should.
 
 ## Releasing
 

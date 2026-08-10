@@ -160,9 +160,21 @@ const api: CourselessApi = {
 
   appInfo: () => ipcRenderer.invoke(IPC.appInfo) as Promise<AppInfo>,
 
-  openDataDir: () => ipcRenderer.invoke(IPC.openDataDir) as Promise<boolean>,
+  openDataDir: () => ipcRenderer.invoke(IPC.openDataDir) as Promise<boolean>
+}
 
-  trayInvoke: (label: string) => ipcRenderer.invoke(IPC.trayInvoke, label) as Promise<boolean>
+/**
+ * The verification harness's one hook, and the only member of this bridge that is not a product
+ * feature: it fires a real tray menu item so an automated run can reach a menu it cannot click.
+ *
+ * It is added here rather than declared above so that a normal build does not merely have a method
+ * that fails — it does not have the method at all. `window.courseless.trayInvoke` is `undefined`,
+ * which is what "no automation surface in production" has to mean to be worth saying. The gate is
+ * the same switch that opens the CDP port in main (see src/main/index.ts), so the two can never
+ * disagree about whether this is a harnessed run, and main refuses the channel independently.
+ */
+if (process.env.COURSELESS_REMOTE_DEBUG) {
+  api.trayInvoke = (label: string) => ipcRenderer.invoke(IPC.trayInvoke, label) as Promise<boolean>
 }
 
 contextBridge.exposeInMainWorld('courseless', api)

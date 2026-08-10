@@ -33,11 +33,27 @@ import {
   showMainWindow
 } from './windows'
 
-// Optional remote debugging for automated verification (Playwright over CDP).
+// Remote debugging for automated verification (Playwright over CDP).
+//
+// ⚠ COURSELESS_REMOTE_DEBUG MUST NEVER BE SET FOR AN END USER. ⚠
+//
+// Setting it opens a Chrome DevTools Protocol port on this machine, and CDP is total control: any
+// process — or any web page that can reach the port — can execute arbitrary JavaScript inside the
+// renderers, which hold the whole `window.courseless` bridge (account, billing, lesson files,
+// recording). There is no password on that port; the switch IS the grant.
+//
+// It exists because a release has to be provable end to end, and it is off unless someone launches
+// the app with the variable deliberately. Nothing in the app, the installer, the updater or the
+// packaged Info.plist sets it, and nothing ever should. The preload bridge reads the same variable
+// and only then adds its harness hook, so "debug build" is one decision in one place.
 const debugPort = process.env.COURSELESS_REMOTE_DEBUG
-if (debugPort) {
-  app.commandLine.appendSwitch('remote-debugging-port', debugPort)
+// A port and nothing else: the value becomes a Chromium command-line switch, so anything that is
+// not a plain port number has no business being appended to it.
+if (debugPort && /^\d{1,5}$/.test(debugPort.trim())) {
+  app.commandLine.appendSwitch('remote-debugging-port', debugPort.trim())
   app.commandLine.appendSwitch('remote-allow-origins', '*')
+} else if (debugPort) {
+  log('main', 'ignoring COURSELESS_REMOTE_DEBUG: not a port number')
 }
 // The float widget must keep rendering while the user works in another app, and CDP screenshots
 // need frames from occluded windows. Both require Chromium's backgrounding to stay off.
@@ -63,7 +79,10 @@ const PROTOCOL_PREFIX = `${PROTOCOL}://`
 let windowsExist = false
 
 function handleDeepLink(url: string): void {
-  log('main', 'deep link', url.slice(0, 120))
+  // The scheme and path only. Nothing secret rides on this URL today (see above) and the log file
+  // is one users are invited to open and send us — so the query string never reaches it, and a
+  // future edit that does put something there cannot leak it by accident.
+  log('main', 'deep link', url.split(/[?#]/)[0].slice(0, 120))
   // Before the first window there is nothing to raise, and bootstrap will show one anyway.
   if (!windowsExist) return
   showMainWindow()

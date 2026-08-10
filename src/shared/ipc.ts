@@ -316,6 +316,10 @@ export interface CourselessApi {
   appInfo(): Promise<AppInfo>
   /** Open the lessons/settings folder in the OS file manager. */
   openDataDir(): Promise<boolean>
-  /** verification-harness only — rejects unless the app was started with COURSELESS_REMOTE_DEBUG */
-  trayInvoke(label: string): Promise<boolean>
+  /**
+   * verification-harness only. Optional because it is genuinely ABSENT from the bridge unless the
+   * app was started with COURSELESS_REMOTE_DEBUG: an end user's build has no such property, so
+   * there is no dead automation surface on `window.courseless` to find.
+   */
+  trayInvoke?(label: string): Promise<boolean>
 }

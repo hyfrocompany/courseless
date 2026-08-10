@@ -13,6 +13,7 @@ import { EventEmitter } from 'node:events'
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import type { AuthResult, AuthState, AuthUser } from '../../shared/types'
+import { externalUrl } from '../util/links'
 import { log } from '../util/log'
 
 /** How often the app asks the handoff whether the browser is done. */
@@ -274,8 +275,13 @@ export class AuthService extends EventEmitter {
       return { ok: false, error: 'Could not start the sign-in. Check your connection and try again.' }
     }
 
-    const url = `${this.opts.siteUrl}/login?pair=${encodeURIComponent(id)}`
+    // Built here, not returned by anything, but it still goes through the same gate: siteUrl is
+    // configuration, and configuration is one bad value away from being an arbitrary scheme.
+    const url = externalUrl(`${this.opts.siteUrl}/login?pair=${encodeURIComponent(id)}`, 'browser sign-in')
     log('auth', 'handoff opened', id)
+    if (!url) {
+      return { ok: false, error: 'The sign-in page address is not valid. Sign in with an email and password instead.' }
+    }
     try {
       await shell.openExternal(url)
     } catch (e) {

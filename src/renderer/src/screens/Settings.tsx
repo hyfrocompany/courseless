@@ -25,9 +25,10 @@ const METERS: { key: keyof BillingStatus['usage']; label: string }[] = [
 /**
  * The three plans, always on screen, in the order you grow through them.
  *
- * Everything a plan is, is here: what it costs at both cadences and the three counts it lifts.
- * There is no hidden fourth tier and no "contact us" — the whole ladder fits on one row of cards,
- * which is the point.
+ * Everything a plan is, is here: what it costs at both cadences and what it lifts. Lessons are
+ * the only metered thing on any plan, so the ladder has exactly one rung that changes and the two
+ * that do not are still spelled out — "unlimited" is a promise, and a promise left implicit reads
+ * as an omission. There is no hidden fourth tier and no "contact us".
  */
 interface PlanCardSpec {
   id: PlanId
@@ -44,7 +45,7 @@ const PLANS: PlanCardSpec[] = [
     id: 'free',
     title: 'Free',
     line: 'Enough to find out whether learning this way suits you.',
-    includes: ['3 lessons a month', '20 coach replies', '15 looks at the screen'],
+    includes: ['3 lessons a month', 'Unlimited coach replies', 'Unlimited looks at the screen'],
     checkout: null,
     price: { monthly: { amount: 'Free', sub: 'no card' }, annual: { amount: 'Free', sub: 'no card' } }
   },
@@ -52,7 +53,7 @@ const PLANS: PlanCardSpec[] = [
     id: 'pro',
     title: 'Pro',
     line: 'For picking up something new most weeks.',
-    includes: ['150 lessons a month', '2000 coach replies', '1000 looks at the screen'],
+    includes: ['150 lessons a month', 'Unlimited coach replies', 'Unlimited looks at the screen'],
     checkout: { monthly: 'pro_monthly', annual: 'pro_annual' },
     price: {
       monthly: { amount: '$20', sub: 'per month' },
@@ -306,7 +307,7 @@ export function SettingsScreen({
   const interval: PlanInterval = settings?.planInterval === 'annual' ? 'annual' : 'monthly'
   const signedIn = !!status?.loggedIn
   const isMac = info?.platform === 'darwin'
-  const renews =
+  const periodEnd =
     billing?.currentPeriodEnd && billing.status !== 'none'
       ? new Date(billing.currentPeriodEnd).toLocaleDateString(undefined, {
           day: 'numeric',
@@ -314,6 +315,19 @@ export function SettingsScreen({
           year: 'numeric'
         })
       : null
+  /**
+   * A cancelled plan is still a live plan until the date. Stripe leaves the status at 'active' for
+   * the whole of that last period, so a page that only looked at the status told someone who
+   * cancelled on the 3rd that their plan "renews" on the day it in fact ends. The date is the same
+   * either way; the verb is not.
+   */
+  const ending = !!billing?.cancelAtPeriodEnd || billing?.status === 'canceled'
+  /**
+   * Invoices outlive the subscription. Anyone who has ever paid has a Stripe customer record, and
+   * the portal is the only way to reach their receipts — so the button follows the customer, not
+   * the plan. `plan !== 'free'` is the fallback for a backend that predates the field.
+   */
+  const canManageBilling = billing?.hasBillingAccount === true || plan !== 'free'
 
   // Updates arrive on their own and install themselves on quit. About is the only place that says
   // so, and only once there is something staged.
@@ -399,16 +413,14 @@ export function SettingsScreen({
                   )}
                 </div>
 
-                {renews && (
+                {periodEnd && (
                   <p className="mt-2.5 text-[12px] text-ink-500" data-testid="period-end">
-                    {billing?.status === 'canceled'
-                      ? `Your plan runs until ${renews}.`
-                      : `Renews ${renews}.`}
+                    {ending ? `Your plan runs until ${periodEnd}.` : `Renews ${periodEnd}.`}
                   </p>
                 )}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  {plan !== 'free' && (
+                  {canManageBilling && (
                     <Button variant="outline" size="sm" data-testid="portal-btn" onClick={onPortal}>
                       Manage billing
                     </Button>
@@ -418,10 +430,11 @@ export function SettingsScreen({
                   </Button>
                 </div>
 
-                {plan !== 'free' && (
+                {canManageBilling && (
                   <p className="mt-2.5 max-w-[54ch] text-[12px] leading-[1.5] text-ink-500">
-                    Changing plan, cancelling, payment methods and invoices all live on the billing
-                    page, which opens in your browser.
+                    {plan === 'free'
+                      ? 'Your past invoices and receipts are on the billing page, which opens in your browser.'
+                      : 'Changing plan, cancelling, payment methods and invoices all live on the billing page, which opens in your browser.'}
                   </p>
                 )}
                 {billing && billingError && (
@@ -460,7 +473,8 @@ export function SettingsScreen({
             <div className="min-w-0">
               <div className="text-[13.5px] font-semibold text-ink-900">Plans</div>
               <div className="mt-0.5 max-w-[52ch] text-[12px] leading-relaxed text-ink-500">
-                Every plan counts the same three things a month. You are on{' '}
+                Lessons are the only thing counted. Coaching and pointing are unlimited on every
+                plan. You are on{' '}
                 <span className="text-ink-700">{PLAN_NAME[plan] ?? plan}</span>.
               </div>
             </div>

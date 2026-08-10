@@ -6,7 +6,7 @@ import { Footer, Topbar } from '@/components/chrome'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Checkout cancelled — Courseless', robots: { index: false } }
+export const metadata: Metadata = { title: 'Checkout cancelled on Courseless', robots: { index: false } }
 
 export default function BillingCancelledPage() {
   return (

@@ -8,7 +8,7 @@ import { CheckIcon } from '@/components/icons'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'You are upgraded — Courseless', robots: { index: false } }
+export const metadata: Metadata = { title: 'You are upgraded on Courseless', robots: { index: false } }
 
 export default async function BillingSuccessPage({
   searchParams
@@ -28,8 +28,8 @@ export default async function BillingSuccessPage({
             </div>
             <h1 className="done-title">That is it. You are upgraded.</h1>
             <p className="note bill-note">
-              Payment went through and your new plan is already on your account. Open Courseless — the next lesson you
-              start runs on it.
+              Payment went through and your new plan is already on your account. Open Courseless, and the next lesson
+              you start runs on it.
             </p>
 
             <a className="btn ocean block bill-cta" href="courseless://signed-in">
