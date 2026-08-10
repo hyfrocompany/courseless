@@ -1,6 +1,6 @@
 {
   "name": "courseless",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stop taking courses. Start doing things.",
   "main": "./out/main/index.js",
   "author": "Courseless",
